@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 720" fill="none" role="img" aria-label="Aper�u interface CRM">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fafafa"/>
+      <stop offset="100%" stop-color="#f4f4f5"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Browser chrome -->
+  <rect width="1120" height="720" rx="12" fill="#e4e4e7"/>
+  <rect x="8" y="8" width="1104" height="704" rx="8" fill="#fff"/>
+  <!-- Traffic + URL -->
+  <rect x="8" y="8" width="1104" height="44" rx="8" fill="#fafafa"/>
+  <circle cx="32" cy="30" r="6" fill="#d4d4d8"/>
+  <circle cx="54" cy="30" r="6" fill="#d4d4d8"/>
+  <circle cx="76" cy="30" r="6" fill="#d4d4d8"/>
+  <rect x="120" y="22" width="520" height="16" rx="4" fill="#f4f4f5" stroke="#e4e4e7"/>
+  <text x="132" y="34" font-family="system-ui,Segoe UI,sans-serif" font-size="11" fill="#71717a">crm.Logo.demo/dashboard</text>
+  <!-- App: sidebar -->
+  <rect x="8" y="52" width="200" height="660" fill="#18181b"/>
+  <rect x="28" y="76" width="140" height="10" rx="2" fill="#3f3f46"/>
+  <rect x="28" y="104" width="160" height="36" rx="6" fill="#27272a"/>
+  <rect x="40" y="116" width="8" height="8" rx="2" fill="#a1a1aa"/>
+  <text x="56" y="126" font-family="system-ui,Segoe UI,sans-serif" font-size="11" fill="#e4e4e7">Tableau de bord</text>
+  <rect x="28" y="152" width="160" height="36" rx="6" fill="transparent"/>
+  <rect x="40" y="164" width="8" height="8" rx="2" fill="#52525b"/>
+  <text x="56" y="174" font-family="system-ui,Segoe UI,sans-serif" font-size="11" fill="#a1a1aa">Familles</text>
+  <rect x="28" y="200" width="160" height="36" rx="6" fill="transparent"/>
+  <rect x="40" y="212" width="8" height="8" rx="2" fill="#52525b"/>
+  <text x="56" y="222" font-family="system-ui,Segoe UI,sans-serif" font-size="11" fill="#a1a1aa">Leads</text>
+  <rect x="28" y="248" width="160" height="36" rx="6" fill="transparent"/>
+  <rect x="40" y="260" width="8" height="8" rx="2" fill="#52525b"/>
+  <text x="56" y="270" font-family="system-ui,Segoe UI,sans-serif" font-size="11" fill="#a1a1aa">Communications</text>
+  <!-- Main -->
+  <rect x="208" y="52" width="904" height="660" fill="url(#g)"/>
+  <!-- Page title -->
+  <text x="236" y="96" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#71717a" letter-spacing="0.08em">ESPACE CRM</text>
+  <text x="236" y="132" font-family="Georgia,serif" font-size="22" fill="#18181b">Vue famille  pipeline en temps r�el</text>
+  <!-- Stat cards -->
+  <g filter="url(#s)">
+    <rect x="236" y="156" width="196" height="88" rx="10" fill="#fff" stroke="#e4e4e7"/>
+    <text x="252" y="184" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#71717a">NOUVEAUX PROSPECTS</text>
+    <text x="252" y="218" font-family="Georgia,serif" font-size="28" fill="#18181b">47</text>
+    <text x="252" y="236" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#a1a1aa">ce mois</text>
+    <rect x="448" y="156" width="196" height="88" rx="10" fill="#fff" stroke="#e4e4e7"/>
+    <text x="464" y="184" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#71717a">FAMILLES ACTIVES</text>
+    <text x="464" y="218" font-family="Georgia,serif" font-size="28" fill="#18181b">62</text>
+    <text x="464" y="236" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#a1a1aa">+5 ce mois</text>
+    <rect x="660" y="156" width="196" height="88" rx="10" fill="#fff" stroke="#e4e4e7"/>
+    <text x="676" y="184" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#71717a">RDV PLANIFI�S</text>
+    <text x="676" y="218" font-family="Georgia,serif" font-size="28" fill="#18181b">18</text>
+    <text x="676" y="236" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#a1a1aa">cette semaine</text>
+    <rect x="872" y="156" width="220" height="88" rx="10" fill="#fff" stroke="#e4e4e7"/>
+    <text x="888" y="184" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#71717a">TAUX CONVERSION</text>
+    <text x="888" y="218" font-family="Georgia,serif" font-size="28" fill="#18181b">34%</text>
+    <text x="888" y="236" font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#a1a1aa">+6 pts</text>
+  </g>
+  <!-- Chart panel -->
+  <rect x="236" y="264" width="580" height="280" rx="12" fill="#fff" stroke="#e4e4e7" filter="url(#s)"/>
+  <text x="260" y="298" font-family="Georgia,serif" font-size="16" fill="#18181b">�volution des prospects</text>
+  <path d="M260 480 L320 420 L380 440 L440 380 L500 400 L560 340 L620 360 L680 320 L740 340 L800 300" stroke="#404040" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <g stroke="#e4e4e7" stroke-width="1">
+    <line x1="260" y1="340" x2="820" y2="340"/>
+    <line x1="260" y1="380" x2="820" y2="380"/>
+    <line x1="260" y1="420" x2="820" y2="420"/>
+    <line x1="260" y1="460" x2="820" y2="460"/>
+  </g>
+  <g font-family="system-ui,Segoe UI,sans-serif" font-size="9" fill="#a1a1aa">
+    <text x="268" y="508">Sept</text>
+    <text x="328" y="508">Oct</text>
+    <text x="388" y="508">Nov</text>
+    <text x="448" y="508">D�c</text>
+    <text x="508" y="508">Jan</text>
+    <text x="568" y="508">F�v</text>
+    <text x="628" y="508">Mar</text>
+  </g>
+  <!-- Sources panel -->
+  <rect x="832" y="264" width="260" height="280" rx="12" fill="#fff" stroke="#e4e4e7" filter="url(#s)"/>
+  <text x="856" y="298" font-family="Georgia,serif" font-size="16" fill="#18181b">Sources</text>
+  <circle cx="920" cy="400" r="72" fill="#f4f4f5" stroke="#e4e4e7"/>
+  <path d="M920 328 A72 72 0 0 1 980 400 L920 400 Z" fill="#27272a"/>
+  <path d="M920 328 A72 72 0 0 0 860 400 L920 400 Z" fill="#52525b"/>
+  <path d="M920 472 A72 72 0 0 1 920 328" fill="none"/>
+  <path d="M920 400 L980 400 A72 72 0 0 1 920 472 Z" fill="#71717a"/>
+  <path d="M920 400 L860 440 A72 72 0 0 1 920 472 Z" fill="#a1a1aa"/>
+  <g font-family="system-ui,Segoe UI,sans-serif" font-size="10" fill="#3f3f46">
+    <text x="856" y="520">Site web</text>
+    <text x="980" y="520" text-anchor="end">38%</text>
+    <text x="856" y="538">Bouche-�-oreille</text>
+    <text x="980" y="538" text-anchor="end">28%</text>
+    <text x="856" y="556">Instagram</text>
+    <text x="980" y="556" text-anchor="end">22%</text>
+  </g>
+  <!-- Pipeline -->
+  <rect x="236" y="560" width="856" height="136" rx="12" fill="#fff" stroke="#e4e4e7" filter="url(#s)"/>
+  <text x="260" y="594" font-family="Georgia,serif" font-size="16" fill="#18181b">Pipeline d'inscriptions</text>
+  <g font-family="system-ui,Segoe UI,sans-serif">
+    <rect x="260" y="612" width="148" height="72" rx="8" fill="#fafafa" stroke="#e4e4e7"/>
+    <text x="276" y="632" font-size="9" fill="#71717a">NOUVEAU</text>
+    <text x="276" y="662" font-family="Georgia,serif" font-size="22" fill="#18181b">24</text>
+    <rect x="420" y="612" width="148" height="72" rx="8" fill="#fafafa" stroke="#e4e4e7"/>
+    <text x="436" y="632" font-size="9" fill="#71717a">CONTACT�</text>
+    <text x="436" y="662" font-family="Georgia,serif" font-size="22" fill="#18181b">18</text>
+    <rect x="580" y="612" width="148" height="72" rx="8" fill="#fafafa" stroke="#e4e4e7"/>
+    <text x="596" y="632" font-size="9" fill="#71717a">RDV PRIS</text>
+    <text x="596" y="662" font-family="Georgia,serif" font-size="22" fill="#18181b">11</text>
+    <rect x="740" y="612" width="148" height="72" rx="8" fill="#fafafa" stroke="#e4e4e7"/>
+    <text x="756" y="632" font-size="9" fill="#71717a">VISITE FAITE</text>
+    <text x="756" y="662" font-family="Georgia,serif" font-size="22" fill="#18181b">8</text>
+    <rect x="900" y="612" width="176" height="72" rx="8" fill="#fafafa" stroke="#e4e4e7"/>
+    <text x="916" y="632" font-size="9" fill="#71717a">INSCRIT</text>
+    <text x="916" y="662" font-family="Georgia,serif" font-size="22" fill="#18181b">5</text>
+  </g>
+</svg>
