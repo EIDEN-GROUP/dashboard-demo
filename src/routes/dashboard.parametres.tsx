@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/crm/parametres")({
+export const Route = createFileRoute("/dashboard/parametres")({
   head: () => ({ meta: [{ title: "Paramètres   CRM" }] }),
   component: CrmParametresPage,
 });
@@ -64,12 +64,6 @@ const initialUsers: UserRow[] = [
 ];
 
 function CrmParametresPage() {
-  const [fees, setFees] = useState({
-    typique: "800",
-    dys: "1500",
-    autiste: "2500",
-    tdah: "1800",
-  });
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
   const [userModalOpen, setUserModalOpen] = useState(false);
 
@@ -79,75 +73,9 @@ function CrmParametresPage() {
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">— CRM — Paramètres</p>
         <h1 className="mt-1 font-display text-3xl tracking-tight text-zinc-950 md:text-4xl">Configuration générale</h1>
         <p className="mt-2 max-w-2xl text-sm italic text-zinc-600">
-          Configurez les frais mensuels et les permissions
+          Configurez les permissions et les comptes utilisateurs.
         </p>
       </header>
-
-      <section className="border border-zinc-200 bg-white p-6">
-        <p className={sectionTitle}>— Frais mensuels</p>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="fee-typ" className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-              Enfant typique (MAD)
-            </Label>
-            <Input
-              id="fee-typ"
-              type="number"
-              min={0}
-              value={fees.typique}
-              onChange={(e) => setFees((f) => ({ ...f, typique: e.target.value }))}
-              className={inputClass}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="fee-dys" className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-              Enfant dys (MAD)
-            </Label>
-            <Input
-              id="fee-dys"
-              type="number"
-              min={0}
-              value={fees.dys}
-              onChange={(e) => setFees((f) => ({ ...f, dys: e.target.value }))}
-              className={inputClass}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="fee-aut" className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-              Enfant autiste (MAD)
-            </Label>
-            <Input
-              id="fee-aut"
-              type="number"
-              min={0}
-              value={fees.autiste}
-              onChange={(e) => setFees((f) => ({ ...f, autiste: e.target.value }))}
-              className={inputClass}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="fee-tdah" className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-              Enfant TDAH (MAD)
-            </Label>
-            <Input
-              id="fee-tdah"
-              type="number"
-              min={0}
-              value={fees.tdah}
-              onChange={(e) => setFees((f) => ({ ...f, tdah: e.target.value }))}
-              className={inputClass}
-            />
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end">
-          <button
-            type="button"
-            className="border border-zinc-950 bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-900"
-          >
-            Enregistrer
-          </button>
-        </div>
-      </section>
 
       <section className="border border-zinc-200 bg-white p-6">
         <p className={sectionTitle}>— Permissions des rôles</p>
@@ -202,7 +130,7 @@ function CrmParametresPage() {
                       className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
                       aria-label={`Supprimer ${u.username}`}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                     </button>
                   </td>
                 </tr>

@@ -18,14 +18,14 @@ function Login() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     login(email, pw);
-    nav({ to: "/admin-choice" });
+    nav({ to: "/dashboard" });
   };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="relative hidden lg:flex flex-col justify-between p-12 bg-zinc-100 text-zinc-900 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-[0.12]" />
-        <Link to="/landing" className="relative flex items-center">
+        <Link to="/" className="relative flex items-center">
           <span className="font-display text-xl">LOGO</span>
         </Link>
         <div className="relative">
@@ -40,7 +40,7 @@ function Login() {
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"].map((t) => (
-              <span key={t} className="text-xs px-3 py-1 rounded-full border border-zinc-300 bg-white text-zinc-700">
+              <span key={t} className="text-xs px-3 py-1 border border-zinc-300 bg-white text-zinc-700">
                 {t}
               </span>
             ))}
@@ -54,7 +54,7 @@ function Login() {
           <div className="flex items-center gap-3">
             <span className="font-display text-5xl text-zinc-400">01</span>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500">Espace administrateur</p>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500">Connexion CRM</p>
               <h2 className="font-display text-2xl text-zinc-900">Connectez-vous</h2>
             </div>
           </div>
@@ -82,9 +82,9 @@ function Login() {
                 </button>
               </div>
             </div>
-            <button className="w-full flex items-center justify-between rounded-full bg-zinc-900 text-white px-6 py-4 text-sm font-medium hover:bg-zinc-800 transition">
+            <button className="w-full flex items-center justify-between bg-zinc-900 text-white px-6 py-4 text-sm font-medium hover:bg-zinc-800 transition">
               Entrer dans l'espace
-              <span className="grid place-items-center h-7 w-7 rounded-full bg-white text-zinc-900">
+              <span className="grid place-items-center h-7 w-7 bg-white text-zinc-900">
                 <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </button>

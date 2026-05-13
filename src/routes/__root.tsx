@@ -22,7 +22,7 @@ function NotFoundComponent() {
         </p>
         <div className="mt-6">
           <Link
-            to="/landing"
+            to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Retour à l&apos;accueil
@@ -57,7 +57,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             Réessayer
           </button>
           <a
-            href="/landing"
+            href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Retour à l&apos;accueil
@@ -103,11 +103,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full scroll-smooth">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-full antialiased">
         {children}
         <Scripts />
       </body>

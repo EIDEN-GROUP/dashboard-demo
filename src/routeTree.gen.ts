@@ -10,46 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as LandingRouteImport } from './routes/landing'
-import { Route as CrmRouteImport } from './routes/crm'
-import { Route as AdminChoiceRouteImport } from './routes/admin-choice'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CrmRapportsRouteImport } from './routes/crm.rapports'
-import { Route as CrmParametresRouteImport } from './routes/crm.parametres'
-import { Route as CrmPaiementsRouteImport } from './routes/crm.paiements'
-import { Route as CrmLeadsRouteImport } from './routes/crm.leads'
-import { Route as CrmFamillesRouteImport } from './routes/crm.familles'
-import { Route as CrmDashboardRouteImport } from './routes/crm.dashboard'
-import { Route as CrmCommunicationsRouteImport } from './routes/crm.communications'
-import { Route as AdminRendezVousRouteImport } from './routes/admin.rendez-vous'
-import { Route as AdminPlanningRouteImport } from './routes/admin.planning'
-import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
-import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardRendezVousRouteImport } from './routes/dashboard.rendez-vous'
+import { Route as DashboardRapportsRouteImport } from './routes/dashboard.rapports'
+import { Route as DashboardParametresRouteImport } from './routes/dashboard.parametres'
+import { Route as DashboardPaiementsRouteImport } from './routes/dashboard.paiements'
+import { Route as DashboardLeadsRouteImport } from './routes/dashboard.leads'
+import { Route as DashboardFamillesRouteImport } from './routes/dashboard.familles'
+import { Route as DashboardAffichesRouteImport } from './routes/dashboard.affiches'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandingRoute = LandingRouteImport.update({
-  id: '/landing',
-  path: '/landing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CrmRoute = CrmRouteImport.update({
-  id: '/crm',
-  path: '/crm',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminChoiceRoute = AdminChoiceRouteImport.update({
-  id: '/admin-choice',
-  path: '/admin-choice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -57,186 +36,130 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CrmRapportsRoute = CrmRapportsRouteImport.update({
-  id: '/rapports',
-  path: '/rapports',
-  getParentRoute: () => CrmRoute,
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const CrmParametresRoute = CrmParametresRouteImport.update({
-  id: '/parametres',
-  path: '/parametres',
-  getParentRoute: () => CrmRoute,
-} as any)
-const CrmPaiementsRoute = CrmPaiementsRouteImport.update({
-  id: '/paiements',
-  path: '/paiements',
-  getParentRoute: () => CrmRoute,
-} as any)
-const CrmLeadsRoute = CrmLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => CrmRoute,
-} as any)
-const CrmFamillesRoute = CrmFamillesRouteImport.update({
-  id: '/familles',
-  path: '/familles',
-  getParentRoute: () => CrmRoute,
-} as any)
-const CrmDashboardRoute = CrmDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => CrmRoute,
-} as any)
-const CrmCommunicationsRoute = CrmCommunicationsRouteImport.update({
-  id: '/communications',
-  path: '/communications',
-  getParentRoute: () => CrmRoute,
-} as any)
-const AdminRendezVousRoute = AdminRendezVousRouteImport.update({
+const DashboardRendezVousRoute = DashboardRendezVousRouteImport.update({
   id: '/rendez-vous',
   path: '/rendez-vous',
-  getParentRoute: () => AdminRoute,
+  getParentRoute: () => DashboardRoute,
 } as any)
-const AdminPlanningRoute = AdminPlanningRouteImport.update({
-  id: '/planning',
-  path: '/planning',
-  getParentRoute: () => AdminRoute,
+const DashboardRapportsRoute = DashboardRapportsRouteImport.update({
+  id: '/rapports',
+  path: '/rapports',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const AdminDashboardRoute = AdminDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AdminRoute,
+const DashboardParametresRoute = DashboardParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => DashboardRoute,
 } as any)
-const AdminCommandesRoute = AdminCommandesRouteImport.update({
-  id: '/commandes',
-  path: '/commandes',
-  getParentRoute: () => AdminRoute,
+const DashboardPaiementsRoute = DashboardPaiementsRouteImport.update({
+  id: '/paiements',
+  path: '/paiements',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFamillesRoute = DashboardFamillesRouteImport.update({
+  id: '/familles',
+  path: '/familles',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAffichesRoute = DashboardAffichesRouteImport.update({
+  id: '/affiches',
+  path: '/affiches',
+  getParentRoute: () => DashboardRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/admin-choice': typeof AdminChoiceRoute
-  '/crm': typeof CrmRouteWithChildren
-  '/landing': typeof LandingRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
-  '/admin/commandes': typeof AdminCommandesRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
-  '/admin/planning': typeof AdminPlanningRoute
-  '/admin/rendez-vous': typeof AdminRendezVousRoute
-  '/crm/communications': typeof CrmCommunicationsRoute
-  '/crm/dashboard': typeof CrmDashboardRoute
-  '/crm/familles': typeof CrmFamillesRoute
-  '/crm/leads': typeof CrmLeadsRoute
-  '/crm/paiements': typeof CrmPaiementsRoute
-  '/crm/parametres': typeof CrmParametresRoute
-  '/crm/rapports': typeof CrmRapportsRoute
+  '/dashboard/affiches': typeof DashboardAffichesRoute
+  '/dashboard/familles': typeof DashboardFamillesRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/paiements': typeof DashboardPaiementsRoute
+  '/dashboard/parametres': typeof DashboardParametresRoute
+  '/dashboard/rapports': typeof DashboardRapportsRoute
+  '/dashboard/rendez-vous': typeof DashboardRendezVousRoute
+  '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/admin-choice': typeof AdminChoiceRoute
-  '/crm': typeof CrmRouteWithChildren
-  '/landing': typeof LandingRoute
   '/login': typeof LoginRoute
-  '/admin/commandes': typeof AdminCommandesRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
-  '/admin/planning': typeof AdminPlanningRoute
-  '/admin/rendez-vous': typeof AdminRendezVousRoute
-  '/crm/communications': typeof CrmCommunicationsRoute
-  '/crm/dashboard': typeof CrmDashboardRoute
-  '/crm/familles': typeof CrmFamillesRoute
-  '/crm/leads': typeof CrmLeadsRoute
-  '/crm/paiements': typeof CrmPaiementsRoute
-  '/crm/parametres': typeof CrmParametresRoute
-  '/crm/rapports': typeof CrmRapportsRoute
+  '/dashboard/affiches': typeof DashboardAffichesRoute
+  '/dashboard/familles': typeof DashboardFamillesRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/paiements': typeof DashboardPaiementsRoute
+  '/dashboard/parametres': typeof DashboardParametresRoute
+  '/dashboard/rapports': typeof DashboardRapportsRoute
+  '/dashboard/rendez-vous': typeof DashboardRendezVousRoute
+  '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/admin-choice': typeof AdminChoiceRoute
-  '/crm': typeof CrmRouteWithChildren
-  '/landing': typeof LandingRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
-  '/admin/commandes': typeof AdminCommandesRoute
-  '/admin/dashboard': typeof AdminDashboardRoute
-  '/admin/planning': typeof AdminPlanningRoute
-  '/admin/rendez-vous': typeof AdminRendezVousRoute
-  '/crm/communications': typeof CrmCommunicationsRoute
-  '/crm/dashboard': typeof CrmDashboardRoute
-  '/crm/familles': typeof CrmFamillesRoute
-  '/crm/leads': typeof CrmLeadsRoute
-  '/crm/paiements': typeof CrmPaiementsRoute
-  '/crm/parametres': typeof CrmParametresRoute
-  '/crm/rapports': typeof CrmRapportsRoute
+  '/dashboard/affiches': typeof DashboardAffichesRoute
+  '/dashboard/familles': typeof DashboardFamillesRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/paiements': typeof DashboardPaiementsRoute
+  '/dashboard/parametres': typeof DashboardParametresRoute
+  '/dashboard/rapports': typeof DashboardRapportsRoute
+  '/dashboard/rendez-vous': typeof DashboardRendezVousRoute
+  '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
-    | '/admin-choice'
-    | '/crm'
-    | '/landing'
+    | '/dashboard'
     | '/login'
-    | '/admin/commandes'
-    | '/admin/dashboard'
-    | '/admin/planning'
-    | '/admin/rendez-vous'
-    | '/crm/communications'
-    | '/crm/dashboard'
-    | '/crm/familles'
-    | '/crm/leads'
-    | '/crm/paiements'
-    | '/crm/parametres'
-    | '/crm/rapports'
+    | '/dashboard/affiches'
+    | '/dashboard/familles'
+    | '/dashboard/leads'
+    | '/dashboard/paiements'
+    | '/dashboard/parametres'
+    | '/dashboard/rapports'
+    | '/dashboard/rendez-vous'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
-    | '/admin-choice'
-    | '/crm'
-    | '/landing'
     | '/login'
-    | '/admin/commandes'
-    | '/admin/dashboard'
-    | '/admin/planning'
-    | '/admin/rendez-vous'
-    | '/crm/communications'
-    | '/crm/dashboard'
-    | '/crm/familles'
-    | '/crm/leads'
-    | '/crm/paiements'
-    | '/crm/parametres'
-    | '/crm/rapports'
+    | '/dashboard/affiches'
+    | '/dashboard/familles'
+    | '/dashboard/leads'
+    | '/dashboard/paiements'
+    | '/dashboard/parametres'
+    | '/dashboard/rapports'
+    | '/dashboard/rendez-vous'
+    | '/dashboard'
   id:
     | '__root__'
     | '/'
-    | '/admin'
-    | '/admin-choice'
-    | '/crm'
-    | '/landing'
+    | '/dashboard'
     | '/login'
-    | '/admin/commandes'
-    | '/admin/dashboard'
-    | '/admin/planning'
-    | '/admin/rendez-vous'
-    | '/crm/communications'
-    | '/crm/dashboard'
-    | '/crm/familles'
-    | '/crm/leads'
-    | '/crm/paiements'
-    | '/crm/parametres'
-    | '/crm/rapports'
+    | '/dashboard/affiches'
+    | '/dashboard/familles'
+    | '/dashboard/leads'
+    | '/dashboard/paiements'
+    | '/dashboard/parametres'
+    | '/dashboard/rapports'
+    | '/dashboard/rendez-vous'
+    | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
-  AdminChoiceRoute: typeof AdminChoiceRoute
-  CrmRoute: typeof CrmRouteWithChildren
-  LandingRoute: typeof LandingRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
@@ -249,32 +172,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/landing': {
-      id: '/landing'
-      path: '/landing'
-      fullPath: '/landing'
-      preLoaderRoute: typeof LandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/crm': {
-      id: '/crm'
-      path: '/crm'
-      fullPath: '/crm'
-      preLoaderRoute: typeof CrmRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin-choice': {
-      id: '/admin-choice'
-      path: '/admin-choice'
-      fullPath: '/admin-choice'
-      preLoaderRoute: typeof AdminChoiceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -284,130 +186,94 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/crm/rapports': {
-      id: '/crm/rapports'
-      path: '/rapports'
-      fullPath: '/crm/rapports'
-      preLoaderRoute: typeof CrmRapportsRouteImport
-      parentRoute: typeof CrmRoute
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/crm/parametres': {
-      id: '/crm/parametres'
-      path: '/parametres'
-      fullPath: '/crm/parametres'
-      preLoaderRoute: typeof CrmParametresRouteImport
-      parentRoute: typeof CrmRoute
-    }
-    '/crm/paiements': {
-      id: '/crm/paiements'
-      path: '/paiements'
-      fullPath: '/crm/paiements'
-      preLoaderRoute: typeof CrmPaiementsRouteImport
-      parentRoute: typeof CrmRoute
-    }
-    '/crm/leads': {
-      id: '/crm/leads'
-      path: '/leads'
-      fullPath: '/crm/leads'
-      preLoaderRoute: typeof CrmLeadsRouteImport
-      parentRoute: typeof CrmRoute
-    }
-    '/crm/familles': {
-      id: '/crm/familles'
-      path: '/familles'
-      fullPath: '/crm/familles'
-      preLoaderRoute: typeof CrmFamillesRouteImport
-      parentRoute: typeof CrmRoute
-    }
-    '/crm/dashboard': {
-      id: '/crm/dashboard'
-      path: '/dashboard'
-      fullPath: '/crm/dashboard'
-      preLoaderRoute: typeof CrmDashboardRouteImport
-      parentRoute: typeof CrmRoute
-    }
-    '/crm/communications': {
-      id: '/crm/communications'
-      path: '/communications'
-      fullPath: '/crm/communications'
-      preLoaderRoute: typeof CrmCommunicationsRouteImport
-      parentRoute: typeof CrmRoute
-    }
-    '/admin/rendez-vous': {
-      id: '/admin/rendez-vous'
+    '/dashboard/rendez-vous': {
+      id: '/dashboard/rendez-vous'
       path: '/rendez-vous'
-      fullPath: '/admin/rendez-vous'
-      preLoaderRoute: typeof AdminRendezVousRouteImport
-      parentRoute: typeof AdminRoute
+      fullPath: '/dashboard/rendez-vous'
+      preLoaderRoute: typeof DashboardRendezVousRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/admin/planning': {
-      id: '/admin/planning'
-      path: '/planning'
-      fullPath: '/admin/planning'
-      preLoaderRoute: typeof AdminPlanningRouteImport
-      parentRoute: typeof AdminRoute
+    '/dashboard/rapports': {
+      id: '/dashboard/rapports'
+      path: '/rapports'
+      fullPath: '/dashboard/rapports'
+      preLoaderRoute: typeof DashboardRapportsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/admin/dashboard': {
-      id: '/admin/dashboard'
-      path: '/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof AdminDashboardRouteImport
-      parentRoute: typeof AdminRoute
+    '/dashboard/parametres': {
+      id: '/dashboard/parametres'
+      path: '/parametres'
+      fullPath: '/dashboard/parametres'
+      preLoaderRoute: typeof DashboardParametresRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/admin/commandes': {
-      id: '/admin/commandes'
-      path: '/commandes'
-      fullPath: '/admin/commandes'
-      preLoaderRoute: typeof AdminCommandesRouteImport
-      parentRoute: typeof AdminRoute
+    '/dashboard/paiements': {
+      id: '/dashboard/paiements'
+      path: '/paiements'
+      fullPath: '/dashboard/paiements'
+      preLoaderRoute: typeof DashboardPaiementsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/leads': {
+      id: '/dashboard/leads'
+      path: '/leads'
+      fullPath: '/dashboard/leads'
+      preLoaderRoute: typeof DashboardLeadsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/familles': {
+      id: '/dashboard/familles'
+      path: '/familles'
+      fullPath: '/dashboard/familles'
+      preLoaderRoute: typeof DashboardFamillesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/affiches': {
+      id: '/dashboard/affiches'
+      path: '/affiches'
+      fullPath: '/dashboard/affiches'
+      preLoaderRoute: typeof DashboardAffichesRouteImport
+      parentRoute: typeof DashboardRoute
     }
   }
 }
 
-interface AdminRouteChildren {
-  AdminCommandesRoute: typeof AdminCommandesRoute
-  AdminDashboardRoute: typeof AdminDashboardRoute
-  AdminPlanningRoute: typeof AdminPlanningRoute
-  AdminRendezVousRoute: typeof AdminRendezVousRoute
+interface DashboardRouteChildren {
+  DashboardAffichesRoute: typeof DashboardAffichesRoute
+  DashboardFamillesRoute: typeof DashboardFamillesRoute
+  DashboardLeadsRoute: typeof DashboardLeadsRoute
+  DashboardPaiementsRoute: typeof DashboardPaiementsRoute
+  DashboardParametresRoute: typeof DashboardParametresRoute
+  DashboardRapportsRoute: typeof DashboardRapportsRoute
+  DashboardRendezVousRoute: typeof DashboardRendezVousRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminCommandesRoute: AdminCommandesRoute,
-  AdminDashboardRoute: AdminDashboardRoute,
-  AdminPlanningRoute: AdminPlanningRoute,
-  AdminRendezVousRoute: AdminRendezVousRoute,
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAffichesRoute: DashboardAffichesRoute,
+  DashboardFamillesRoute: DashboardFamillesRoute,
+  DashboardLeadsRoute: DashboardLeadsRoute,
+  DashboardPaiementsRoute: DashboardPaiementsRoute,
+  DashboardParametresRoute: DashboardParametresRoute,
+  DashboardRapportsRoute: DashboardRapportsRoute,
+  DashboardRendezVousRoute: DashboardRendezVousRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
 }
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
-interface CrmRouteChildren {
-  CrmCommunicationsRoute: typeof CrmCommunicationsRoute
-  CrmDashboardRoute: typeof CrmDashboardRoute
-  CrmFamillesRoute: typeof CrmFamillesRoute
-  CrmLeadsRoute: typeof CrmLeadsRoute
-  CrmPaiementsRoute: typeof CrmPaiementsRoute
-  CrmParametresRoute: typeof CrmParametresRoute
-  CrmRapportsRoute: typeof CrmRapportsRoute
-}
-
-const CrmRouteChildren: CrmRouteChildren = {
-  CrmCommunicationsRoute: CrmCommunicationsRoute,
-  CrmDashboardRoute: CrmDashboardRoute,
-  CrmFamillesRoute: CrmFamillesRoute,
-  CrmLeadsRoute: CrmLeadsRoute,
-  CrmPaiementsRoute: CrmPaiementsRoute,
-  CrmParametresRoute: CrmParametresRoute,
-  CrmRapportsRoute: CrmRapportsRoute,
-}
-
-const CrmRouteWithChildren = CrmRoute._addFileChildren(CrmRouteChildren)
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
-  AdminChoiceRoute: AdminChoiceRoute,
-  CrmRoute: CrmRouteWithChildren,
-  LandingRoute: LandingRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

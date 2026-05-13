@@ -19,7 +19,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/crm/familles")({
+export const Route = createFileRoute("/dashboard/familles")({
   head: () => ({ meta: [{ title: "Parents   CRM" }] }),
   component: CrmParentsPage,
 });
@@ -331,7 +331,7 @@ function CrmParentsPage() {
                         className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
                         aria-label={`Voir ${c.child}`}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>
                       <button
                         type="button"
@@ -339,7 +339,7 @@ function CrmParentsPage() {
                         className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
                         aria-label={`Modifier ${c.child}`}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>
                     </div>
                   </td>

@@ -7,14 +7,22 @@ import { LogOut, ArrowLeftRight } from "lucide-react";
 export type NavItem = { to: string; label: string; icon: any };
 
 function topNavItemActive(pathname: string, to: string) {
-  if (to === "/admin/dashboard") return pathname === "/admin/dashboard";
-  if (to === "/admin/commandes") return pathname === "/admin/commandes" || pathname.startsWith("/admin/commandes/");
-  if (to === "/admin/rendez-vous") return pathname === "/admin/rendez-vous" || pathname.startsWith("/admin/rendez-vous/");
-  if (to === "/admin/planning") return pathname === "/admin/planning" || pathname.startsWith("/admin/planning/");
-  if (to === "/crm/dashboard") return pathname === "/crm/dashboard";
-  if (to === "/crm/familles") return pathname === "/crm/familles" || pathname.startsWith("/crm/familles/");
-  if (to === "/crm/paiements") return pathname === "/crm/paiements" || pathname.startsWith("/crm/paiements/");
-  if (to === "/crm/parametres") return pathname === "/crm/parametres" || pathname.startsWith("/crm/parametres/");
+  if (to === "/dashboard")
+    return pathname === "/dashboard" || pathname === "/dashboard/";
+  if (to === "/dashboard/rendez-vous")
+    return pathname === "/dashboard/rendez-vous" || pathname.startsWith("/dashboard/rendez-vous/");
+  if (to === "/dashboard/familles")
+    return pathname === "/dashboard/familles" || pathname.startsWith("/dashboard/familles/");
+  if (to === "/dashboard/paiements")
+    return pathname === "/dashboard/paiements" || pathname.startsWith("/dashboard/paiements/");
+  if (to === "/dashboard/parametres")
+    return pathname === "/dashboard/parametres" || pathname.startsWith("/dashboard/parametres/");
+  if (to === "/dashboard/leads")
+    return pathname === "/dashboard/leads" || pathname.startsWith("/dashboard/leads/");
+  if (to === "/dashboard/affiches")
+    return pathname === "/dashboard/affiches" || pathname.startsWith("/dashboard/affiches/");
+  if (to === "/dashboard/rapports")
+    return pathname === "/dashboard/rapports" || pathname.startsWith("/dashboard/rapports/");
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
@@ -22,24 +30,16 @@ function topNavItemActive(pathname: string, to: string) {
 function MobileBottomNav({
   topNav,
   pathname,
-  onLogout,
 }: {
   topNav: NavItem[];
   pathname: string;
-  onLogout: () => void;
 }) {
   const compact = topNav.length >= 4;
-  const labelClass = compact ? "text-[10px]" : "text-[11px]";
+  const labelClass = compact ? "text-[9px] leading-tight" : "text-[10px] leading-tight";
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-100 bg-white pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-6px_24px_rgb(0_0_0/0.05)] lg:hidden"
-      aria-label="Navigation principale"
-    >
-      <div
-        className="grid min-h-[4.25rem] w-full auto-cols-fr"
-        style={{ gridTemplateColumns: `repeat(${topNav.length + 1}, minmax(0, 1fr))` }}
-      >
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-100 bg-white pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-6px_24px_rgb(0_0_0/0.05)] lg:hidden" aria-label="Navigation principale">
+      <div className="grid min-h-[4.25rem] w-full auto-cols-fr" style={{ gridTemplateColumns: `repeat(${topNav.length}, minmax(0, 1fr))` }}>
         {topNav.map((n) => {
           const active = topNavItemActive(pathname, n.to);
           const Icon = n.icon;
@@ -56,31 +56,12 @@ function MobileBottomNav({
                 <span className={cn("h-0.5 w-6 shrink-0 rounded-full", active ? "bg-zinc-900" : "bg-transparent")} />
               </span>
               <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
-              <span
-                className={cn(
-                  "w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight",
-                  labelClass,
-                  active ? "text-zinc-900" : "font-medium text-zinc-500",
-                )}
-              >
+              <span className={cn( "w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight", labelClass, active ? "text-zinc-900" : "font-medium text-zinc-500", )}>
                 {n.label}
               </span>
             </Link>
           );
         })}
-        <button
-          type="button"
-          onClick={onLogout}
-          className="mx-0.5 flex min-w-0 flex-col items-center justify-center gap-1 rounded-full px-0.5 py-2 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
-        >
-          <span className="flex h-1 w-full shrink-0 items-center justify-center" aria-hidden>
-            <span className="h-0.5 w-6 shrink-0 rounded-full bg-transparent" />
-          </span>
-          <LogOut className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-          <span className={cn("w-full truncate px-0.5 text-center font-medium leading-tight text-zinc-500", labelClass)}>
-            Quitter
-          </span>
-        </button>
       </div>
     </nav>
   );
@@ -98,13 +79,14 @@ export function DashShell({
   children,
 }: {
   brand: string;
-  brandColor: "primary" | "coral";
+  brandColor: "primary";
   nav?: NavItem[];
   topNav?: NavItem[];
   secondaryNav?: NavItem[];
   variant?: "sidebar" | "topnav";
-  switchTo: string;
-  switchLabel: string;
+  /** Second workspace link (e.g. admin). Omit to hide the switch control. */
+  switchTo?: string;
+  switchLabel?: string;
   children: ReactNode;
 }) {
   const { user, logout } = useAuth();
@@ -125,50 +107,48 @@ export function DashShell({
     };
 
     return (
-      <div className="min-h-screen flex flex-col bg-zinc-100">
-        <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white">
+      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-zinc-100">
+        <header className="z-30 shrink-0 border-b border-zinc-200 bg-white">
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <Link to={topNav[0]?.to ?? "/admin/dashboard"} className="flex min-w-0 flex-col">
-                <span className="font-display text-2xl leading-none text-zinc-900">Plateforme</span>
+              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 flex-col">
+                <span className="font-display text-xl leading-none tracking-tight text-zinc-900">Plateforme</span>
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">{brand}</span>
               </Link>
-              <Link
-                to={switchTo}
-                className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-zinc-300 px-2 py-1 text-[10px] font-medium text-zinc-700 hover:bg-zinc-50"
-              >
-                <ArrowLeftRight className="h-3 w-3 shrink-0" />
-                <span className="truncate">{switchLabel}</span>
-              </Link>
+              {switchTo && switchLabel ? (
+                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-zinc-300 px-2 py-1 text-[10px] font-medium text-zinc-700 hover:bg-zinc-50">
+                  <ArrowLeftRight className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{switchLabel}</span>
+                </Link>
+              ) : null}
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1 pt-0.5">
-              <p className="max-w-[7rem] truncate text-right text-xs font-medium leading-none text-zinc-900">
-                {user?.name || "admin"}
-              </p>
+            <div className="flex shrink-0 items-center gap-2 pt-0.5">
               <div className="h-9 w-9 border border-zinc-200 bg-zinc-900 text-white grid place-items-center text-sm font-medium">
                 {(user?.name || "A").slice(0, 1).toUpperCase()}
               </div>
+              <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center border border-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900" aria-label="Sortir">
+                <LogOut className="h-4 w-4" strokeWidth={1.75} />
+              </button>
             </div>
           </div>
 
           {/* Desktop: full header */}
           <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
-              <Link to={topNav[0]?.to ?? "/admin/dashboard"} className="flex flex-col">
+              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex flex-col">
                 <span className="font-display text-4xl leading-none text-zinc-900">Plateforme</span>
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">{brand}</span>
               </Link>
-              <Link
-                to={switchTo}
-                className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-800 hover:bg-zinc-50 w-fit"
-              >
-                <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{switchLabel}</span>
-              </Link>
+              {switchTo && switchLabel ? (
+                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-zinc-300 px-2.5 py-1.5 text-xs text-zinc-800 hover:bg-zinc-50 w-fit" >
+                  <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{switchLabel}</span>
+                </Link>
+              ) : null}
             </div>
 
-            <nav className="flex justify-center gap-0 overflow-x-auto border-y border-zinc-200 py-1 lg:border-y-0 lg:py-0">
+            <nav className="scroll-touch flex justify-center gap-0 overflow-x-auto border-y border-zinc-200 py-1 lg:border-y-0 lg:py-0">
               {topNav.map((n) => {
                 const active = topNavItemActive(loc.pathname, n.to);
                 return (
@@ -199,19 +179,15 @@ export function DashShell({
                   {(user?.name || "A").slice(0, 1).toUpperCase()}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 border border-zinc-200 px-2.5 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Sortir</span>
+              <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 border border-zinc-200 px-2.5 py-1.5 text-zinc-600 hover:bg-zinc-50" aria-label="Sortir">
+                <LogOut className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden lg:inline">Sortir</span>
               </button>
             </div>
           </div>
 
           {secondaryNav && secondaryNav.length > 0 ? (
-            <div className="flex flex-nowrap items-center gap-1 overflow-x-auto border-t border-zinc-200 bg-zinc-50/80 px-4 py-2 lg:flex-wrap lg:px-6">
+            <div className="scroll-touch flex flex-nowrap items-center gap-1 overflow-x-auto border-t border-zinc-200 bg-zinc-50 px-4 py-2 lg:flex-wrap lg:px-6">
               {secondaryNav.map((n) => {
                 const active = loc.pathname === n.to || loc.pathname.startsWith(`${n.to}/`);
                 return (
@@ -219,7 +195,7 @@ export function DashShell({
                     key={n.to}
                     to={n.to}
                     className={
-                      "flex shrink-0 items-center gap-2 border px-3 py-1.5 text-xs font-medium " +
+                      "flex shrink-0 items-center gap-1.5 border px-2.5 py-1.5 text-[11px] font-medium leading-tight " +
                       (active
                         ? "border-zinc-300 bg-white text-zinc-900"
                         : "border-transparent text-zinc-600 hover:bg-white/80 hover:text-zinc-900")
@@ -234,30 +210,31 @@ export function DashShell({
           ) : null}
         </header>
 
-        <main className="flex-1 p-4 pb-24 lg:p-8 lg:pb-8">{children}</main>
+        <main data-dashboard-main className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-24 lg:p-8 lg:pb-8">
+          {children}
+        </main>
 
-        <MobileBottomNav topNav={topNav} pathname={loc.pathname} onLogout={handleLogout} />
+        <MobileBottomNav topNav={topNav} pathname={loc.pathname} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex bg-zinc-100">
-      <aside className="hidden lg:flex w-64 flex-col bg-white border-r border-zinc-200 sticky top-0 h-screen">
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-zinc-100">
+      <aside className="hidden h-full min-h-0 w-64 shrink-0 flex-col border-r border-zinc-200 bg-white lg:flex">
         <div className="px-6 py-5 border-b border-zinc-200 space-y-3">
           <div>
             <p className="font-display text-lg leading-none text-zinc-900">LOGO</p>
             <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{brand}</p>
           </div>
-          <Link
-            to={switchTo}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-zinc-300 text-zinc-800 hover:bg-zinc-100"
-          >
-            <ArrowLeftRight className="h-4 w-4 text-zinc-700 shrink-0" />
-            <span className="min-w-0 truncate">{switchLabel}</span>
-          </Link>
+          {switchTo && switchLabel ? (
+            <Link to={switchTo} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-zinc-300 text-zinc-800 hover:bg-zinc-100" >
+              <ArrowLeftRight className="h-4 w-4 text-zinc-700 shrink-0" />
+              <span className="min-w-0 truncate">{switchLabel}</span>
+            </Link>
+          ) : null}
         </div>
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto scroll-touch p-3">
           {nav.map((n) => {
             const active = loc.pathname === n.to;
             return (
@@ -290,8 +267,8 @@ export function DashShell({
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white/80 backdrop-blur border-b border-zinc-200 sticky top-0 z-20">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="z-20 shrink-0 border-b border-zinc-200 bg-white">
           <div className="px-6 h-16 flex items-center justify-end gap-4">
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
@@ -304,7 +281,7 @@ export function DashShell({
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto scroll-touch p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

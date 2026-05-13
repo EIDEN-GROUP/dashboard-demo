@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/crm/dashboard")({
+export const Route = createFileRoute("/dashboard/")({
   head: () => ({ meta: [{ title: "CRM   Plateforme" }] }),
   component: CrmDash,
 });
@@ -54,7 +54,7 @@ const metrics = [
     badge: "Actif",
     borderClass: "border-t-zinc-900",
     icon: Users,
-    to: "/crm/familles",
+    to: "/dashboard/familles",
   },
   {
     k: "02",
@@ -64,7 +64,7 @@ const metrics = [
     badge: "Actif",
     borderClass: "border-t-zinc-600",
     icon: CreditCard,
-    to: "/crm/familles",
+    to: "/dashboard/familles",
   },
   {
     k: "03",
@@ -74,7 +74,7 @@ const metrics = [
     badge: "Actif",
     borderClass: "border-t-zinc-400",
     icon: AlertCircle,
-    to: "/crm/rapports",
+    to: "/dashboard/rapports",
   },
   {
     k: "04",
@@ -84,7 +84,7 @@ const metrics = [
     badge: "Actif",
     borderClass: "border-t-zinc-300",
     icon: TrendingUp,
-    to: "/crm/rapports",
+    to: "/dashboard/rapports",
   },
 ] as const;
 
@@ -101,21 +101,21 @@ type QuickAction =
 const quickActions: QuickAction[] = [
   {
     kind: "link",
-    to: "/crm/familles",
+    to: "/dashboard/familles",
     title: "Gérer les clients",
     desc: "Voir et modifier les informations des clients.",
     icon: Users,
   },
   {
     kind: "link",
-    to: "/crm/familles",
+    to: "/dashboard/familles",
     title: "Enregistrer un paiement",
     desc: "Sélectionner un parent et enregistrer.",
     icon: CreditCard,
   },
   {
     kind: "link",
-    to: "/crm/leads",
+    to: "/dashboard/leads",
     title: "Clients en retard",
     desc: "Voir les clients avec des paiements en retard.",
     icon: Clock,
@@ -302,10 +302,14 @@ function CrmDash() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((card) => (
-          <div
+          <Link
             key={card.k}
+            to={card.to}
+            aria-label={`${card.label}: ${card.value}. Ouvrir`}
             className={
-              "relative overflow-hidden border border-zinc-200 bg-white p-5 " + card.borderClass + " border-t-4"
+              "relative block overflow-hidden border border-zinc-200 bg-white p-5 text-left text-inherit no-underline outline-none transition-colors hover:border-zinc-300 hover:bg-zinc-50/60 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 " +
+              card.borderClass +
+              " border-t-4"
             }
           >
             <span className={badgeClass}>{card.badge}</span>
@@ -319,14 +323,7 @@ function CrmDash() {
               </span>
             </div>
             {card.sub && <p className="mt-1 text-xs text-zinc-600">{card.sub}</p>}
-            <Link
-              to={card.to}
-              className="mt-4 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-zinc-600 hover:text-zinc-950"
-            >
-              Voir le détail
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          </Link>
         ))}
       </div>
 

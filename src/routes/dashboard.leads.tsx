@@ -12,7 +12,7 @@ const cards: Record<(typeof stages)[number], { n: string; e: string; p: string }
   "Visite effectuée": [{ n: "Famille Tahiri", e: "4 ans · PS", p: "Site web" }],
 };
 
-export const Route = createFileRoute("/crm/leads")({
+export const Route = createFileRoute("/dashboard/leads")({
   head: () => ({ meta: [{ title: "Prospects — CRM" }] }),
   component: () => (
     <div className="space-y-8">

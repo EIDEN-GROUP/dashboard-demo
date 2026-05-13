@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Search, Download, Eye, X, ChevronDown, Reply, CheckCircle, Send } from "lucide-react";
 
-export const Route = createFileRoute("/admin/rendez-vous")({
-  head: () => ({ meta: [{ title: "Rendez-vous   Administration" }] }),
-  component: AdminRendezVous,
+export const Route = createFileRoute("/dashboard/rendez-vous")({
+  head: () => ({ meta: [{ title: "Rendez-vous — CRM" }] }),
+  component: CrmRendezVous,
 });
 
 type DemandeType = "contact" | "rdv";
@@ -72,7 +72,7 @@ type ModalState =
   | { kind: "reply"; row: Demande }
   | null;
 
-function AdminRendezVous() {
+function CrmRendezVous() {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("tous");
   const [statutFilter, setStatutFilter] = useState<StatutFilter>("tous_statuts");
@@ -127,7 +127,7 @@ function AdminRendezVous() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <header>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            — Chapitre 06 — Rendez-vous
+            Demandes — CRM
           </p>
           <h1 className="mt-2 font-display text-3xl text-zinc-900 md:text-4xl">
             <span className="font-semibold">Gestion des </span>
@@ -234,7 +234,7 @@ function AdminRendezVous() {
                           className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
                           aria-label="Voir le détail"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                         </button>
                         <button
                           type="button"
@@ -242,7 +242,7 @@ function AdminRendezVous() {
                           className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
                           aria-label="Répondre"
                         >
-                          <Reply className="h-4 w-4" />
+                          <Reply className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                         </button>
                         <button
                           type="button"
@@ -250,7 +250,7 @@ function AdminRendezVous() {
                           className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
                           aria-label="Convertir CRM"
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                         </button>
                       </div>
                     </td>
