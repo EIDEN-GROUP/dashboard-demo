@@ -34,7 +34,6 @@ type Client = {
   childSubtitle?: string;
   email: string;
   phone: string;
-  profil: string;
   stade: StadeCrm;
   payment: PaymentStatus;
   mensuel: number;
@@ -96,7 +95,6 @@ const initialClients: Client[] = [
     childSubtitle: "Enfant de 13 ans",
     email: "tehgdgh@test.com",
     phone: "0614020520",
-    profil: "ENFANT DYS",
     stade: "nouveau",
     payment: "impaye",
     mensuel: 0,
@@ -117,7 +115,6 @@ const initialClients: Client[] = [
     child: "Yasmine",
     email: "contact.alami@example.com",
     phone: "0661122334",
-    profil: "ENFANT TYPIQUE",
     stade: "converti",
     payment: "paye",
     mensuel: 1800,
@@ -138,7 +135,6 @@ const initialClients: Client[] = [
     child: "Sara",
     email: "sara.b@example.com",
     phone: "0611223344",
-    profil: "ENFANT TDAH",
     stade: "nouveau",
     payment: "impaye",
     mensuel: 0,
@@ -159,7 +155,6 @@ const initialClients: Client[] = [
     child: "Mehdi",
     email: "mehdi.parent@example.com",
     phone: "0622334455",
-    profil: "ENFANT TYPIQUE",
     stade: "converti",
     payment: "paye",
     mensuel: 1800,
@@ -280,13 +275,12 @@ function CrmParentsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Liste des clients</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[960px] text-left text-sm">
+          <table className="w-full min-w-[840px] text-left text-sm">
             <thead>
               <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
                 <th className="px-4 py-3">Parent</th>
                 <th className="px-4 py-3">Enfant</th>
                 <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Profil</th>
                 <th className="px-4 py-3">Stade CRM</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Mensuel</th>
@@ -307,9 +301,6 @@ function CrmParentsPage() {
                   <td className="px-4 py-3 text-zinc-700">
                     <span className="block">{c.email}</span>
                     <span className="mt-0.5 block text-xs text-zinc-500">{c.phone}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-700">{c.profil}</span>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={c.stade === "converti" ? "dark" : "neutral"}>
@@ -426,7 +417,6 @@ function AddClientDialog({
                 child,
                 email: String(fd.get("email1") || ""),
                 phone: String(fd.get("tel1") || ""),
-                profil: "ENFANT TYPIQUE",
                 stade: "nouveau",
                 payment: "impaye",
                 mensuel: 0,
@@ -535,9 +525,6 @@ function DetailClientDialog({
             </Field>
             <Field id="d-niveau" label="Niveau">
               <p className="text-sm font-semibold text-zinc-950">{dash(client.niveau)}</p>
-            </Field>
-            <Field id="d-profil" label="Profil">
-              <p className="text-sm font-semibold text-zinc-950">{client.profil}</p>
             </Field>
             <Field id="d-frais" label="Frais mensuels">
               <p className="text-sm font-semibold text-zinc-950">{client.mensuel} MAD</p>
@@ -648,13 +635,11 @@ function EditClientDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (patch: Partial<Client>) => void;
 }) {
-  const [profil, setProfil] = useState(client.profil);
   const [stade, setStade] = useState<StadeCrm>(client.stade);
 
   useEffect(() => {
-    setProfil(client.profil);
     setStade(client.stade);
-  }, [client.id, client.profil, client.stade]);
+  }, [client.id, client.stade]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -677,7 +662,6 @@ function EditClientDialog({
                 child: String(fd.get("child") || client.child),
                 email: String(fd.get("email") || client.email),
                 phone: String(fd.get("phone") || client.phone),
-                profil,
                 stade,
                 mensuel: Number(fd.get("mensuel") ?? client.mensuel),
                 jourPaiement: Number(fd.get("jour") ?? client.jourPaiement ?? 1),
@@ -696,18 +680,6 @@ function EditClientDialog({
               </Field>
               <Field id="e-phone" label="Téléphone">
                 <Input id="e-phone" name="phone" type="tel" defaultValue={client.phone} className={inputClass} />
-              </Field>
-              <Field id="e-profil" label="Profil">
-                <Select value={profil} onValueChange={setProfil}>
-                  <SelectTrigger id="e-profil" className={selectTriggerClass}>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-none border-zinc-200">
-                    <SelectItem value="ENFANT DYS">Enfant Dys</SelectItem>
-                    <SelectItem value="ENFANT TYPIQUE">Enfant typique</SelectItem>
-                    <SelectItem value="ENFANT TDAH">Enfant TDAH</SelectItem>
-                  </SelectContent>
-                </Select>
               </Field>
               <Field id="e-stade" label="Stade CRM">
                 <Select value={stade} onValueChange={(v) => setStade(v as StadeCrm)}>

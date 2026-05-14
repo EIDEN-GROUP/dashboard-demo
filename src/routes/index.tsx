@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
   BarChart3,
@@ -15,10 +16,8 @@ import {
   MapPin,
   Phone,
   Send,
-  Settings,
   Shield,
   Sparkles,
-  UserPlus,
   Users,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -63,12 +62,10 @@ const previewTopNav: { id: DashboardMiniaturePageId; label: string; icon: typeof
   { id: "dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { id: "familles", label: "Parents", icon: Users },
   { id: "paiements", label: "Paiements", icon: CreditCard },
-  { id: "rendez-vous", label: "Rendez-vous", icon: Calendar },
-  { id: "parametres", label: "Paramètres", icon: Settings },
+  { id: "rendez-vous", label: "Rendez-vous", icon: Calendar }
 ];
 
-const previewSecondaryNav: { id: DashboardMiniaturePageId; label: string; icon: typeof UserPlus }[] = [
-  { id: "leads", label: "Prospects", icon: UserPlus },
+const previewSecondaryNav: { id: DashboardMiniaturePageId; label: string; icon: LucideIcon }[] = [
   { id: "affiches", label: "Affiches", icon: Images },
   { id: "rapports", label: "Rapports", icon: BarChart3 },
 ];

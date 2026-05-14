@@ -4,13 +4,14 @@ import {
   Users,
   CreditCard,
   AlertCircle,
-  TrendingUp,
+  Banknote,
   Clock,
   Plus,
   ArrowUpRight,
   Calendar,
 } from "lucide-react";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { mirrorRapportsChart } from "@/lib/dashboard-mirror-data";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import {
   Dialog,
   DialogContent,
@@ -32,16 +33,6 @@ export const Route = createFileRoute("/dashboard/")({
   head: () => ({ meta: [{ title: "CRM   Plateforme" }] }),
   component: CrmDash,
 });
-
-const funnel = [
-  { m: "Sept", v: 22 },
-  { m: "Oct", v: 31 },
-  { m: "Nov", v: 28 },
-  { m: "Déc", v: 18 },
-  { m: "Jan", v: 42 },
-  { m: "Fév", v: 51 },
-  { m: "Mar", v: 47 },
-];
 
 const filterTags = ["CLIENTS", "PAIEMENTS", "DETTE", "COLLECTE"] as const;
 
@@ -78,12 +69,12 @@ const metrics = [
   },
   {
     k: "04",
-    label: "TAUX DE COLLECTE",
-    value: "200%",
-    sub: "Ce mois",
+    label: "REVENU TOTAL",
+    value: "12 600 MAD",
+    sub: "Rapports & paiements (démo)",
     badge: "Actif",
     borderClass: "border-t-zinc-300",
-    icon: TrendingUp,
+    icon: Banknote,
     to: "/dashboard/rapports",
   },
 ] as const;
@@ -115,7 +106,7 @@ const quickActions: QuickAction[] = [
   },
   {
     kind: "link",
-    to: "/dashboard/leads",
+    to: "/dashboard/paiements",
     title: "Clients en retard",
     desc: "Voir les clients avec des paiements en retard.",
     icon: Clock,
@@ -133,6 +124,13 @@ const tagClass =
 
 const badgeClass =
   "absolute right-4 top-4 border border-zinc-300 bg-white px-2 py-0.5 text-[10px] font-medium text-zinc-700";
+
+const dashChartTooltip = {
+  background: "#ffffff",
+  border: "1px solid #d4d4d8",
+  borderRadius: 0,
+  color: "#09090b",
+} as const;
 
 const labelClass = "text-[10px] font-medium uppercase tracking-wider text-zinc-500";
 
@@ -231,21 +229,6 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
                 <Input id="crm-tel2" name="tel2" type="tel" className={inputClass} />
               </Field>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="crm-profil" label="Profil">
-                <Select name="profil">
-                  <SelectTrigger id="crm-profil" className={selectTriggerClass}>
-                    <SelectValue placeholder="Sélectionner le profil" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-none border-zinc-200">
-                    <SelectItem value="parent">Parent</SelectItem>
-                    <SelectItem value="tuteur">Tuteur légal</SelectItem>
-                    <SelectItem value="autre">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <div className="hidden sm:block" aria-hidden />
-            </div>
             <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-zinc-200 pt-5">
               <button
                 type="button"
@@ -327,71 +310,75 @@ function CrmDash() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-5">
-        <div className="border border-zinc-200 bg-white p-6 lg:col-span-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Prospects (total)</p>
-          <p className="mt-1 font-display text-2xl font-semibold text-zinc-950">47</p>
-          <p className="mt-0.5 text-xs text-zinc-600">Évolution des prospects sur la saison</p>
-          <div className="mt-4 h-64">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+        <div className="flex min-h-0 w-full flex-col border border-zinc-200 bg-white p-6 lg:min-w-0 lg:flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Graphique</p>
+          <h2 className="mt-1 font-display text-xl text-zinc-950">
+            Inscriptions <span className="font-normal italic text-zinc-500">par mois</span>
+          </h2>
+          <p className="mt-1 text-xs text-zinc-600">Volume mensuel (données de démonstration, alignées sur les rapports).</p>
+          <div className="mt-4 h-72 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={funnel}>
+              <BarChart data={[...mirrorRapportsChart]}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
                 <XAxis dataKey="m" stroke="#52525b" fontSize={12} />
                 <YAxis stroke="#52525b" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#ffffff",
-                    border: "1px solid #d4d4d8",
-                    borderRadius: 0,
-                    color: "#09090b",
-                  }}
-                />
-                <Line type="monotone" dataKey="v" stroke="#171717" strokeWidth={2} dot={{ r: 3, fill: "#171717" }} />
-              </LineChart>
+                <Tooltip contentStyle={dashChartTooltip} />
+                <Bar dataKey="v" fill="#18181b" radius={[0, 0, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
+          <Link
+            to="/dashboard/rapports"
+            className="mt-4 inline-flex w-fit shrink-0 items-center gap-1.5 border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
+          >
+            Voir les rapports
+            <ArrowUpRight className="h-4 w-4" aria-hidden />
+          </Link>
         </div>
 
-        <div className="border border-zinc-200 bg-white p-6 lg:col-span-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Actions rapides</p>
-          <h2 className="mt-1 font-display text-xl text-zinc-950">
-            Navigation <span className="font-normal italic text-zinc-500">rapide</span>
-          </h2>
-          <ul className="mt-5 space-y-2">
-            {quickActions.map((a) => {
-              const QIcon = a.icon;
-              const inner = (
-                <>
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center border border-zinc-200 bg-zinc-100 text-zinc-800">
-                    <QIcon className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-zinc-950">{a.title}</span>
-                      <ArrowUpRight className="h-4 w-4 shrink-0 text-zinc-500 transition group-hover:text-zinc-950" />
+        <div className="flex shrink-0 flex-col gap-4 lg:w-[min(100%,22rem)] lg:max-w-sm">
+          <div className="flex flex-col border border-zinc-200 bg-white p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Actions rapides</p>
+            <h2 className="mt-1 font-display text-xl text-zinc-950">
+              Navigation <span className="font-normal italic text-zinc-500">rapide</span>
+            </h2>
+            <ul className="mt-5 space-y-2">
+              {quickActions.map((a) => {
+                const QIcon = a.icon;
+                const inner = (
+                  <>
+                    <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center border border-zinc-200 bg-zinc-100 text-zinc-800">
+                      <QIcon className="h-4 w-4" />
                     </span>
-                    <span className="mt-0.5 block text-xs text-zinc-600">{a.desc}</span>
-                  </span>
-                </>
-              );
-              if (a.kind === "add-client") {
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-zinc-950">{a.title}</span>
+                        <ArrowUpRight className="h-4 w-4 shrink-0 text-zinc-500 transition group-hover:text-zinc-950" />
+                      </span>
+                      <span className="mt-0.5 block text-xs text-zinc-600">{a.desc}</span>
+                    </span>
+                  </>
+                );
+                if (a.kind === "add-client") {
+                  return (
+                    <li key={a.title}>
+                      <button type="button" onClick={() => setAddClientOpen(true)} className={quickRowClass}>
+                        {inner}
+                      </button>
+                    </li>
+                  );
+                }
                 return (
                   <li key={a.title}>
-                    <button type="button" onClick={() => setAddClientOpen(true)} className={quickRowClass}>
+                    <Link to={a.to} className={quickRowClass}>
                       {inner}
-                    </button>
+                    </Link>
                   </li>
                 );
-              }
-              return (
-                <li key={a.title}>
-                  <Link to={a.to} className={quickRowClass}>
-                    {inner}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+              })}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

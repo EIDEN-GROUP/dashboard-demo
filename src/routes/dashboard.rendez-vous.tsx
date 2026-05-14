@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import { Search, Download, Eye, X, ChevronDown, Reply, CheckCircle, Send } from "lucide-react";
+import { type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Search, Download, Eye, X, Reply, CheckCircle, Send } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/rendez-vous")({
   head: () => ({ meta: [{ title: "Rendez-vous — CRM" }] }),
@@ -21,19 +21,7 @@ type Demande = {
   dateTable: string;
   dateDetail: string;
   ageEnfant: string;
-  profilEnfant: string;
   message: string;
-};
-
-const TYPE_LABEL: Record<DemandeType, string> = {
-  contact: "Contact",
-  rdv: "Rendez-vous",
-};
-
-const STATUT_LABEL: Record<DemandeStatut, string> = {
-  nouveau: "Nouveau",
-  contacte: "Contacté",
-  converti: "Converti",
 };
 
 const DEMO_DEMANDES: Demande[] = [
@@ -48,23 +36,19 @@ const DEMO_DEMANDES: Demande[] = [
     dateTable: "05/05/2026",
     dateDetail: "5 mai 2026",
     ageEnfant: "13 ans",
-    profilEnfant: "Enfant TDAH",
     message: "molay thami",
   },
-  { id: "1", nom: "Alami Youssef", email: "y.alami@mail.com", phone: "0611223344", sujet: "Question inscription", type: "contact", status: "nouveau", dateTable: "04/05/2026", dateDetail: "4 mai 2026", ageEnfant: "7 ans", profilEnfant: "TSA", message: "Disponibilités été ?" },
-  { id: "2", nom: "Benani Salma", email: "salma.b@gmail.com", phone: "0666778899", sujet: "RDV direction", type: "rdv", status: "contacte", dateTable: "03/05/2026", dateDetail: "3 mai 2026", ageEnfant: "5 ans", profilEnfant: "HP", message: "Premier contact." },
-  { id: "3", nom: "Cherkaoui Omar", email: "omar.c@outlook.fr", phone: "0520112233", sujet: "Atelier", type: "rdv", status: "nouveau", dateTable: "02/05/2026", dateDetail: "2 mai 2026", ageEnfant: "9 ans", profilEnfant: "Dyslexie", message: "Mercredi après-midi." },
-  { id: "4", nom: "Idrissi Kenza", email: "kenza.i@yahoo.com", phone: "0633445566", sujet: "Infos tarifs", type: "contact", status: "converti", dateTable: "01/05/2026", dateDetail: "1 mai 2026", ageEnfant: "6 ans", profilEnfant: "TDAH", message: "Budget famille." },
-  { id: "5", nom: "Fassi Mehdi", email: "mehdi.fassi@mail.com", phone: "0677889900", sujet: "Rappel", type: "contact", status: "contacte", dateTable: "30/04/2026", dateDetail: "30 avril 2026", ageEnfant: "11 ans", profilEnfant: "Anxiété", message: "Suite à notre échange." },
-  { id: "6", nom: "Tazi Ilham", email: "ilham.tazi@gmail.com", phone: "0655001122", sujet: "Visite guidée", type: "rdv", status: "nouveau", dateTable: "29/04/2026", dateDetail: "29 avril 2026", ageEnfant: "4 ans", profilEnfant: "TSA", message: "Parents + enfant." },
-  { id: "7", nom: "Berrada Hicham", email: "h.berrada@mail.com", phone: "0520998877", sujet: "Contact général", type: "contact", status: "nouveau", dateTable: "28/04/2026", dateDetail: "28 avril 2026", ageEnfant: "8 ans", profilEnfant: "TDAH", message: "Horaires accueil." },
-  { id: "8", nom: "Amrani Sofia", email: "sofia.amrani@gmail.com", phone: "0644332211", sujet: "Bilan pédagogique", type: "rdv", status: "contacte", dateTable: "27/04/2026", dateDetail: "27 avril 2026", ageEnfant: "10 ans", profilEnfant: "Dyspraxie", message: "Documents à fournir." },
-  { id: "9", nom: "Lahlou Karim", email: "karim.lahlou@outlook.com", phone: "0619988776", sujet: "Réorientation", type: "contact", status: "converti", dateTable: "26/04/2026", dateDetail: "26 avril 2026", ageEnfant: "12 ans", profilEnfant: "HP", message: "Transfert depuis autre établissement." },
-  { id: "10", nom: "Mouline Nora", email: "nora.mouline@mail.com", phone: "0665544332", sujet: "Rendez-vous suivi", type: "rdv", status: "nouveau", dateTable: "25/04/2026", dateDetail: "25 avril 2026", ageEnfant: "6 ans", profilEnfant: "TSA", message: "Compte-rendu trimestre." },
+  { id: "1", nom: "Alami Youssef", email: "y.alami@mail.com", phone: "0611223344", sujet: "Question inscription", type: "contact", status: "nouveau", dateTable: "04/05/2026", dateDetail: "4 mai 2026", ageEnfant: "7 ans", message: "Disponibilités été ?" },
+  { id: "2", nom: "Benani Salma", email: "salma.b@gmail.com", phone: "0666778899", sujet: "RDV direction", type: "rdv", status: "contacte", dateTable: "03/05/2026", dateDetail: "3 mai 2026", ageEnfant: "5 ans", message: "Premier contact." },
+  { id: "3", nom: "Cherkaoui Omar", email: "omar.c@outlook.fr", phone: "0520112233", sujet: "Atelier", type: "rdv", status: "nouveau", dateTable: "02/05/2026", dateDetail: "2 mai 2026", ageEnfant: "9 ans", message: "Mercredi après-midi." },
+  { id: "4", nom: "Idrissi Kenza", email: "kenza.i@yahoo.com", phone: "0633445566", sujet: "Infos tarifs", type: "contact", status: "converti", dateTable: "01/05/2026", dateDetail: "1 mai 2026", ageEnfant: "6 ans", message: "Budget famille." },
+  { id: "5", nom: "Fassi Mehdi", email: "mehdi.fassi@mail.com", phone: "0677889900", sujet: "Rappel", type: "contact", status: "contacte", dateTable: "30/04/2026", dateDetail: "30 avril 2026", ageEnfant: "11 ans", message: "Suite à notre échange." },
+  { id: "6", nom: "Tazi Ilham", email: "ilham.tazi@gmail.com", phone: "0655001122", sujet: "Visite guidée", type: "rdv", status: "nouveau", dateTable: "29/04/2026", dateDetail: "29 avril 2026", ageEnfant: "4 ans", message: "Parents + enfant." },
+  { id: "7", nom: "Berrada Hicham", email: "h.berrada@mail.com", phone: "0520998877", sujet: "Contact général", type: "contact", status: "nouveau", dateTable: "28/04/2026", dateDetail: "28 avril 2026", ageEnfant: "8 ans", message: "Horaires accueil." },
+  { id: "8", nom: "Amrani Sofia", email: "sofia.amrani@gmail.com", phone: "0644332211", sujet: "Bilan pédagogique", type: "rdv", status: "contacte", dateTable: "27/04/2026", dateDetail: "27 avril 2026", ageEnfant: "10 ans", message: "Documents à fournir." },
+  { id: "9", nom: "Lahlou Karim", email: "karim.lahlou@outlook.com", phone: "0619988776", sujet: "Réorientation", type: "contact", status: "converti", dateTable: "26/04/2026", dateDetail: "26 avril 2026", ageEnfant: "12 ans", message: "Transfert depuis autre établissement." },
+  { id: "10", nom: "Mouline Nora", email: "nora.mouline@mail.com", phone: "0665544332", sujet: "Rendez-vous suivi", type: "rdv", status: "nouveau", dateTable: "25/04/2026", dateDetail: "25 avril 2026", ageEnfant: "6 ans", message: "Compte-rendu trimestre." },
 ];
-
-type TypeFilter = "tous" | DemandeType;
-type StatutFilter = "tous_statuts" | DemandeStatut;
 
 type ModalState =
   | { kind: "detail"; row: Demande }
@@ -74,8 +58,6 @@ type ModalState =
 
 function CrmRendezVous() {
   const [query, setQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("tous");
-  const [statutFilter, setStatutFilter] = useState<StatutFilter>("tous_statuts");
   const [rows, setRows] = useState<Demande[]>(DEMO_DEMANDES);
   const [modal, setModal] = useState<ModalState>(null);
 
@@ -86,17 +68,16 @@ function CrmRendezVous() {
         !q ||
         r.nom.toLowerCase().includes(q) ||
         r.email.toLowerCase().includes(q) ||
+        r.phone.toLowerCase().includes(q) ||
         r.sujet.toLowerCase().includes(q);
-      const matchT = typeFilter === "tous" || r.type === typeFilter;
-      const matchS = statutFilter === "tous_statuts" || r.status === statutFilter;
-      return matchQ && matchT && matchS;
+      return matchQ;
     });
-  }, [rows, query, typeFilter, statutFilter]);
+  }, [rows, query]);
 
   const exportCsv = useCallback(() => {
-    const header = ["Nom", "Email", "Type", "Statut", "Date", "Sujet"];
+    const header = ["Nom", "Email", "Téléphone", "Date", "Sujet"];
     const lines = filtered.map((r) =>
-      [r.nom, r.email, TYPE_LABEL[r.type], STATUT_LABEL[r.status], r.dateTable, r.sujet].map(csvEscape).join(","),
+      [r.nom, r.email, r.phone, r.dateTable, r.sujet].map(csvEscape).join(","),
     );
     const csv = [header.join(","), ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -152,45 +133,18 @@ function CrmRendezVous() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher par nom, email ou sujet..."
+            placeholder="Rechercher par nom, email, téléphone ou sujet..."
             className="w-full border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
           />
-        </div>
-        <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
-            <span className="self-center text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Type</span>
-            {(
-              [
-                { key: "tous" as const, label: "Tous" },
-                { key: "contact" as const, label: "Contact" },
-                { key: "rdv" as const, label: "Rendez-vous" },
-              ] as const
-            ).map(({ key, label }) => (
-              <FilterBtn key={key} active={typeFilter === key} onClick={() => setTypeFilter(key)} label={label} />
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <span className="self-center text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Statut</span>
-            {(
-              [
-                { key: "tous_statuts" as const, label: "Tous statuts" },
-                { key: "nouveau" as const, label: "Nouveau" },
-                { key: "contacte" as const, label: "Contacté" },
-                { key: "converti" as const, label: "Converti" },
-              ] as const
-            ).map(({ key, label }) => (
-              <FilterBtn key={key} active={statutFilter === key} onClick={() => setStatutFilter(key)} label={label} />
-            ))}
-          </div>
         </div>
       </div>
 
       <div className="border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem] text-left text-sm">
+          <table className="w-full min-w-[36rem] text-left text-sm">
             <thead>
               <tr className="border-b border-zinc-200 bg-zinc-50">
-                {["Nom", "Email", "Type", "Statut", "Date", "Actions"].map((h) => (
+                {["Nom", "Email", "Date", "Actions"].map((h) => (
                   <th key={h} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
                     {h}
                   </th>
@@ -200,7 +154,7 @@ function CrmRendezVous() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-zinc-500">
+                  <td colSpan={4} className="px-4 py-12 text-center text-sm text-zinc-500">
                     Aucune demande ne correspond à ces critères.
                   </td>
                 </tr>
@@ -209,22 +163,6 @@ function CrmRendezVous() {
                   <tr key={r.id} className="border-b border-zinc-100 last:border-0">
                     <td className="px-4 py-4 font-semibold text-zinc-900">{r.nom}</td>
                     <td className="px-4 py-4 text-zinc-600">{r.email}</td>
-                    <td className="px-4 py-4">
-                      <TypePill type={r.type} />
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatutSelect
-                        value={r.status}
-                        onChange={(next) => {
-                          setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, status: next } : x)));
-                          setModal((m) =>
-                            m && (m.kind === "detail" || m.kind === "crm" || m.kind === "reply") && m.row.id === r.id
-                              ? { ...m, row: { ...m.row, status: next } }
-                              : m,
-                          );
-                        }}
-                      />
-                    </td>
                     <td className="px-4 py-4 text-zinc-600">{r.dateTable}</td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1">
@@ -279,52 +217,6 @@ function CrmRendezVous() {
   );
 }
 
-function FilterBtn({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        "border px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors " +
-        (active
-          ? "border-zinc-400 bg-zinc-200 text-zinc-900"
-          : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50")
-      }
-    >
-      {label}
-    </button>
-  );
-}
-
-function TypePill({ type }: { type: DemandeType }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800">
-      <span className="h-1.5 w-1.5 shrink-0 bg-zinc-600" aria-hidden />
-      {TYPE_LABEL[type]}
-    </span>
-  );
-}
-
-function StatutSelect({ value, onChange }: { value: DemandeStatut; onChange: (v: DemandeStatut) => void }) {
-  return (
-    <label className="inline-flex min-w-[9.5rem] cursor-pointer items-center gap-2 border border-zinc-200 bg-zinc-100 px-2 py-1.5">
-      <span className="h-1.5 w-1.5 shrink-0 bg-zinc-600" aria-hidden />
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value as DemandeStatut)}
-        className="min-w-0 flex-1 cursor-pointer appearance-none border-0 bg-transparent py-0.5 pr-1 text-sm text-zinc-800 outline-none"
-      >
-        {(Object.keys(STATUT_LABEL) as DemandeStatut[]).map((k) => (
-          <option key={k} value={k}>
-            {STATUT_LABEL[k]}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
-    </label>
-  );
-}
-
 function DetailModal({ row, onClose, onCrm }: { row: Demande; onClose: () => void; onCrm: () => void }) {
   return (
     <ModalShell onClose={onClose}>
@@ -332,13 +224,6 @@ function DetailModal({ row, onClose, onCrm }: { row: Demande; onClose: () => voi
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Détail — Rendez-vous</p>
           <h2 className="mt-2 font-display text-xl font-bold text-zinc-900 md:text-2xl">{row.nom}</h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <TypePill type={row.type} />
-            <span className="inline-flex items-center gap-1.5 border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800">
-              <span className="h-1.5 w-1.5 shrink-0 bg-zinc-600" aria-hidden />
-              {STATUT_LABEL[row.status]}
-            </span>
-          </div>
         </div>
         <button
           type="button"
@@ -355,18 +240,16 @@ function DetailModal({ row, onClose, onCrm }: { row: Demande; onClose: () => voi
             [
               { label: "Email", value: row.email },
               { label: "Téléphone", value: row.phone },
-              { label: "Type", value: TYPE_LABEL[row.type] },
               { label: "Date", value: row.dateDetail },
               { label: "Âge de l'enfant", value: row.ageEnfant },
-              { label: "Profil de l'enfant", value: row.profilEnfant },
             ] as const
           ).map((f, i) => (
             <div
               key={f.label}
               className={
                 "border-zinc-200 px-4 py-3 " +
-                (i < 6 ? "border-b " : "") +
-                (i < 4 ? "sm:border-b " : "sm:border-b-0 ") +
+                (i < 4 ? "border-b " : "") +
+                (i < 2 ? "sm:border-b " : "sm:border-b-0 ") +
                 (i % 2 === 0 ? "sm:border-r " : "")
               }
             >
@@ -403,62 +286,153 @@ function CrmModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const [a, setA] = useState(false);
-  const [b, setB] = useState(false);
   const prenom = row.nom.trim().split(/\s+/)[0] ?? row.nom;
-  const canConfirm = a && b;
+  const crmFieldClass = "text-[10px] font-semibold uppercase tracking-wider text-zinc-500";
+  const crmInputClass =
+    "mt-1 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400";
+  const crmSelectClass = crmInputClass + " cursor-pointer bg-white";
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const parent = String(fd.get("parent") || "").trim();
+    const eleve = String(fd.get("eleve") || "").trim();
+    const email1 = String(fd.get("email1") || "").trim();
+    if (parent.length < 2 || eleve.length < 1 || email1.length < 3) return;
+    onConfirm();
+  };
 
   return (
-    <ModalShell onClose={onClose}>
-      <div className="flex items-start justify-between gap-4 border-b border-zinc-200 p-5">
+    <ModalShell onClose={onClose} wide>
+      <div className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 p-5">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Conversion CRM</p>
           <h2 className="mt-2 font-display text-xl font-bold text-zinc-900">
-            Convertir <span className="font-semibold">{prenom}</span>
+            Fiche client — <span className="font-semibold">{prenom}</span>
           </h2>
         </div>
         <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center border border-zinc-200 hover:bg-zinc-50" aria-label="Fermer">
           <X className="h-4 w-4" />
         </button>
       </div>
-      <div className="p-5">
-        <p className="border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-800">
-          Ce client sera ajouté ou mis à jour dans le CRM avec le statut <strong>Converti</strong>.
-        </p>
-        <div className="mt-6 space-y-4">
-          <label className="flex cursor-pointer items-start gap-3 border border-zinc-200 p-3 hover:bg-zinc-50">
-            <input type="checkbox" checked={a} onChange={(e) => setA(e.target.checked)} className="mt-0.5 h-4 w-4 border-zinc-400" />
-            <span className="text-sm text-zinc-900">Ajouter ce client au CRM</span>
-          </label>
-          <label className="flex cursor-pointer items-start gap-3 border border-zinc-200 p-3 hover:bg-zinc-50">
-            <input type="checkbox" checked={b} onChange={(e) => setB(e.target.checked)} className="mt-0.5 h-4 w-4 border-zinc-400" />
-            <span className="text-sm text-zinc-900">Le client a déjà payé</span>
-          </label>
+      <form onSubmit={handleSubmit} className="flex min-h-0 max-h-[min(85vh,34rem)] flex-1 flex-col">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
+          <p className="text-sm text-zinc-600">
+            Complétez les informations manquantes pour créer le dossier dans le CRM. À l&apos;enregistrement, la
+            demande passe en <strong>Converti</strong> (démo).
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-1">
+              <label htmlFor={`crm-rv-parent-${row.id}`} className={crmFieldClass}>
+                Parent (nom affiché) <span className="text-zinc-900">*</span>
+              </label>
+              <input
+                id={`crm-rv-parent-${row.id}`}
+                name="parent"
+                required
+                minLength={2}
+                defaultValue={row.nom}
+                autoComplete="name"
+                className={crmInputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-eleve-${row.id}`} className={crmFieldClass}>
+                Nom d&apos;élève <span className="text-zinc-900">*</span>
+              </label>
+              <input id={`crm-rv-eleve-${row.id}`} name="eleve" required minLength={1} className={crmInputClass} placeholder="Prénom et nom" />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-naissance-${row.id}`} className={crmFieldClass}>
+                Date de naissance
+              </label>
+              <input id={`crm-rv-naissance-${row.id}`} name="naissance" placeholder="jj/mm/aaaa" className={crmInputClass} />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-niveau-${row.id}`} className={crmFieldClass}>
+                Niveau
+              </label>
+              <select id={`crm-rv-niveau-${row.id}`} name="niveau" className={crmSelectClass} defaultValue="">
+                <option value="">Sélectionner</option>
+                <option value="ps">Petite section</option>
+                <option value="ms">Moyenne section</option>
+                <option value="gs">Grande section</option>
+                <option value="cp">CP</option>
+                <option value="ce1">CE1</option>
+                <option value="ce2">CE2</option>
+                <option value="cm1">CM1</option>
+                <option value="cm2">CM2</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-pere-${row.id}`} className={crmFieldClass}>
+                Nom du père
+              </label>
+              <input id={`crm-rv-pere-${row.id}`} name="pere" autoComplete="additional-name" className={crmInputClass} />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-mere-${row.id}`} className={crmFieldClass}>
+                Nom de mère
+              </label>
+              <input id={`crm-rv-mere-${row.id}`} name="mere" autoComplete="additional-name" className={crmInputClass} />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-cin-${row.id}`} className={crmFieldClass}>
+                CIN ou passeport
+              </label>
+              <input id={`crm-rv-cin-${row.id}`} name="cin" className={crmInputClass} />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-email1-${row.id}`} className={crmFieldClass}>
+                Email 1 <span className="text-zinc-900">*</span>
+              </label>
+              <input
+                id={`crm-rv-email1-${row.id}`}
+                name="email1"
+                type="email"
+                required
+                defaultValue={row.email}
+                autoComplete="email"
+                className={crmInputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-email2-${row.id}`} className={crmFieldClass}>
+                Email 2
+              </label>
+              <input id={`crm-rv-email2-${row.id}`} name="email2" type="email" className={crmInputClass} />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-tel1-${row.id}`} className={crmFieldClass}>
+                Téléphone 1
+              </label>
+              <input id={`crm-rv-tel1-${row.id}`} name="tel1" type="tel" defaultValue={row.phone} autoComplete="tel" className={crmInputClass} />
+            </div>
+            <div>
+              <label htmlFor={`crm-rv-tel2-${row.id}`} className={crmFieldClass}>
+                Téléphone 2
+              </label>
+              <input id={`crm-rv-tel2-${row.id}`} name="tel2" type="tel" className={crmInputClass} />
+            </div>
+          </div>
         </div>
-        <div className="mt-8 flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2 border-t border-zinc-200 p-5">
           <button
-            type="button"
-            disabled={!canConfirm}
-            onClick={onConfirm}
-            className={
-              "inline-flex flex-1 min-w-[8rem] items-center justify-center gap-2 border px-4 py-2.5 text-sm font-medium " +
-              (canConfirm
-                ? "border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800"
-                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400")
-            }
+            type="submit"
+            className="inline-flex min-w-[8rem] flex-1 items-center justify-center gap-2 border border-zinc-900 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
           >
             <CheckCircle className="h-4 w-4" />
-            Confirmer
+            Enregistrer et convertir
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex flex-1 min-w-[8rem] items-center justify-center border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            className="inline-flex min-w-[8rem] flex-1 items-center justify-center border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
           >
             Annuler
           </button>
         </div>
-      </div>
+      </form>
     </ModalShell>
   );
 }
@@ -524,8 +498,8 @@ function ModalShell({ children, onClose, wide }: { children: ReactNode; onClose:
         role="dialog"
         aria-modal="true"
         className={
-          "relative z-10 flex max-h-[min(92vh,40rem)] w-full flex-col border border-zinc-200 bg-white shadow-xl " +
-          (wide ? "max-w-xl" : "max-w-md")
+          "relative z-10 flex min-h-0 max-h-[min(92vh,42rem)] w-full flex-col border border-zinc-200 bg-white shadow-xl " +
+          (wide ? "max-w-2xl" : "max-w-md")
         }
       >
         {children}

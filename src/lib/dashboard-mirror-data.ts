@@ -1,32 +1,77 @@
 /**
  * Snapshot of demo data used on real dashboard routes — kept in sync for the landing miniature.
  * Source routes: dashboard.index, dashboard.familles, dashboard.paiements, dashboard.rendez-vous,
- * dashboard.leads, dashboard.parametres, dashboard.affiches, dashboard.rapports.
+ * dashboard.affiches, dashboard.rapports.
  */
 import type { LucideIcon } from "lucide-react";
-import { Users, CreditCard, AlertCircle, TrendingUp, Plus, Clock } from "lucide-react";
+import { Users, CreditCard, AlertCircle, Banknote, Plus, Clock } from "lucide-react";
 
 export type DashboardMiniaturePageId =
   | "dashboard"
   | "familles"
   | "paiements"
   | "rendez-vous"
-  | "parametres"
   | "leads"
   | "affiches"
   | "rapports";
 
-export const mirrorFunnel = [
-  { m: "Sept", v: 22 },
-  { m: "Oct", v: 31 },
-  { m: "Nov", v: 28 },
-  { m: "Déc", v: 18 },
-  { m: "Jan", v: 42 },
-  { m: "Fév", v: 51 },
-  { m: "Mar", v: 47 },
-] as const;
+export type MirrorPlanTone = "violet" | "emerald" | "amber" | "zinc";
+
+export type MirrorPlanificationEntry = {
+  id: string;
+  date: string;
+  time: string;
+  title: string;
+  detail: string;
+  tone: MirrorPlanTone;
+};
+
+/** Demo planifications — same list as `dashboard.planifications`. */
+export const mirrorPlanificationEntries: readonly MirrorPlanificationEntry[] = [
+  {
+    id: "1",
+    date: "2026-05-12",
+    time: "09:00",
+    title: "Conseil pédagogique",
+    detail: "Salle direction · équipe cycle 1",
+    tone: "violet",
+  },
+  {
+    id: "2",
+    date: "2026-05-13",
+    time: "14:30",
+    title: "Atelier parents",
+    detail: "Salle polyvalente · bienveillance",
+    tone: "emerald",
+  },
+  {
+    id: "3",
+    date: "2026-05-14",
+    time: "10:00",
+    title: "Réunion facturation",
+    detail: "Visioconférence · clôture mai",
+    tone: "zinc",
+  },
+  {
+    id: "4",
+    date: "2026-05-14",
+    time: "15:00",
+    title: "Sortie pédagogique",
+    detail: "Musée des sciences · GS–CP",
+    tone: "amber",
+  },
+  {
+    id: "5",
+    date: "2026-05-15",
+    time: "11:00",
+    title: "Formation interne",
+    detail: "TDAH & classe flexible",
+    tone: "violet",
+  },
+];
 
 export const mirrorFilterTags = ["CLIENTS", "PAIEMENTS", "DETTE", "COLLECTE"] as const;
+
 
 export const mirrorMetrics: readonly {
   k: string;
@@ -66,12 +111,12 @@ export const mirrorMetrics: readonly {
   },
   {
     k: "04",
-    label: "TAUX DE COLLECTE",
-    value: "200%",
-    sub: "Ce mois",
+    label: "REVENU TOTAL",
+    value: "12 600 MAD",
+    sub: "Rapports & paiements (démo)",
     badge: "Actif",
     borderClass: "border-t-zinc-300",
-    icon: TrendingUp,
+    icon: Banknote,
   },
 ];
 
@@ -89,7 +134,6 @@ export const mirrorClients = [
     child: "testss",
     email: "tehgdgh@test.com",
     phone: "0614020520",
-    profil: "ENFANT DYS",
     stade: "nouveau",
     payment: "impaye",
     mensuel: 0,
@@ -101,7 +145,6 @@ export const mirrorClients = [
     child: "Yasmine",
     email: "contact.alami@example.com",
     phone: "0661122334",
-    profil: "ENFANT TYPIQUE",
     stade: "converti",
     payment: "paye",
     mensuel: 1800,
@@ -113,7 +156,6 @@ export const mirrorClients = [
     child: "Sara",
     email: "sara.b@example.com",
     phone: "0611223344",
-    profil: "ENFANT TDAH",
     stade: "nouveau",
     payment: "impaye",
     mensuel: 0,
@@ -125,7 +167,6 @@ export const mirrorClients = [
     child: "Mehdi",
     email: "mehdi.parent@example.com",
     phone: "0622334455",
-    profil: "ENFANT TYPIQUE",
     stade: "converti",
     payment: "paye",
     mensuel: 1800,
@@ -173,28 +214,6 @@ export const mirrorDemandes = [
   { id: "3", nom: "Cherkaoui Omar", email: "omar.c@outlook.fr", type: "rdv" as const, status: "nouveau" as const, dateTable: "02/05/2026", sujet: "Atelier" },
 ] as const;
 
-export const mirrorLeadStages = ["Nouveau", "Contacté", "Rendez-vous", "Visite effectuée"] as const;
-
-export const mirrorLeadCards: Record<(typeof mirrorLeadStages)[number], { n: string; e: string; p: string }[]> = {
-  Nouveau: [
-    { n: "Famille Alaoui", e: "5 ans · MS", p: "Site web" },
-    { n: "Famille Cherkaoui", e: "8 ans · CE2", p: "Instagram" },
-  ],
-  Contacté: [{ n: "Famille Bennani", e: "6 ans · CP", p: "Bouche-à-oreille" }],
-  "Rendez-vous": [{ n: "Famille Idrissi", e: "7 ans · CE1", p: "Partenaire" }],
-  "Visite effectuée": [{ n: "Famille Tahiri", e: "4 ans · PS", p: "Site web" }],
-};
-
-export const mirrorUsers = [
-  {
-    id: "1",
-    email: "admin@educazenkids.com",
-    username: "admin",
-    displayName: "Admin",
-    role: "ADMIN",
-  },
-] as const;
-
 export const mirrorEmployes = [
   {
     id: "e1",
@@ -238,14 +257,3 @@ export const mirrorRapportsChart = [
 /** Same counts as `FAMILLES_PAYEES.length` / `FAMILLES_IMPAYEES.length` in dashboard.rapports */
 export const mirrorRapportsPayeCount = 22;
 export const mirrorRapportsImpayeCount = 22;
-
-export const TYPE_LABEL: Record<"contact" | "rdv", string> = {
-  contact: "Contact",
-  rdv: "Rendez-vous",
-};
-
-export const STATUT_LABEL: Record<"nouveau" | "contacte" | "converti", string> = {
-  nouveau: "Nouveau",
-  contacte: "Contacté",
-  converti: "Converti",
-};

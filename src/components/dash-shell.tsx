@@ -15,10 +15,6 @@ function topNavItemActive(pathname: string, to: string) {
     return pathname === "/dashboard/familles" || pathname.startsWith("/dashboard/familles/");
   if (to === "/dashboard/paiements")
     return pathname === "/dashboard/paiements" || pathname.startsWith("/dashboard/paiements/");
-  if (to === "/dashboard/parametres")
-    return pathname === "/dashboard/parametres" || pathname.startsWith("/dashboard/parametres/");
-  if (to === "/dashboard/leads")
-    return pathname === "/dashboard/leads" || pathname.startsWith("/dashboard/leads/");
   if (to === "/dashboard/affiches")
     return pathname === "/dashboard/affiches" || pathname.startsWith("/dashboard/affiches/");
   if (to === "/dashboard/rapports")

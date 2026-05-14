@@ -1,24 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, CheckCircle2, Plus, Search, XCircle } from "lucide-react";
-import { CartesianGrid, Line, LineChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cn } from "@/lib/utils";
 import {
   mirrorClients,
   mirrorDemandes,
   mirrorEmployes,
   mirrorFilterTags,
-  mirrorFunnel,
-  mirrorLeadCards,
-  mirrorLeadStages,
   mirrorMetrics,
   mirrorPaymentRows,
   mirrorQuickActions,
   mirrorRapportsChart,
   mirrorRapportsImpayeCount,
   mirrorRapportsPayeCount,
-  mirrorUsers,
-  STATUT_LABEL,
-  TYPE_LABEL,
   type DashboardMiniaturePageId,
 } from "@/lib/dashboard-mirror-data";
 
@@ -28,14 +22,12 @@ const tagClass =
 const badgeClass =
   "absolute right-1 top-1 border border-zinc-300 bg-white px-1 py-px text-[5px] font-medium text-zinc-700 sm:right-1.5 sm:top-1.5";
 
-const chartTooltipLine = {
+const chartTooltipBar = {
   background: "#ffffff",
   border: "1px solid #d4d4d8",
   borderRadius: 0,
   color: "#09090b",
 } as const;
-
-const chartTooltipBar = chartTooltipLine;
 
 export function HeroPreviewPageBody({
   page,
@@ -94,25 +86,7 @@ export function HeroPreviewPageBody({
             ))}
           </div>
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-1.5 lg:grid-cols-5">
-            <div className="flex min-h-[5.5rem] flex-col border border-zinc-200 bg-white p-1.5 lg:col-span-3 sm:p-2">
-              <p className="text-[5px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:text-[6px]">Prospects (total)</p>
-              <p className="mt-0.5 font-display text-[10px] font-semibold text-zinc-950">47</p>
-              <p className="text-[5px] text-zinc-600 sm:text-[6px]">Évolution des prospects sur la saison</p>
-              <div className="mt-1 min-h-0 flex-1" style={{ minHeight: "4.5rem" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[...mirrorFunnel]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
-                    <XAxis dataKey="m" stroke="#52525b" tick={{ fontSize: 7 }} />
-                    <YAxis stroke="#52525b" tick={{ fontSize: 7 }} width={16} />
-                    <Tooltip contentStyle={chartTooltipLine} />
-                    <Line type="monotone" dataKey="v" stroke="#171717" strokeWidth={2} dot={{ r: 2, fill: "#171717" }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="flex min-h-0 flex-col border border-zinc-200 bg-white p-1.5 lg:col-span-2 sm:p-2">
+          <div className="flex min-h-0 flex-1 flex-col border border-zinc-200 bg-white p-1.5 sm:p-2">
               <p className="text-[5px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:text-[6px]">Actions rapides</p>
               <h2 className="mt-0.5 font-display text-[8px] text-zinc-950 sm:text-[9px]">
                 Navigation <span className="font-normal italic text-zinc-500">rapide</span>
@@ -142,7 +116,6 @@ export function HeroPreviewPageBody({
                   );
                 })}
               </ul>
-            </div>
           </div>
         </div>
       );
@@ -176,7 +149,6 @@ export function HeroPreviewPageBody({
                   <tr className="border-b border-zinc-200 bg-zinc-50 text-[5px] font-semibold uppercase tracking-wider text-zinc-600">
                     <th className="px-1 py-0.5">Parent</th>
                     <th className="px-1 py-0.5">Enfant</th>
-                    <th className="px-1 py-0.5">Profil</th>
                     <th className="px-1 py-0.5">Stade</th>
                     <th className="px-1 py-0.5">Paiement</th>
                   </tr>
@@ -186,7 +158,6 @@ export function HeroPreviewPageBody({
                     <tr key={c.id} className="hover:bg-zinc-50/80">
                       <td className="px-1 py-0.5 font-medium text-zinc-950">{c.parent}</td>
                       <td className="px-1 py-0.5 text-zinc-800">{c.child}</td>
-                      <td className="px-1 py-0.5 text-[5px] font-medium uppercase text-zinc-700">{c.profil}</td>
                       <td className="px-1 py-0.5">
                         <span className="inline-flex items-center gap-0.5 border border-zinc-300 bg-zinc-50 px-0.5 py-px text-[5px] font-semibold uppercase">
                           {c.stade}
@@ -297,7 +268,7 @@ export function HeroPreviewPageBody({
               <table className="w-full min-w-[260px] text-left text-[5px] sm:text-[6px]">
                 <thead>
                   <tr className="border-b border-zinc-200 bg-zinc-50">
-                    {["Nom", "Email", "Type", "Statut", "Date", "Sujet"].map((h) => (
+                    {["Nom", "Email", "Date", "Sujet"].map((h) => (
                       <th key={h} className="px-1 py-0.5 text-[5px] font-semibold uppercase tracking-wider text-zinc-500">
                         {h}
                       </th>
@@ -309,88 +280,12 @@ export function HeroPreviewPageBody({
                     <tr key={r.id} className="border-b border-zinc-100">
                       <td className="px-1 py-0.5 font-medium text-zinc-900">{r.nom}</td>
                       <td className="max-w-[4rem] truncate px-1 py-0.5 text-zinc-700">{r.email}</td>
-                      <td className="px-1 py-0.5">{TYPE_LABEL[r.type]}</td>
-                      <td className="px-1 py-0.5">{STATUT_LABEL[r.status]}</td>
                       <td className="px-1 py-0.5 tabular-nums">{r.dateTable}</td>
                       <td className="max-w-[4rem] truncate px-1 py-0.5 text-zinc-600">{r.sujet}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-      );
-
-    case "parametres":
-      return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <div className="shrink-0">
-            <p className="text-[6px] font-medium uppercase tracking-[0.18em] text-zinc-500">— CRM — Paramètres</p>
-            <p className="font-display text-[9px] tracking-tight text-zinc-950 sm:text-[10px]">Configuration générale</p>
-            <p className="text-[5px] italic text-zinc-600 sm:text-[6px]">Configurez les permissions et les comptes utilisateurs.</p>
-          </div>
-          <section className="shrink-0 border border-zinc-200 bg-white p-1 sm:p-1.5">
-            <p className="text-[5px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Permissions des rôles</p>
-            <p className="mt-0.5 text-[5px] text-zinc-600 sm:text-[6px]">Cette fonctionnalité sera disponible dans une prochaine mise à jour.</p>
-          </section>
-          <section className="min-h-0 flex-1 border border-zinc-200 bg-white p-1 sm:p-1.5">
-            <p className="text-[5px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Gestion des utilisateurs</p>
-            <div className="mt-1 overflow-x-auto">
-              <table className="w-full text-left text-[5px] sm:text-[6px]">
-                <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 text-[5px] font-semibold uppercase tracking-wider text-zinc-600">
-                    <th className="px-1 py-0.5">Email</th>
-                    <th className="px-1 py-0.5">Utilisateur</th>
-                    <th className="px-1 py-0.5">Affichage</th>
-                    <th className="px-1 py-0.5">Rôle</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mirrorUsers.map((u) => (
-                    <tr key={u.id} className="border-b border-zinc-100">
-                      <td className="px-1 py-0.5 text-zinc-800">{u.email}</td>
-                      <td className="px-1 py-0.5 font-medium text-zinc-950">{u.username}</td>
-                      <td className="px-1 py-0.5 text-zinc-800">{u.displayName}</td>
-                      <td className="px-1 py-0.5">
-                        <span className="inline-flex items-center gap-0.5 border border-zinc-300 bg-zinc-100 px-0.5 py-px text-[5px] font-semibold uppercase text-zinc-800">
-                          {u.role}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </div>
-      );
-
-    case "leads":
-      return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <div className="shrink-0">
-            <p className="text-[6px] font-medium uppercase tracking-[0.22em] text-zinc-500">Fil commercial — CRM</p>
-            <p className="font-display text-[9px] leading-tight text-zinc-950 sm:text-[10px]">
-              <span className="font-semibold">Prospects</span> <span className="font-normal italic text-zinc-500">et pipeline</span>
-            </p>
-          </div>
-          <div className="min-h-0 flex-1 overflow-x-auto pb-0.5">
-            <div className="flex min-w-max gap-1">
-              {mirrorLeadStages.map((s) => (
-                <div key={s} className="w-[5.5rem] shrink-0 border border-zinc-200 bg-white p-1 sm:w-24">
-                  <h3 className="border-b border-zinc-200 pb-1 text-[5px] font-semibold uppercase tracking-wider text-zinc-500 sm:text-[6px]">{s}</h3>
-                  <div className="mt-1 space-y-1">
-                    {mirrorLeadCards[s].map((c) => (
-                      <div key={c.n} className="border border-zinc-200 bg-zinc-50 p-1">
-                        <p className="text-[6px] font-medium text-zinc-950">{c.n}</p>
-                        <p className="mt-px text-[5px] text-zinc-600">{c.e}</p>
-                        <p className="mt-0.5 text-[5px] font-medium uppercase tracking-wide text-zinc-500">Source · {c.p}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
