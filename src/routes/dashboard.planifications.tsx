@@ -36,7 +36,7 @@ const toneBlock: Record<MirrorPlanTone, string> = {
   violet: "border-l-[3px] border-l-violet-600 bg-violet-50/95 text-violet-950 shadow-sm",
   emerald: "border-l-[3px] border-l-emerald-600 bg-emerald-50/95 text-emerald-950 shadow-sm",
   amber: "border-l-[3px] border-l-amber-600 bg-amber-50/95 text-amber-950 shadow-sm",
-  zinc: "border-l-[3px] border-l-zinc-600 bg-zinc-50/95 text-zinc-950 shadow-sm",
+  zinc: "border-l-[3px] border-l-primary/50 bg-muted/95 text-foreground shadow-sm",
 };
 
 function earliestPlanMonday(): Date {
@@ -121,13 +121,13 @@ function PlanificationsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">Organisation — CRM</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">Organisation — CRM</p>
         <div>
-          <h1 className="font-display text-3xl leading-tight tracking-tight text-zinc-950 md:text-[2.35rem]">
+          <h1 className="font-display text-3xl leading-tight tracking-tight text-foreground md:text-[2.35rem]">
             <span className="font-semibold">Planifications</span>{" "}
-            <span className="font-normal italic text-zinc-500">par créneaux</span>
+            <span className="font-normal italic text-muted-foreground">par créneaux</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Semaine type : les rendez-vous et réunions apparaissent directement dans la grille horaire (données de
             démonstration).
           </p>
@@ -135,22 +135,22 @@ function PlanificationsPage() {
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)] lg:items-start">
-        <div className="border border-zinc-200/80 bg-white shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-3 py-3 sm:px-4">
-            <div className="flex items-center gap-2 text-zinc-700">
-              <span className="grid h-9 w-9 place-items-center border border-zinc-200 bg-zinc-50 text-zinc-800">
+        <div className="border border-border/80 bg-card shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-3 sm:px-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span className="grid h-9 w-9 place-items-center border border-border bg-muted text-foreground/90">
                 <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
               </span>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Vue semaine</p>
-                <p className="text-sm font-medium capitalize text-zinc-900">{weekLabel}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Vue semaine</p>
+                <p className="text-sm font-medium capitalize text-foreground">{weekLabel}</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addWeeks(w, -1))}
-                className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:bg-zinc-50"
+                className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:bg-muted"
                 aria-label="Semaine précédente"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -158,14 +158,14 @@ function PlanificationsPage() {
               <button
                 type="button"
                 onClick={() => setWeekStart(earliestPlanMonday())}
-                className="border border-zinc-200 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800"
+                className="border border-border bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/85"
               >
                 Semaine démo
               </button>
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addWeeks(w, 1))}
-                className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:bg-zinc-50"
+                className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:bg-muted"
                 aria-label="Semaine suivante"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -176,26 +176,26 @@ function PlanificationsPage() {
           <div className="overflow-x-auto">
             <div className="min-w-[640px]">
               <div
-                className="grid border-b border-zinc-200 bg-zinc-50/80"
+                className="grid border-b border-border bg-muted/80"
                 style={{
                   gridTemplateColumns: `3.25rem repeat(7, minmax(0, 1fr))`,
                 }}
               >
-                <div className="border-r border-zinc-200" />
+                <div className="border-r border-border" />
                 {weekDays.map((day) => {
                   const isToday = isSameDay(day, new Date());
                   return (
                     <div
                       key={format(day, "yyyy-MM-dd")}
                       className={cn(
-                        "border-r border-zinc-200 px-1 py-2 text-center last:border-r-0",
-                        isToday && "bg-zinc-900/5",
+                        "border-r border-border px-1 py-2 text-center last:border-r-0",
+                        isToday && "bg-primary/5",
                       )}
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                         {format(day, "EEE", { locale: fr })}
                       </p>
-                      <p className={cn("mt-0.5 font-display text-sm font-semibold tabular-nums", isToday && "text-zinc-900")}>
+                      <p className={cn("mt-0.5 font-display text-sm font-semibold tabular-nums", isToday && "text-foreground")}>
                         {format(day, "d MMM", { locale: fr })}
                       </p>
                     </div>
@@ -209,11 +209,11 @@ function PlanificationsPage() {
                   gridTemplateColumns: `3.25rem repeat(7, minmax(0, 1fr))`,
                 }}
               >
-                <div className="border-r border-zinc-200 bg-zinc-50/40">
+                <div className="border-r border-border bg-muted/40">
                   {Array.from({ length: SLOT_COUNT }, (_, i) => (
                     <div
                       key={i}
-                      className="border-b border-zinc-100 pr-1.5 text-right text-[10px] font-medium tabular-nums text-zinc-400"
+                      className="border-b border-border pr-1.5 text-right text-[10px] font-medium tabular-nums text-muted-foreground/70"
                       style={{ height: SLOT_PX, lineHeight: `${SLOT_PX}px` }}
                     >
                       {i % 2 === 0 ? slotLabel(i) : ""}
@@ -227,13 +227,13 @@ function PlanificationsPage() {
                     <div
                       key={format(day, "yyyy-MM-dd")}
                       className={cn(
-                        "relative border-r border-zinc-200 last:border-r-0",
-                        isSameDay(day, new Date()) && "bg-zinc-900/[0.02]",
+                        "relative border-r border-border last:border-r-0",
+                        isSameDay(day, new Date()) && "bg-primary/[0.02]",
                       )}
                     >
                       <div className="pointer-events-none absolute inset-0">
                         {Array.from({ length: SLOT_COUNT }, (_, i) => (
-                          <div key={i} className="border-b border-zinc-100" style={{ height: SLOT_PX }} />
+                          <div key={i} className="border-b border-border" style={{ height: SLOT_PX }} />
                         ))}
                       </div>
                       <div className="relative" style={{ height: GRID_BODY_PX }}>
@@ -247,9 +247,9 @@ function PlanificationsPage() {
                               type="button"
                               onClick={() => setSelectedPlanId((id) => (id === plan.id ? null : plan.id))}
                               className={cn(
-                                "absolute left-0.5 right-0.5 overflow-hidden border border-zinc-200/80 px-1.5 py-1 text-left transition",
+                                "absolute left-0.5 right-0.5 overflow-hidden border border-border/80 px-1.5 py-1 text-left transition",
                                 toneBlock[plan.tone],
-                                active && "ring-2 ring-zinc-900 ring-offset-1",
+                                active && "ring-2 ring-primary ring-offset-1",
                               )}
                               style={{ top: layout.top, height: layout.height, zIndex: active ? 2 : 1 }}
                             >
@@ -271,30 +271,30 @@ function PlanificationsPage() {
         </div>
 
         <aside className="flex flex-col gap-5">
-          <div className="border border-zinc-200/80 bg-white p-5 shadow-sm sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Créneau sélectionné</p>
+          <div className="border border-border/80 bg-card p-5 shadow-sm sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Créneau sélectionné</p>
             {selectedPlan ? (
               <>
-                <h2 className="mt-1 font-display text-lg text-zinc-950">{selectedPlan.title}</h2>
-                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium tabular-nums text-zinc-600">
+                <h2 className="mt-1 font-display text-lg text-foreground">{selectedPlan.title}</h2>
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium tabular-nums text-muted-foreground">
                   <Clock className="h-3.5 w-3.5" aria-hidden />
                   {format(parseISO(selectedPlan.date), "EEEE d MMMM yyyy", { locale: fr })} · {selectedPlan.time}
                 </p>
-                <p className="mt-3 text-sm leading-relaxed text-zinc-600">{selectedPlan.detail}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{selectedPlan.detail}</p>
               </>
             ) : (
-              <p className="mt-4 text-sm leading-relaxed text-zinc-500">
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                 Cliquez sur un bloc dans la grille pour afficher le détail du créneau.
               </p>
             )}
           </div>
 
-          <div className="border border-zinc-200/60 bg-zinc-50/50 p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Cette semaine</p>
-            <h3 className="mt-1 font-display text-lg text-zinc-900">Tous les créneaux</h3>
+          <div className="border border-border/60 bg-muted/50 p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Cette semaine</p>
+            <h3 className="mt-1 font-display text-lg text-foreground">Tous les créneaux</h3>
             <ul className="mt-4 max-h-[min(20rem,45vh)] space-y-2 overflow-y-auto pr-1">
               {plansInWeek.length === 0 ? (
-                <li className="text-xs text-zinc-500">Aucun créneau sur cette semaine.</li>
+                <li className="text-xs text-muted-foreground">Aucun créneau sur cette semaine.</li>
               ) : (
                 plansInWeek.map((p) => (
                   <li key={p.id}>
@@ -305,17 +305,17 @@ function PlanificationsPage() {
                         setWeekStart(startOfWeek(parseISO(p.date), { weekStartsOn: 1 }));
                       }}
                       className={cn(
-                        "flex w-full items-start justify-between gap-2 border border-zinc-200/80 bg-white px-2.5 py-2 text-left text-xs shadow-sm transition hover:border-zinc-300",
-                        selectedPlanId === p.id && "ring-1 ring-zinc-900",
+                        "flex w-full items-start justify-between gap-2 border border-border/80 bg-card px-2.5 py-2 text-left text-xs shadow-sm transition hover:border-border",
+                        selectedPlanId === p.id && "ring-1 ring-primary",
                       )}
                     >
                       <div className="min-w-0">
-                        <p className="font-medium text-zinc-900">{p.title}</p>
-                        <p className="mt-0.5 text-[11px] text-zinc-500">{p.detail}</p>
+                        <p className="font-medium text-foreground">{p.title}</p>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">{p.detail}</p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="font-medium tabular-nums text-zinc-800">{p.time}</p>
-                        <p className="text-[10px] capitalize text-zinc-500">
+                        <p className="font-medium tabular-nums text-foreground/90">{p.time}</p>
+                        <p className="text-[10px] capitalize text-muted-foreground">
                           {format(parseISO(p.date), "EEE d MMM", { locale: fr })}
                         </p>
                       </div>
@@ -326,16 +326,16 @@ function PlanificationsPage() {
             </ul>
           </div>
 
-          <div className="border border-zinc-200/60 bg-white p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Vue du mois</p>
+          <div className="border border-border/60 bg-card p-5 sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Vue du mois</p>
             <ul className="mt-3 space-y-2 text-xs">
               {monthPlans.map((p) => (
                 <li
                   key={`m-${p.id}`}
-                  className="flex items-start justify-between gap-2 border-b border-zinc-100 py-1.5 last:border-0"
+                  className="flex items-start justify-between gap-2 border-b border-border py-1.5 last:border-0"
                 >
-                  <span className="font-medium text-zinc-800">{p.title}</span>
-                  <span className="shrink-0 tabular-nums text-zinc-500">
+                  <span className="font-medium text-foreground/90">{p.title}</span>
+                  <span className="shrink-0 tabular-nums text-muted-foreground">
                     {format(parseISO(p.date), "d/MM", { locale: fr })} {p.time}
                   </span>
                 </li>

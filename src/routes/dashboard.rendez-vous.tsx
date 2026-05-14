@@ -71,21 +71,21 @@ function statusLabel(s: DemandeStatut) {
 }
 
 function statusRowClass(s: DemandeStatut) {
-  if (s === "nouveau") return "border-l-zinc-900";
-  if (s === "contacte") return "border-l-zinc-400";
+  if (s === "nouveau") return "border-l-primary";
+  if (s === "contacte") return "border-l-chart-2";
   return "border-l-emerald-700";
 }
 
 function statusPillClass(s: DemandeStatut) {
-  if (s === "nouveau") return "border-zinc-200 bg-zinc-900 text-white";
-  if (s === "contacte") return "border-zinc-300 bg-zinc-100 text-zinc-800";
+  if (s === "nouveau") return "border-border bg-primary text-primary-foreground";
+  if (s === "contacte") return "border-border bg-muted text-foreground/90";
   return "border-emerald-200 bg-emerald-50 text-emerald-900";
 }
 
 function typePillClass(t: DemandeType) {
   return t === "rdv"
-    ? "border-zinc-300 bg-white text-zinc-800"
-    : "border-dashed border-zinc-300 bg-zinc-50 text-zinc-700";
+    ? "border-border bg-card text-foreground/90"
+    : "border-dashed border-border bg-muted text-muted-foreground";
 }
 
 const DEMO_DEMANDES: Demande[] = [
@@ -171,48 +171,48 @@ function CrmRendezVous() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <header>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Demandes — CRM
           </p>
-          <h1 className="mt-2 font-display text-3xl text-zinc-900 md:text-4xl">
+          <h1 className="mt-2 font-display text-3xl text-foreground md:text-4xl">
             <span className="font-semibold">Gestion des </span>
-            <span className="font-medium italic text-zinc-600">rendez-vous</span>
+            <span className="font-medium italic text-muted-foreground">rendez-vous</span>
           </h1>
-          <p className="mt-2 text-sm text-zinc-500">{afficheDemandes(filtered.length)}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{afficheDemandes(filtered.length)}</p>
         </header>
         <button
           type="button"
           onClick={exportCsv}
-          className="inline-flex shrink-0 items-center justify-center gap-2 border border-zinc-900 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
+          className="inline-flex shrink-0 items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/85"
         >
           <Download className="h-4 w-4" />
           Exporter CSV
         </button>
       </div>
 
-      <div className="flex flex-col gap-4 border border-zinc-200 bg-white p-4">
+      <div className="flex flex-col gap-4 border border-border bg-card p-4">
         <div className="relative min-w-0 w-full">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher par nom, email, téléphone ou sujet..."
-            className="w-full border border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+            className="w-full border border-border bg-muted py-2.5 pl-10 pr-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-input"
           />
         </div>
       </div>
 
-      <div className="border border-zinc-200 bg-white">
-        <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 sm:px-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Liste</p>
-          <h2 className="mt-0.5 font-display text-lg font-semibold tracking-tight text-zinc-950">
-            Demandes <span className="font-normal italic text-zinc-500">reçues</span>
+      <div className="border border-border bg-card">
+        <div className="border-b border-border bg-muted px-4 py-3 sm:px-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Liste</p>
+          <h2 className="mt-0.5 font-display text-lg font-semibold tracking-tight text-foreground">
+            Demandes <span className="font-normal italic text-muted-foreground">reçues</span>
           </h2>
         </div>
-        <ul role="list" className="divide-y divide-zinc-100">
+        <ul role="list" className="divide-y divide-border">
           {filtered.length === 0 ? (
-            <li className="px-4 py-14 text-center text-sm text-zinc-500 sm:px-5">
+            <li className="px-4 py-14 text-center text-sm text-muted-foreground sm:px-5">
               Aucune demande ne correspond à ces critères.
             </li>
           ) : (
@@ -222,25 +222,25 @@ function CrmRendezVous() {
                 <li
                   key={r.id}
                   className={cn(
-                    "flex flex-col gap-4 border-l-[3px] bg-white p-4 transition-colors sm:flex-row sm:items-stretch sm:gap-5 sm:p-5",
+                    "flex flex-col gap-4 border-l-[3px] bg-card p-4 transition-colors sm:flex-row sm:items-stretch sm:gap-5 sm:p-5",
                     statusRowClass(r.status),
-                    "hover:bg-zinc-50/80",
+                    "hover:bg-muted/80",
                   )}
                 >
                   <div className="flex shrink-0 gap-3 sm:flex-col sm:items-center">
-                    <div className="grid h-[4.25rem] w-[4.25rem] shrink-0 place-content-center border border-zinc-200 bg-zinc-50 text-center leading-none">
-                      <span className="font-display text-xl font-semibold text-zinc-950">{d.day}</span>
+                    <div className="grid h-[4.25rem] w-[4.25rem] shrink-0 place-content-center border border-border bg-muted text-center leading-none">
+                      <span className="font-display text-xl font-semibold text-foreground">{d.day}</span>
                       {d.month ? (
-                        <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                        <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           {d.month}
                         </span>
                       ) : null}
-                      <span className="mt-1 text-[10px] font-medium text-zinc-400">{d.year}</span>
+                      <span className="mt-1 text-[10px] font-medium text-muted-foreground/70">{d.year}</span>
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-display text-base font-semibold text-zinc-950">{r.nom}</span>
+                      <span className="font-display text-base font-semibold text-foreground">{r.nom}</span>
                       <span
                         className={cn(
                           "inline-flex border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
@@ -258,26 +258,26 @@ function CrmRendezVous() {
                         {statusLabel(r.status)}
                       </span>
                     </div>
-                    <div className="mt-2 flex flex-col gap-1.5 text-xs text-zinc-600 sm:flex-row sm:flex-wrap sm:gap-x-5">
+                    <div className="mt-2 flex flex-col gap-1.5 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5">
                       <span className="inline-flex min-w-0 items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
                         <span className="truncate">{r.email}</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                        <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
                         {r.phone}
                       </span>
                     </div>
-                    <p className="mt-2 flex items-start gap-1.5 text-sm text-zinc-800">
-                      <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                    <p className="mt-2 flex items-start gap-1.5 text-sm text-foreground/90">
+                      <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
                       <span className="leading-snug">{r.sujet}</span>
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center justify-end gap-1 border-t border-zinc-100 pt-3 sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:border-zinc-100 sm:pl-5 sm:pt-0">
+                  <div className="flex shrink-0 items-center justify-end gap-1 border-t border-border pt-3 sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:border-border sm:pl-5 sm:pt-0">
                     <button
                       type="button"
                       onClick={() => setModal({ kind: "detail", row: r })}
-                      className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+                      className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:border-input hover:bg-muted"
                       aria-label="Voir le détail"
                     >
                       <Eye className="h-4 w-4" />
@@ -285,7 +285,7 @@ function CrmRendezVous() {
                     <button
                       type="button"
                       onClick={() => setModal({ kind: "reply", row: r })}
-                      className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+                      className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:border-input hover:bg-muted"
                       aria-label="Répondre"
                     >
                       <Reply className="h-4 w-4" />
@@ -293,7 +293,7 @@ function CrmRendezVous() {
                     <button
                       type="button"
                       onClick={() => setModal({ kind: "crm", row: r })}
-                      className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+                      className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:border-input hover:bg-muted"
                       aria-label="Convertir CRM"
                     >
                       <CheckCircle className="h-4 w-4" />
@@ -304,8 +304,8 @@ function CrmRendezVous() {
             })
           )}
         </ul>
-        <div className="border-t border-zinc-200 bg-zinc-50/80 px-4 py-3 sm:px-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+        <div className="border-t border-border bg-muted/80 px-4 py-3 sm:px-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {filtered.length} résultat{filtered.length === 1 ? "" : "s"}
           </p>
         </div>
@@ -321,22 +321,22 @@ function CrmRendezVous() {
 function DetailModal({ row, onClose, onCrm }: { row: Demande; onClose: () => void; onCrm: () => void }) {
   return (
     <ModalShell onClose={onClose}>
-      <div className="flex items-start justify-between gap-4 border-b border-zinc-200 p-5">
+      <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Détail — Rendez-vous</p>
-          <h2 className="mt-2 font-display text-xl font-bold text-zinc-900 md:text-2xl">{row.nom}</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Détail — Rendez-vous</p>
+          <h2 className="mt-2 font-display text-xl font-bold text-foreground md:text-2xl">{row.nom}</h2>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="grid h-9 w-9 shrink-0 place-items-center border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+          className="grid h-9 w-9 shrink-0 place-items-center border border-border text-muted-foreground hover:bg-muted"
           aria-label="Fermer"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
       <div className="max-h-[min(70vh,28rem)] overflow-y-auto p-5">
-        <div className="grid grid-cols-1 border border-zinc-200 sm:grid-cols-2">
+        <div className="grid grid-cols-1 border border-border sm:grid-cols-2">
           {(
             [
               { label: "Email", value: row.email },
@@ -348,19 +348,19 @@ function DetailModal({ row, onClose, onCrm }: { row: Demande; onClose: () => voi
             <div
               key={f.label}
               className={
-                "border-zinc-200 px-4 py-3 " +
+                "border-border px-4 py-3 " +
                 (i < 4 ? "border-b " : "") +
                 (i < 2 ? "sm:border-b " : "sm:border-b-0 ") +
                 (i % 2 === 0 ? "sm:border-r " : "")
               }
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{f.label}</p>
-              <p className="mt-1 text-sm text-zinc-900">{f.value}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{f.label}</p>
+              <p className="mt-1 text-sm text-foreground">{f.value}</p>
             </div>
           ))}
-          <div className="border-t border-zinc-200 px-4 py-3 sm:col-span-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Message</p>
-            <p className="mt-1 text-sm text-zinc-800">{row.message}</p>
+          <div className="border-t border-border px-4 py-3 sm:col-span-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Message</p>
+            <p className="mt-1 text-sm text-foreground/90">{row.message}</p>
           </div>
         </div>
         <button
@@ -368,7 +368,7 @@ function DetailModal({ row, onClose, onCrm }: { row: Demande; onClose: () => voi
           onClick={() => {
             onCrm();
           }}
-          className="mt-6 flex w-full items-center justify-center gap-2 border border-zinc-900 bg-zinc-900 py-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="mt-6 flex w-full items-center justify-center gap-2 border border-primary bg-primary py-3 text-sm font-medium text-primary-foreground hover:bg-primary/85"
         >
           <CheckCircle className="h-4 w-4" />
           Confirmer la conversion CRM
@@ -388,10 +388,10 @@ function CrmModal({
   onConfirm: () => void;
 }) {
   const prenom = row.nom.trim().split(/\s+/)[0] ?? row.nom;
-  const crmFieldClass = "text-[10px] font-semibold uppercase tracking-wider text-zinc-500";
+  const crmFieldClass = "text-[10px] font-semibold uppercase tracking-wider text-muted-foreground";
   const crmInputClass =
-    "mt-1 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400";
-  const crmSelectClass = crmInputClass + " cursor-pointer bg-white";
+    "mt-1 w-full border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-input";
+  const crmSelectClass = crmInputClass + " cursor-pointer bg-card";
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -405,27 +405,27 @@ function CrmModal({
 
   return (
     <ModalShell onClose={onClose} wide>
-      <div className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 p-5">
+      <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Conversion CRM</p>
-          <h2 className="mt-2 font-display text-xl font-bold text-zinc-900">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Conversion CRM</p>
+          <h2 className="mt-2 font-display text-xl font-bold text-foreground">
             Fiche client — <span className="font-semibold">{prenom}</span>
           </h2>
         </div>
-        <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center border border-zinc-200 hover:bg-zinc-50" aria-label="Fermer">
+        <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center border border-border hover:bg-muted" aria-label="Fermer">
           <X className="h-4 w-4" />
         </button>
       </div>
       <form onSubmit={handleSubmit} className="flex min-h-0 max-h-[min(85vh,34rem)] flex-1 flex-col">
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm text-muted-foreground">
             Complétez les informations manquantes pour créer le dossier dans le CRM. À l&apos;enregistrement, la
             demande passe en <strong>Converti</strong> (démo).
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-1">
               <label htmlFor={`crm-rv-parent-${row.id}`} className={crmFieldClass}>
-                Parent (nom affiché) <span className="text-zinc-900">*</span>
+                Parent (nom affiché) <span className="text-foreground">*</span>
               </label>
               <input
                 id={`crm-rv-parent-${row.id}`}
@@ -439,7 +439,7 @@ function CrmModal({
             </div>
             <div>
               <label htmlFor={`crm-rv-eleve-${row.id}`} className={crmFieldClass}>
-                Nom d&apos;élève <span className="text-zinc-900">*</span>
+                Nom d&apos;élève <span className="text-foreground">*</span>
               </label>
               <input id={`crm-rv-eleve-${row.id}`} name="eleve" required minLength={1} className={crmInputClass} placeholder="Prénom et nom" />
             </div>
@@ -485,7 +485,7 @@ function CrmModal({
             </div>
             <div>
               <label htmlFor={`crm-rv-email1-${row.id}`} className={crmFieldClass}>
-                Email 1 <span className="text-zinc-900">*</span>
+                Email 1 <span className="text-foreground">*</span>
               </label>
               <input
                 id={`crm-rv-email1-${row.id}`}
@@ -517,10 +517,10 @@ function CrmModal({
             </div>
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap gap-2 border-t border-zinc-200 p-5">
+        <div className="flex shrink-0 flex-wrap gap-2 border-t border-border p-5">
           <button
             type="submit"
-            className="inline-flex min-w-[8rem] flex-1 items-center justify-center gap-2 border border-zinc-900 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
+            className="inline-flex min-w-[8rem] flex-1 items-center justify-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/85"
           >
             <CheckCircle className="h-4 w-4" />
             Enregistrer et convertir
@@ -528,7 +528,7 @@ function CrmModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-w-[8rem] flex-1 items-center justify-center border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            className="inline-flex min-w-[8rem] flex-1 items-center justify-center border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
           >
             Annuler
           </button>
@@ -545,43 +545,43 @@ function ReplyModal({ row, onClose }: { row: Demande; onClose: () => void }) {
 
   return (
     <ModalShell onClose={onClose} wide>
-      <div className="flex items-start justify-between gap-4 border-b border-zinc-200 p-5">
+      <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Réponse — Email</p>
-          <h2 className="mt-2 font-display text-xl font-bold text-zinc-900">Répondre à {replyTo}</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Réponse — Email</p>
+          <h2 className="mt-2 font-display text-xl font-bold text-foreground">Répondre à {replyTo}</h2>
         </div>
-        <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center border border-zinc-200 hover:bg-zinc-50" aria-label="Fermer">
+        <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center border border-border hover:bg-muted" aria-label="Fermer">
           <X className="h-4 w-4" />
         </button>
       </div>
       <div className="space-y-4 p-5">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Destinataire</p>
-          <input readOnly value={row.email} className="mt-1 w-full border border-zinc-200 bg-zinc-100 px-3 py-2 text-sm text-zinc-800" />
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Destinataire</p>
+          <input readOnly value={row.email} className="mt-1 w-full border border-border bg-muted px-3 py-2 text-sm text-foreground/90" />
         </div>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Sujet</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Sujet</p>
           <input
             value={sujet}
             onChange={(e) => setSujet(e.target.value)}
             placeholder="Sujet de votre réponse..."
-            className="mt-1 w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400"
+            className="mt-1 w-full border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-input"
           />
         </div>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Message</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Message</p>
           <textarea
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             placeholder="Écrivez votre réponse ici..."
             rows={6}
-            className="mt-1 w-full resize-y border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400"
+            className="mt-1 w-full resize-y border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-input"
           />
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="flex w-full items-center justify-center gap-2 border border-zinc-900 bg-zinc-900 py-3 text-sm font-medium text-white hover:bg-zinc-800"
+          className="flex w-full items-center justify-center gap-2 border border-primary bg-primary py-3 text-sm font-medium text-primary-foreground hover:bg-primary/85"
         >
           <Send className="h-4 w-4" />
           Envoyer la réponse
@@ -594,12 +594,12 @@ function ReplyModal({ row, onClose }: { row: Demande; onClose: () => void }) {
 function ModalShell({ children, onClose, wide }: { children: ReactNode; onClose: () => void; wide?: boolean }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button type="button" className="absolute inset-0 bg-zinc-900/50" onClick={onClose} aria-label="Fermer" />
+      <button type="button" className="absolute inset-0 bg-primary/50" onClick={onClose} aria-label="Fermer" />
       <div
         role="dialog"
         aria-modal="true"
         className={
-          "relative z-10 flex min-h-0 max-h-[min(92vh,42rem)] w-full flex-col border border-zinc-200 bg-white shadow-xl " +
+          "relative z-10 flex min-h-0 max-h-[min(92vh,42rem)] w-full flex-col border border-border bg-card shadow-xl " +
           (wide ? "max-w-2xl" : "max-w-md")
         }
       >

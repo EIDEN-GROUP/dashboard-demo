@@ -87,7 +87,7 @@ export const mirrorMetrics: readonly {
     value: "4",
     sub: "1 actif",
     badge: "Actif",
-    borderClass: "border-t-zinc-900",
+    borderClass: "border-t-primary",
     icon: Users,
   },
   {
@@ -96,7 +96,7 @@ export const mirrorMetrics: readonly {
     value: "2",
     sub: "1 en attente",
     badge: "Actif",
-    borderClass: "border-t-zinc-600",
+    borderClass: "border-t-chart-4",
     icon: CreditCard,
   },
   {
@@ -105,7 +105,7 @@ export const mirrorMetrics: readonly {
     value: "0 MAD",
     sub: "Calculé dynamiquement",
     badge: "Actif",
-    borderClass: "border-t-zinc-400",
+    borderClass: "border-t-chart-2",
     icon: AlertCircle,
   },
   {
@@ -114,7 +114,7 @@ export const mirrorMetrics: readonly {
     value: "12 600 MAD",
     sub: "Rapports & paiements (démo)",
     badge: "Actif",
-    borderClass: "border-t-zinc-300",
+    borderClass: "border-t-muted-foreground",
     icon: Banknote,
   },
 ];

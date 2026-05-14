@@ -43,15 +43,15 @@ type Employe = {
 };
 
 const dialogSurface =
-  "gap-0 overflow-hidden border border-zinc-200 bg-white p-0 shadow-none sm:rounded-none rounded-none max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-zinc-300 [&>button]:bg-white [&>button]:opacity-100 [&>button]:hover:bg-zinc-100 [&>button]:focus:ring-0";
+  "gap-0 overflow-hidden border border-border bg-card p-0 shadow-none sm:rounded-none rounded-none max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0";
 
-const labelClass = "text-[10px] font-medium uppercase tracking-wider text-zinc-500";
+const labelClass = "text-[10px] font-medium uppercase tracking-wider text-muted-foreground";
 
 const inputClass =
-  "rounded-none border-zinc-300 bg-white shadow-none focus-visible:border-zinc-950 focus-visible:ring-0";
+  "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
 
 const selectTriggerClass =
-  "h-10 rounded-none border-zinc-300 bg-white shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-zinc-400";
+  "h-10 rounded-none border-border bg-card shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/70";
 
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
@@ -70,8 +70,8 @@ function Badge({ children, variant }: { children: ReactNode; variant: "neutral" 
       className={cn(
         "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         variant === "dark"
-          ? "border-zinc-800 bg-zinc-900 text-white"
-          : "border-zinc-300 bg-zinc-50 text-zinc-800",
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-muted text-foreground/90",
       )}
     >
       <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
@@ -87,7 +87,7 @@ function StatutTag({ actif }: { actif: boolean }) {
       role="status"
       className={cn(
         "inline-flex w-fit border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider",
-        actif ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 bg-zinc-100 text-zinc-700",
+        actif ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted text-muted-foreground",
       )}
     >
       {actif ? "Actif" : "Inactif"}
@@ -213,64 +213,64 @@ function DetailEmployeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={dialogSurface}>
         <DialogDescription className="sr-only">Détails de l&apos;employé {employe.nomComplet}</DialogDescription>
-        <div className="border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">Équipe</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-zinc-950">
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Équipe</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               Détails de l&apos;employé
             </DialogTitle>
           </div>
           <div className="grid max-h-[60vh] grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto scroll-touch px-6 py-5 sm:grid-cols-2">
             <Field id="emp-nom" label="Nom complet">
-              <p className="text-sm font-semibold text-zinc-950">{employe.nomComplet}</p>
+              <p className="text-sm font-semibold text-foreground">{employe.nomComplet}</p>
             </Field>
             <div className="flex items-end justify-start sm:justify-end">
               <StatutTag actif={employe.statut === "actif"} />
             </div>
             <Field id="emp-naissance" label="Date de naissance">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.dateNaissance)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.dateNaissance)}</p>
             </Field>
             <Field id="emp-embauche" label="Date d'embauche">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.dateEmbauche)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.dateEmbauche)}</p>
             </Field>
             <Field id="emp-cin" label="CIN ou passeport">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.cin)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.cin)}</p>
             </Field>
             <Field id="emp-contrat" label="Type de contrat">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.contrat)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.contrat)}</p>
             </Field>
             <Field id="emp-email" label="Email professionnel">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.email)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.email)}</p>
             </Field>
             <Field id="emp-email-perso" label="Email personnel">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.emailPerso)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.emailPerso)}</p>
             </Field>
             <Field id="emp-tel1" label="Téléphone 1">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.tel)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.tel)}</p>
             </Field>
             <Field id="emp-tel2" label="Téléphone 2">
-              <p className="text-sm font-semibold text-zinc-950">{dash(employe.tel2)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(employe.tel2)}</p>
             </Field>
             <Field id="emp-poste" label="Poste">
-              <p className="text-sm font-semibold text-zinc-950">{employe.poste}</p>
+              <p className="text-sm font-semibold text-foreground">{employe.poste}</p>
             </Field>
             <Field id="emp-dept" label="Département">
-              <p className="text-sm font-semibold text-zinc-950">{employe.departement}</p>
+              <p className="text-sm font-semibold text-foreground">{employe.departement}</p>
             </Field>
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="emp-adresse" className={labelClass}>
                 Adresse
               </Label>
-              <p id="emp-adresse" className="text-sm font-semibold text-zinc-950">
+              <p id="emp-adresse" className="text-sm font-semibold text-foreground">
                 {dash(employe.adresse)}
               </p>
             </div>
           </div>
-          <div className="flex w-full flex-wrap justify-end border-t border-zinc-200 px-6 py-4">
+          <div className="flex w-full flex-wrap justify-end border-t border-border px-6 py-4">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+              className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
               Fermer
             </button>
@@ -304,10 +304,10 @@ function EditEmployeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
         <DialogDescription className="sr-only">Modifier l&apos;employé {employe.nomComplet}</DialogDescription>
-        <div className="border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">— Équipe</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-zinc-950">
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— Équipe</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               Modifier l&apos;employé
             </DialogTitle>
           </div>
@@ -344,7 +344,7 @@ function EditEmployeDialog({
                   <SelectTrigger id="ed-statut" className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-none border-zinc-200">
+                  <SelectContent className="rounded-none border-border">
                     <SelectItem value="actif">Actif</SelectItem>
                     <SelectItem value="inactif">Inactif</SelectItem>
                   </SelectContent>
@@ -387,17 +387,17 @@ function EditEmployeDialog({
                 <Input id="ed-adresse" name="adresse" defaultValue={employe.adresse} className={inputClass} />
               </div>
             </div>
-            <div className="flex flex-wrap justify-end gap-3 border-t border-zinc-200 pt-5">
+            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="border border-zinc-950 bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-900"
+                className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 Enregistrer les modifications
               </button>
@@ -443,13 +443,13 @@ function AffichesPage() {
       />
 
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">Équipe — CRM</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">Équipe — CRM</p>
         <div>
-          <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-zinc-950">
+          <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
             <span className="font-semibold">Affiches</span>{" "}
-            <span className="font-normal italic text-zinc-500">et personnel</span>
+            <span className="font-normal italic text-muted-foreground">et personnel</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Liste des employés et leur statut (données de démonstration).
           </p>
         </div>
@@ -458,7 +458,7 @@ function AffichesPage() {
       <section className="space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="relative max-w-md flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -468,19 +468,19 @@ function AffichesPage() {
             />
           </div>
         </div>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           {filtered.length} employé{filtered.length !== 1 ? "s" : ""}
         </p>
       </section>
 
-      <section className="border border-zinc-200 bg-white">
-        <div className="border-b border-zinc-200 px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Liste des employés</p>
+      <section className="border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Liste des employés</p>
         </div>
         <div className="overflow-x-auto scroll-touch">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+              <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">Nom</th>
                 <th className="px-4 py-3">Poste</th>
                 <th className="px-4 py-3">Département</th>
@@ -489,15 +489,15 @@ function AffichesPage() {
                 <th className="px-4 py-3 w-28">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200">
+            <tbody className="divide-y divide-border">
               {filtered.map((e) => (
-                <tr key={e.id} className="hover:bg-zinc-50/80">
-                  <td className="px-4 py-3 font-medium text-zinc-950">{e.nomComplet}</td>
-                  <td className="px-4 py-3 text-zinc-800">{e.poste}</td>
-                  <td className="px-4 py-3 text-zinc-700">{e.departement}</td>
-                  <td className="px-4 py-3 text-zinc-700">
+                <tr key={e.id} className="hover:bg-muted/80">
+                  <td className="px-4 py-3 font-medium text-foreground">{e.nomComplet}</td>
+                  <td className="px-4 py-3 text-foreground/90">{e.poste}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{e.departement}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     <span className="block">{e.email}</span>
-                    <span className="mt-0.5 block text-xs text-zinc-500">{e.tel}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{e.tel}</span>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={e.statut === "actif" ? "dark" : "neutral"}>
@@ -512,7 +512,7 @@ function AffichesPage() {
                           setDetailId(e.id);
                           setEditId(null);
                         }}
-                        className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                        className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
                         aria-label={`Voir ${e.nomComplet}`}
                       >
                         <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
@@ -523,7 +523,7 @@ function AffichesPage() {
                           setEditId(e.id);
                           setDetailId(null);
                         }}
-                        className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                        className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
                         aria-label={`Modifier ${e.nomComplet}`}
                       >
                         <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />

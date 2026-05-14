@@ -1,19 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { ArrowRight, BarChart3, Calendar, Check, CreditCard, GraduationCap, Images, LayoutDashboard, LogOut, Mail, MapPin, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, Eye, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
+import { ArrowRight, BarChart3, Calendar, Check, CreditCard, GraduationCap, Globe, Images, LayoutDashboard, LogOut, Mail, MapPin, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, Eye, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { HeroPreviewPageBody } from "@/components/hero-preview-page-body";
 import type { DashboardMiniaturePageId } from "@/lib/dashboard-mirror-data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 
 const MotionLink = motion.create(Link);
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Orio — CRM pour centres éducatifs spécialisés" },
+      { title: "Orio CRM pour centres éducatifs spécialisés" },
       {
         name: "description",
         content:
@@ -160,7 +161,8 @@ function HeroDashboardPreview() {
     window.setTimeout(() => setNotice(null), 4000);
   };
 
-  const previewBtn = "inline-flex items-center justify-center gap-0.5 border border-zinc-300 bg-white px-1 py-0.5 text-[7px] font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 active:scale-[0.98] sm:text-[8px]";
+  const previewBtn =
+    "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-1.5 py-0.5 text-[9px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[10px]";
 
   const panelTransition = reduceMotion
     ? { duration: 0.15 }
@@ -175,45 +177,45 @@ function HeroDashboardPreview() {
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.9, ease, delay: 0.25 }}
-        className="relative min-w-0 overflow-hidden rounded-2xl border-2 border-foreground/10 bg-white shadow-[var(--shadow-elegant)] ring-1 ring-foreground/[0.06]"
+        className="relative min-w-0 overflow-hidden rounded-2xl border-2 border-border bg-card shadow-[var(--shadow-elegant)] ring-1 ring-foreground/[0.06]"
       >
         {/* Browser chrome */}
-        <div className="flex items-center gap-1.5 border-b border-zinc-200/90 bg-zinc-50 px-3 py-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-          <span className="ml-2 flex-1 rounded border border-zinc-200 bg-white px-2 py-0.5 font-mono text-[9px] text-zinc-400">
+        <div className="flex items-center gap-1.5 border-b border-border bg-muted px-3 py-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
+          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
+          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
+          <span className="ml-2 flex-1 rounded border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
             orio.ma · aperçu démo
           </span>
-          <span className="flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-1.5 py-0.5 text-[9px] font-semibold text-green-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Live
           </span>
         </div>
 
         {/* App shell */}
-        <div className="flex flex-col bg-zinc-50 text-[7px] sm:text-[8px]">
+        <div className="flex flex-col bg-muted text-[9px] sm:text-[10px]">
           {/* App header */}
-          <div className="shrink-0 border-b border-zinc-200 bg-white px-2 py-1.5 sm:px-3 sm:py-2">
+          <div className="shrink-0 border-b border-border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold tracking-tight text-zinc-900 text-[10px]">Orio</p>
-                <p className="text-[6px] uppercase tracking-widest text-zinc-400">Centre spécialisé</p>
+                <p className="text-[11px] font-bold tracking-tight text-foreground sm:text-xs">Orio</p>
+                <p className="text-[8px] uppercase tracking-widest text-muted-foreground sm:text-[9px]">Centre spécialisé</p>
               </div>
               <div className="flex items-center gap-0.5">
-                <div className="grid h-5 w-5 place-items-center bg-zinc-900 text-[7px] font-bold text-white">A</div>
+                <div className="grid h-5 w-5 place-items-center bg-primary text-[8px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[9px]">A</div>
                 <motion.button
                   type="button"
                   whileTap={{ scale: 0.92 }}
-                  className="grid h-5 w-5 place-items-center border border-zinc-200 text-zinc-500 hover:bg-zinc-50"
+                  className="grid h-5 w-5 place-items-center border border-border text-muted-foreground hover:bg-muted sm:h-6 sm:w-6"
                   onClick={() => showLocked("Connectez-vous pour accéder à votre espace réel.")}
                 >
-                  <LogOut className="h-2.5 w-2.5" strokeWidth={2} />
+                  <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2} />
                 </motion.button>
               </div>
             </div>
             {/* Top nav */}
-            <nav className="mt-1.5 flex flex-nowrap gap-0.5 overflow-x-auto border-t border-zinc-100 pt-1">
+            <nav className="mt-1.5 flex flex-nowrap gap-0.5 overflow-x-auto border-t border-border/70 pt-1">
               {previewTopNav.map((n) => {
                 const Icon = n.icon;
                 const active = page === n.id;
@@ -225,17 +227,17 @@ function HeroDashboardPreview() {
                     whileTap={{ scale: 0.96 }}
                     className={cn(
                       "flex shrink-0 items-center gap-0.5 border px-1 py-1 sm:px-1.5",
-                      active ? "border-zinc-300 bg-zinc-100 font-semibold text-zinc-900 shadow-sm" : "border-transparent text-zinc-500 hover:bg-zinc-50",
+                      active ? "border-border bg-muted font-semibold text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:bg-muted/80",
                     )}
                   >
-                    <Icon className="h-2.5 w-2.5 shrink-0 opacity-75" />
+                    <Icon className="h-2.5 w-2.5 shrink-0 opacity-75 sm:h-3 sm:w-3" />
                     <span className="whitespace-nowrap">{n.label}</span>
                   </motion.button>
                 );
               })}
             </nav>
             {/* Secondary nav */}
-            <div className="mt-1 flex flex-wrap gap-0.5 border-t border-zinc-200 bg-zinc-50 px-1 py-1">
+            <div className="mt-1 flex flex-wrap gap-0.5 border-t border-border bg-muted px-1 py-1">
               {previewSecondaryNav.map((n) => {
                 const Icon = n.icon;
                 const active = page === n.id;
@@ -247,10 +249,10 @@ function HeroDashboardPreview() {
                     whileTap={{ scale: 0.96 }}
                     className={cn(
                       "flex items-center gap-0.5 border px-1 py-0.5 font-medium",
-                      active ? "border-zinc-300 bg-white text-zinc-900 shadow-sm" : "border-transparent text-zinc-500 hover:bg-white/80",
+                      active ? "border-border bg-card text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:bg-card/90",
                     )}
                   >
-                    <Icon className="h-2.5 w-2.5 shrink-0 opacity-75" />
+                    <Icon className="h-2.5 w-2.5 shrink-0 opacity-75 sm:h-3 sm:w-3" />
                     {n.label}
                   </motion.button>
                 );
@@ -259,7 +261,7 @@ function HeroDashboardPreview() {
           </div>
 
           {/* Page area */}
-          <main className="relative h-[min(42vh,280px)] min-h-[220px] shrink-0 overflow-hidden bg-zinc-100 sm:h-[280px] sm:min-h-0 md:h-[300px]">
+          <main className="relative h-[min(42vh,280px)] min-h-[220px] shrink-0 overflow-hidden bg-muted sm:h-[280px] sm:min-h-0 md:h-[300px]">
             <AnimatePresence initial={false} mode="wait">
               {notice && (
                 <motion.div
@@ -270,7 +272,7 @@ function HeroDashboardPreview() {
                   transition={{ duration: 0.25, ease }}
                   className="pointer-events-none absolute left-2 right-2 top-2 z-20 flex justify-center"
                 >
-                  <p className="max-w-full rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-[10px] text-muted-foreground shadow-md backdrop-blur-sm">
+                  <p className="max-w-full rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-xs text-muted-foreground shadow-md backdrop-blur-sm">
                     {notice}
                   </p>
                 </motion.div>
@@ -292,22 +294,22 @@ function HeroDashboardPreview() {
         </div>
       </motion.div>
 
-      {/* Floating badge — in-flow on narrow screens to avoid clipping */}
+      {/* Floating badge in-flow on narrow screens to avoid clipping */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease, delay: 0.8 }}
         className="relative mt-3 flex w-max max-w-full items-center gap-1.5 self-end border-2 border-foreground bg-background px-2.5 py-1.5 shadow-[4px_4px_0_0_var(--foreground)] sm:absolute sm:right-0 sm:top-0 sm:mt-0 sm:self-auto sm:px-3 md:-right-5 md:-top-4"
       >
-        <Sparkles className="h-3 w-3 shrink-0 text-primary" />
-        <span className="text-[9px] font-black uppercase tracking-wider sm:text-[10px]">Démo interactive</span>
+        <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" />
+        <span className="text-[11px] font-black uppercase tracking-wider sm:text-xs">Démo interactive</span>
       </motion.div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────
-// S1 — Hero
+// S1 Hero
 // ─────────────────────────────────────────────
 function Hero() {
   const reduceMotion = useReducedMotion();
@@ -347,7 +349,7 @@ function Hero() {
           </motion.h1>
 
           <motion.p variants={fadeUp} className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Orio est le CRM pensé pour les centres spécialisés au Maroc. Familles, paiements, prospects, planning — tout au même endroit, accessible en 2 clics.
+            Orio est le CRM pensé pour les centres spécialisés au Maroc. Familles, paiements, planning tout au même endroit, accessible en 2 clics.
           </motion.p>
 
           {/* Social proof mini row */}
@@ -371,7 +373,7 @@ function Hero() {
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="mt-8 flex w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <motion.div variants={fadeUp} className="mt-8">
             <motion.button
               whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
@@ -384,22 +386,13 @@ function Hero() {
               <span className="relative">Demander une démo gratuite</span>
               <ArrowRight className="relative h-4 w-4 transition group-hover:translate-x-1" />
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => scrollToId("demo")}
-              className="inline-flex w-full items-center justify-center gap-2 border-2 border-foreground/20 bg-background px-6 py-3.5 text-sm font-bold text-foreground transition hover:border-foreground/50 sm:w-auto sm:px-7 sm:py-4"
-            >
-              <MousePointerClick className="h-4 w-4" />
-              Explorer la démo
-            </motion.button>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-6 flex flex-wrap gap-2">
             {[
               { icon: BadgeDollarSign, label: "100 % local" },
               { icon: Lock, label: "Données sécurisées" },
-              { icon: Phone, label: "Support Maroc" },
+              { icon: Phone, label: "07 77 77 74 28" },
             ].map(({ icon: Icon, label }) => (
               <span key={label} className="inline-flex items-center gap-1.5 border border-foreground/10 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground/70">
                 <Icon className="h-3.5 w-3.5" />
@@ -424,7 +417,7 @@ function Hero() {
 }
 
 // ─────────────────────────────────────────────
-// S2 — Animated Feature Tour + Interactive Demo
+// S2 Animated Feature Tour + Interactive Demo
 // ─────────────────────────────────────────────
 const tourSteps: {
   page: DashboardMiniaturePageId;
@@ -439,7 +432,7 @@ const tourSteps: {
     icon: LayoutDashboard,
     label: "Tableau de bord",
     headline: "Vos KPIs en temps réel",
-    description: "Recettes du mois, dettes en cours, prospects actifs — tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
+    description: "Recettes du mois, dettes en cours, prospects actifs tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
     tag: "Vue d'ensemble",
   },
   {
@@ -521,7 +514,7 @@ function DemoSection() {
   }, []);
 
   const previewBtn =
-    "inline-flex items-center justify-center gap-0.5 border border-zinc-300 bg-white px-1.5 py-1 text-[8px] font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-100 active:scale-[0.98] sm:text-[9px]";
+    "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-2 py-1 text-[10px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[11px]";
 
   const panelTransition = reduceMotion
     ? { duration: 0.15 }
@@ -532,44 +525,44 @@ function DemoSection() {
   // Shared dashboard frame used in both layouts
   function DashboardFrame() {
     return (
-      <div className="relative overflow-hidden rounded-xl border-2 border-foreground/12 bg-white shadow-[var(--shadow-elegant)]">
+      <div className="relative overflow-hidden rounded-xl border-2 border-border bg-card shadow-[var(--shadow-elegant)]">
         {/* Browser bar */}
-        <div className="flex items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-3 py-2 sm:px-4 sm:py-2.5">
-          <span className="h-2 w-2 rounded-full bg-zinc-300 sm:h-2.5 sm:w-2.5" />
-          <span className="h-2 w-2 rounded-full bg-zinc-300 sm:h-2.5 sm:w-2.5" />
-          <span className="h-2 w-2 rounded-full bg-zinc-300 sm:h-2.5 sm:w-2.5" />
-          <span className="ml-2 flex-1 truncate rounded border border-zinc-200 bg-white px-2 py-0.5 font-mono text-[9px] text-zinc-400 sm:ml-3 sm:px-3 sm:text-[11px]">
+        <div className="flex items-center gap-2 border-b border-border bg-muted px-3 py-2 sm:px-4 sm:py-2.5">
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
+          <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
+          <span className="ml-2 flex-1 truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:ml-3 sm:px-3 sm:text-xs">
             orio.ma · {currentStep.label.toLowerCase()}
           </span>
-          <span className="flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-1.5 py-0.5 text-[9px] font-semibold text-green-700 sm:px-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary sm:px-2 sm:text-[11px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             <span className="hidden sm:inline">Démo live</span>
             <span className="sm:hidden">Live</span>
           </span>
         </div>
         {/* App shell */}
-        <div className="flex flex-col bg-zinc-50">
+        <div className="flex flex-col bg-muted">
           {/* Top nav */}
-          <div className="border-b border-zinc-200 bg-white px-3 py-2 sm:px-5 sm:py-3">
+          <div className="border-b border-border bg-card px-3 py-2 sm:px-5 sm:py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold tracking-tight text-zinc-900 sm:text-sm">Orio</p>
-                <p className="text-[9px] uppercase tracking-widest text-zinc-400 sm:text-[10px]">Centre spécialisé</p>
+                <p className="text-sm font-bold tracking-tight text-foreground sm:text-base">Orio</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-[11px]">Centre spécialisé</p>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="hidden items-center gap-1.5 text-[10px] text-zinc-400 sm:flex sm:text-[11px]">
-                  <span className="flex h-5 w-5 items-center justify-center rounded bg-zinc-900 text-[9px] font-bold text-white">A</span>
+                <div className="hidden items-center gap-1.5 text-[11px] text-muted-foreground sm:flex sm:text-xs">
+                  <span className="flex h-5 w-5 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[11px]">A</span>
                   Admin · Directeur
                 </div>
                 <button
-                  className="rounded border border-zinc-200 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 hover:bg-zinc-50 sm:px-2 sm:py-1 sm:text-[10px]"
+                  className="rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted sm:px-2 sm:py-1 sm:text-xs"
                   onClick={() => showLocked("Connectez-vous pour accéder à votre espace réel.")}
                 >
                   <LogOut className="inline h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 </button>
               </div>
             </div>
-            <nav className="mt-1.5 flex flex-wrap gap-0.5 border-t border-zinc-100 pt-1.5 sm:mt-2 sm:gap-1 sm:pt-2">
+            <nav className="mt-1.5 flex flex-wrap gap-0.5 border-t border-border/70 pt-1.5 sm:mt-2 sm:gap-1 sm:pt-2">
               {[...previewTopNav, ...previewSecondaryNav].map((n) => {
                 const Icon = n.icon;
                 const active = page === n.id;
@@ -580,8 +573,8 @@ function DemoSection() {
                     onClick={() => { const idx = tourSteps.findIndex(t => t.page === n.id); if (idx !== -1) goToStep(idx); else setPage(n.id); }}
                     whileTap={{ scale: 0.97 }}
                     className={cn(
-                      "flex items-center gap-0.5 border px-1.5 py-0.5 text-[9px] font-medium transition sm:px-2 sm:py-1 sm:text-[11px]",
-                      active ? "border-zinc-300 bg-zinc-100 font-semibold text-zinc-900 shadow-sm" : "border-transparent text-zinc-500 hover:bg-zinc-50",
+                      "flex items-center gap-0.5 border px-1.5 py-0.5 text-[10px] font-medium transition sm:px-2 sm:py-1 sm:text-xs",
+                      active ? "border-border bg-muted font-semibold text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:bg-muted/80",
                     )}
                   >
                     <Icon className="h-2.5 w-2.5 opacity-70 sm:h-3 sm:w-3" />
@@ -603,7 +596,7 @@ function DemoSection() {
                   transition={{ duration: 0.25, ease }}
                   className="pointer-events-none absolute left-2 right-2 top-2 z-20 flex justify-center sm:left-4 sm:right-4 sm:top-3"
                 >
-                  <p className="max-w-xs rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-[10px] text-muted-foreground shadow-md backdrop-blur-sm sm:max-w-md sm:px-4 sm:py-2 sm:text-xs">
+                  <p className="max-w-xs rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-xs text-muted-foreground shadow-md backdrop-blur-sm sm:max-w-md sm:px-4 sm:py-2 sm:text-sm">
                     {notice}
                   </p>
                 </motion.div>
@@ -643,19 +636,19 @@ function DemoSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-            <MousePointerClick className="h-3.5 w-3.5" />
-            Démo interactive — sans compte requis
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary sm:px-5 sm:text-base">
+            <MousePointerClick className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
+            Démo interactive sans compte requis
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
             Explorez Orio maintenant.
           </motion.h2>
-          <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Cliquez sur chaque module pour voir comment il fonctionne — comme si c'était votre vrai tableau de bord.
+          <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground sm:text-xl">
+            Cliquez sur chaque module pour voir comment il fonctionne comme si c'était votre vrai tableau de bord.
           </motion.p>
         </motion.div>
 
-        {/* ─── DESKTOP LAYOUT (lg+) — sidebar step list + annotation + dashboard ─── */}
+        {/* ─── DESKTOP LAYOUT (lg+) sidebar step list + annotation + dashboard ─── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -688,8 +681,8 @@ function DemoSection() {
                     <Icon className="h-4 w-4" strokeWidth={1.5} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("text-sm font-bold leading-tight", active ? "text-background" : "text-foreground")}>{s.label}</p>
-                    <p className={cn("mt-0.5 text-xs", active ? "text-background/65" : "text-muted-foreground")}>{s.tag}</p>
+                    <p className={cn("text-base font-bold leading-tight", active ? "text-background" : "text-foreground")}>{s.label}</p>
+                    <p className={cn("mt-0.5 text-sm", active ? "text-background/65" : "text-muted-foreground")}>{s.tag}</p>
                   </div>
                   {active && <span className="shrink-0 text-background/50 text-sm">→</span>}
                 </motion.button>
@@ -715,15 +708,15 @@ function DemoSection() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-[10px] text-background/50 uppercase tracking-widest">
+                      <span className="font-mono text-xs text-background/50 uppercase tracking-widest">
                         Module {step + 1} / {tourSteps.length}
                       </span>
-                      <span className="rounded-full border border-background/20 bg-background/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-background/70">
+                      <span className="rounded-full border border-background/20 bg-background/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-background/70">
                         {currentStep.tag}
                       </span>
                     </div>
-                    <h3 className="mt-1.5 text-xl font-black">{currentStep.headline}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-background/75">{currentStep.description}</p>
+                    <h3 className="mt-1.5 text-2xl font-black">{currentStep.headline}</h3>
+                    <p className="mt-2 text-base leading-relaxed text-background/75">{currentStep.description}</p>
                   </div>
                 </div>
                 {/* Controls */}
@@ -748,7 +741,7 @@ function DemoSection() {
           </div>
         </motion.div>
 
-        {/* ─── MOBILE LAYOUT (< lg) — horizontal tab bar + annotation card + dashboard ─── */}
+        {/* ─── MOBILE LAYOUT (< lg) horizontal tab bar + annotation card + dashboard ─── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -756,7 +749,7 @@ function DemoSection() {
           transition={{ duration: 0.7, ease }}
           className="mt-10 flex flex-col gap-4 lg:hidden"
         >
-          {/* Tab bar — horizontal scroll */}
+          {/* Tab bar horizontal scroll */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
             {tourSteps.map((s, i) => {
               const Icon = s.icon;
@@ -775,13 +768,13 @@ function DemoSection() {
                   )}
                 >
                   <Icon className={cn("h-5 w-5", active ? "text-background" : "text-foreground/60")} strokeWidth={1.5} />
-                  <span className={cn("text-[11px] font-bold whitespace-nowrap", active ? "text-background" : "text-foreground/70")}>{s.label}</span>
+                  <span className={cn("text-xs font-bold whitespace-nowrap sm:text-sm", active ? "text-background" : "text-foreground/70")}>{s.label}</span>
                 </motion.button>
               );
             })}
           </div>
 
-          {/* Annotation card — compact */}
+          {/* Annotation card compact */}
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -796,11 +789,11 @@ function DemoSection() {
                   <StepIcon className="h-4 w-4" strokeWidth={1.5} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-mono text-background/50 uppercase tracking-widest">Module {step + 1} / {tourSteps.length} · {currentStep.tag}</p>
-                  <h3 className="mt-0.5 text-base font-black leading-tight">{currentStep.headline}</h3>
+                  <p className="text-sm font-mono text-background/50 uppercase tracking-widest">Module {step + 1} / {tourSteps.length} · {currentStep.tag}</p>
+                  <h3 className="mt-0.5 text-lg font-black leading-tight sm:text-xl">{currentStep.headline}</h3>
                 </div>
               </div>
-              <p className="mt-2.5 text-sm leading-relaxed text-background/75">{currentStep.description}</p>
+              <p className="mt-2.5 text-base leading-relaxed text-background/75">{currentStep.description}</p>
               {/* Progress dots + arrows */}
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-1">
@@ -851,7 +844,7 @@ function DemoSection() {
 }
 
 // ─────────────────────────────────────────────
-// S3 — Pain Points
+// S3 Pain Points
 // ─────────────────────────────────────────────
 const painPoints = [
   {
@@ -901,7 +894,7 @@ function PainPointsSection() {
             Vous vous reconnaissez dans ces situations ?
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Les directeurs de centres spécialisés nous racontent tous la même chose. Ce n'est pas un manque de compétence — c'est un manque d'outil adapté.
+            Les directeurs de centres spécialisés nous racontent tous la même chose. Ce n'est pas un manque de compétence c'est un manque d'outil adapté.
           </motion.p>
         </motion.div>
 
@@ -953,7 +946,7 @@ function PainPointsSection() {
 }
 
 // ─────────────────────────────────────────────
-// S4 — Solution bridge (dark bg)
+// S4 Solution bridge (dark bg)
 // ─────────────────────────────────────────────
 function SolutionSection() {
   const benefits = [
@@ -982,7 +975,7 @@ function SolutionSection() {
             <span className="opacity-60">Un seul tableau de bord.</span>
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-6 text-lg text-background/70">
-            Fini les outils éparpillés. Orio a été conçu de A à Z pour les centres spécialisés — avec les contraintes réelles des directeurs en tête.
+            Fini les outils éparpillés. Orio a été conçu de A à Z pour les centres spécialisés avec les contraintes réelles des directeurs en tête.
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {benefits.map((b) => (
@@ -1032,7 +1025,7 @@ function SolutionSection() {
 }
 
 // ─────────────────────────────────────────────
-// S5 — Modules
+// S5 Modules
 // ─────────────────────────────────────────────
 const modules = [
   {
@@ -1051,7 +1044,7 @@ const modules = [
     icon: ClipboardList,
     title: "Prospects",
     benefit: "Ne perdez plus aucune inscription",
-    text: "Quand une famille vous contacte, elle entre dans un pipeline visuel. Vous suivez chaque étape — de la première demande jusqu'à la signature — sans post-it ni tableur.",
+    text: "Quand une famille vous contacte, elle entre dans un pipeline visuel. Vous suivez chaque étape de la première demande jusqu'à la signature sans post-it ni tableur.",
   },
   {
     icon: Calendar,
@@ -1149,7 +1142,7 @@ function ModulesSection() {
 }
 
 // ─────────────────────────────────────────────
-// S6 — Social Proof
+// S6 Social Proof
 // ─────────────────────────────────────────────
 const testimonials = [
   {
@@ -1410,7 +1403,7 @@ function SocialProofSection() {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Track — translate by one card + gap per index (sliding window) */}
+          {/* Track translate by one card + gap per index (sliding window) */}
           <div ref={viewportRef} className="min-w-0 overflow-hidden">
             <motion.div
               className="flex"
@@ -1432,7 +1425,7 @@ function SocialProofSection() {
 
           {/* Controls */}
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Dots — one per visible "page" */}
+            {/* Dots one per visible "page" */}
             <div className="flex max-w-full flex-wrap items-center gap-2">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
@@ -1497,7 +1490,7 @@ function SocialProofSection() {
 }
 
 // ─────────────────────────────────────────────
-// S7 — Pricing
+// S7 Pricing
 // ─────────────────────────────────────────────
 type Plan = {
   id: string;
@@ -1541,8 +1534,107 @@ const pricingPlans: Plan[] = [
   },
 ];
 
+function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: boolean }) {
+  return (
+    <motion.div
+      variants={fadeUp}
+      whileHover={{ y: plan.popular ? -6 : -4 }}
+      transition={{ type: "spring", stiffness: 260 }}
+      className={cn(
+        "relative flex h-full min-h-0 flex-col border-2 transition-shadow rounded-none",
+        plan.popular
+          ? "z-10 border-foreground bg-foreground p-6 text-background shadow-[10px_10px_0_0_oklch(0_0_0/0.18)] sm:p-8"
+          : "border-foreground/25 bg-background p-5 text-foreground shadow-[6px_6px_0_0_oklch(0_0_0/0.06)] hover:border-foreground/40 sm:p-7",
+      )}
+    >
+      {plan.popular && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35, ease, delay: 0.15 }}
+          className="absolute right-0 top-0 z-20 border-b-2 border-l-2 border-foreground bg-background px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-foreground sm:px-4 sm:text-[10px] rounded-none"
+        >
+          ★ Populaire
+        </motion.div>
+      )}
+      <div className="flex items-center justify-between gap-2">
+        <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-background/60" : "text-muted-foreground")}>0{idx + 1} / 03</span>
+        <span className={cn("h-2 w-2 shrink-0 rounded-none", plan.popular ? "bg-background" : "bg-foreground")} />
+      </div>
+      <h3 className={cn("mt-4 text-2xl font-black sm:text-3xl", plan.popular && "sm:text-4xl")}>{plan.name}</h3>
+      <p className={cn("mt-2 text-sm", plan.popular ? "text-background/70" : "text-muted-foreground")}>{plan.blurb}</p>
+      <div className={cn("my-6 h-px w-full rounded-none", plan.popular ? "bg-background/25" : "bg-foreground/15")} />
+      <div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${plan.id}-${yearly}`}
+            initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -12, filter: "blur(4px)" }}
+            transition={{ duration: 0.3, ease }}
+          >
+            {plan.monthly == null ? (
+              <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">Sur mesure</div>
+            ) : (
+              <>
+                <div className="flex min-w-0 flex-wrap items-baseline gap-1">
+                  <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-5xl sm:text-6xl lg:text-7xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString("fr-MA") : plan.monthly?.toLocaleString("fr-MA")}</span>
+                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-background/60" : "text-muted-foreground")}>{yearly ? "/ an HT" : "/ mois HT"}</span>
+                </div>
+                {yearly && (
+                  <p className={cn("mt-2 text-xs", plan.popular ? "text-background/60" : "text-muted-foreground")}>
+                    Soit environ{" "}
+                    <span className={cn("font-semibold", plan.popular ? "text-background" : "text-foreground")}>{Math.round(plan.yearly! / 12)} / mois</span> ramené sur 12 mois
+                  </p>
+                )}
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <ul className="mt-8 flex-1 space-y-3">
+        {plan.features.map((f) => (
+          <motion.li key={f} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease }} className="flex items-start gap-3 text-sm">
+            <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none", plan.popular ? "bg-background text-foreground" : "bg-foreground text-background")}>
+              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+            </span>
+            <span className={plan.popular ? "text-background/90" : "text-foreground/80"}>{f}</span>
+          </motion.li>
+        ))}
+      </ul>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => scrollToId("contact")}
+        className={cn(
+          "mt-8 w-full py-4 text-sm font-black uppercase tracking-wider transition rounded-none",
+          plan.popular
+            ? "border-2 border-background bg-background text-foreground hover:bg-transparent hover:text-background"
+            : "border-2 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background",
+        )}
+      >
+        {plan.cta}
+      </motion.button>
+    </motion.div>
+  );
+}
+
 function PricingSection() {
   const [yearly, setYearly] = useState(true);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  useEffect(() => {
+    if (!carouselApi) return;
+    const onSelect = () => setCarouselIndex(carouselApi.selectedScrollSnap());
+    onSelect();
+    carouselApi.on("select", onSelect);
+    return () => {
+      carouselApi.off("select", onSelect);
+    };
+  }, [carouselApi]);
+
   return (
     <section id="tarifs" className="relative overflow-hidden py-24 sm:py-32">
       <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-60" />
@@ -1554,14 +1646,14 @@ function PricingSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-none">
             Tarifs
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
             Des formules claires et transparentes.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Montants indicatifs — l'offre finale est toujours ajustée après un court diagnostic de votre centre.
+            Montants indicatifs l'offre finale est toujours ajustée après un court diagnostic de votre centre.
           </motion.p>
         </motion.div>
 
@@ -1572,18 +1664,34 @@ function PricingSection() {
           transition={{ duration: 0.5, ease }}
           className="mt-12 flex flex-col items-center gap-4"
         >
-          <div className="relative inline-flex max-w-full items-center border-2 border-foreground bg-background p-1.5 shadow-[6px_6px_0_0_var(--foreground)]">
-            <motion.div
-              className="absolute inset-y-1.5 w-[calc(50%-6px)] bg-foreground"
-              animate={{ x: yearly ? "calc(100% + 0px)" : 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            />
-            <button onClick={() => setYearly(false)} className={cn("relative z-10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors sm:px-7 sm:text-sm", !yearly ? "text-background" : "text-foreground")}>
+          <div className="flex w-full max-w-md border-2 border-foreground shadow-[6px_6px_0_0_var(--foreground)] rounded-none">
+            <button
+              type="button"
+              onClick={() => setYearly(false)}
+              className={cn(
+                "min-h-[3rem] flex-1 px-3 py-3 text-xs font-black uppercase tracking-wider transition-colors sm:px-6 sm:text-sm rounded-none",
+                !yearly ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-muted/50",
+              )}
+            >
               Mensuel
             </button>
-            <button onClick={() => setYearly(true)} className={cn("relative z-10 flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors sm:gap-2 sm:px-7 sm:text-sm", yearly ? "text-background" : "text-foreground")}>
-              Annuel
-              <span className={cn("border px-1.5 py-0.5 text-[8px] font-black sm:text-[9px]", yearly ? "border-background/40 text-background" : "border-foreground/30 text-foreground")}>−2 MOIS</span>
+            <button
+              type="button"
+              onClick={() => setYearly(true)}
+              className={cn(
+                "flex min-h-[3rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 border-l-2 border-foreground px-3 py-2 text-xs font-black uppercase tracking-wider transition-colors sm:flex-row sm:gap-2 sm:px-6 sm:py-3 sm:text-sm rounded-none",
+                yearly ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-muted/50",
+              )}
+            >
+              <span>Annuel</span>
+              <span
+                className={cn(
+                  "border px-1.5 py-0.5 text-[8px] font-black leading-none sm:text-[9px] rounded-none",
+                  yearly ? "border-background/50 text-background" : "border-foreground/40 text-foreground",
+                )}
+              >
+                −2 MOIS
+              </span>
             </button>
           </div>
           <AnimatePresence mode="wait">
@@ -1593,97 +1701,43 @@ function PricingSection() {
           </AnimatePresence>
         </motion.div>
 
+        <div className="mt-16 w-full min-w-0 lg:hidden">
+          <Carousel setApi={setCarouselApi} opts={{ align: "start", loop: false }} className="w-full">
+            <CarouselContent className="-ml-3 sm:-ml-4">
+              {pricingPlans.map((plan, idx) => (
+                <CarouselItem key={plan.id} className="basis-[min(100%,22rem)] pl-3 sm:basis-[88%] sm:pl-4">
+                  <PricingCard plan={plan} idx={idx} yearly={yearly} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+          <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label="Choisir une formule">
+            {pricingPlans.map((plan, i) => (
+              <button
+                key={plan.id}
+                type="button"
+                role="tab"
+                aria-selected={carouselIndex === i}
+                aria-label={`${plan.name}, formule ${i + 1} sur ${pricingPlans.length}`}
+                onClick={() => carouselApi?.scrollTo(i)}
+                className={cn(
+                  "h-2 rounded-full transition-all duration-300",
+                  carouselIndex === i ? "w-8 bg-foreground" : "w-2 bg-foreground/25 hover:bg-foreground/40",
+                )}
+              />
+            ))}
+          </div>
+        </div>
+
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
           variants={{ show: { transition: { staggerChildren: 0.12 } } }}
-          className="mt-16 grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:items-stretch"
+          className="mt-16 hidden min-w-0 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid lg:grid-cols-3 lg:items-stretch"
         >
           {pricingPlans.map((plan, idx) => (
-            <motion.div
-              key={plan.id}
-              variants={fadeUp}
-              whileHover={{ y: plan.popular ? -12 : -6 }}
-              transition={{ type: "spring", stiffness: 260 }}
-              className={cn(
-                "relative flex flex-col border-2 transition-shadow",
-                plan.popular
-                  ? "z-10 border-foreground bg-foreground p-6 text-background shadow-[12px_12px_0_0_var(--foreground)] sm:p-9 lg:scale-[1.02]"
-                  : "border-foreground/15 bg-background p-5 text-foreground shadow-[6px_6px_0_0_oklch(0_0_0/0.08)] hover:shadow-[8px_8px_0_0_var(--foreground)] sm:p-7",
-              )}
-            >
-              {plan.popular && (
-                <motion.div
-                  initial={{ scale: 0, rotate: -12 }}
-                  whileInView={{ scale: 1, rotate: -6 }}
-                  viewport={{ once: true }}
-                  transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
-                  className="absolute right-2 top-2 z-20 border-2 border-foreground bg-background px-3 py-1 text-[9px] font-black uppercase tracking-widest text-foreground shadow-[4px_4px_0_0_var(--foreground)] sm:-right-4 sm:-top-5 sm:px-4 sm:py-1.5 sm:text-[10px]"
-                >
-                  ★ Populaire
-                </motion.div>
-              )}
-              <div className="flex items-center justify-between">
-                <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-background/60" : "text-muted-foreground")}>0{idx + 1} / 03</span>
-                <span className={cn("h-2 w-2", plan.popular ? "bg-background" : "bg-foreground")} />
-              </div>
-              <h3 className={cn("mt-4 text-2xl font-black sm:text-3xl", plan.popular && "sm:text-4xl")}>{plan.name}</h3>
-              <p className={cn("mt-2 text-sm", plan.popular ? "text-background/70" : "text-muted-foreground")}>{plan.blurb}</p>
-              <div className={cn("my-6 h-px", plan.popular ? "bg-background/20" : "bg-foreground/15")} />
-              <div>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${plan.id}-${yearly}`}
-                    initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -12, filter: "blur(4px)" }}
-                    transition={{ duration: 0.3, ease }}
-                  >
-                    {plan.monthly == null ? (
-                      <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">Sur mesure</div>
-                    ) : (
-                      <>
-                        <div className="flex min-w-0 flex-wrap items-baseline gap-1">
-                          <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-5xl sm:text-6xl lg:text-7xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString("fr-MA") : plan.monthly?.toLocaleString("fr-MA")}</span>
-                          <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-background/60" : "text-muted-foreground")}>{yearly ? "/ an HT" : "/ mois HT"}</span>
-                        </div>
-                        {yearly && (
-                          <p className={cn("mt-2 text-xs", plan.popular ? "text-background/60" : "text-muted-foreground")}>
-                            Soit environ{" "}
-                            <span className={cn("font-semibold", plan.popular ? "text-background" : "text-foreground")}>{Math.round(plan.yearly! / 12)} / mois</span>{" "}
-                            ramené sur 12 mois
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <ul className="mt-8 flex-1 space-y-3">
-                {plan.features.map((f) => (
-                  <motion.li key={f} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease }} className="flex items-start gap-3 text-sm">
-                    <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center", plan.popular ? "bg-background text-foreground" : "bg-foreground text-background")}>
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                    </span>
-                    <span className={plan.popular ? "text-background/90" : "text-foreground/80"}>{f}</span>
-                  </motion.li>
-                ))}
-              </ul>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => scrollToId("contact")}
-                className={cn(
-                  "mt-8 w-full py-4 text-sm font-black uppercase tracking-wider transition",
-                  plan.popular
-                    ? "bg-background text-foreground hover:bg-background/90"
-                    : "border-2 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background",
-                )}
-              >
-                {plan.cta}
-              </motion.button>
-            </motion.div>
+            <PricingCard key={plan.id} plan={plan} idx={idx} yearly={yearly} />
           ))}
         </motion.div>
       </div>
@@ -1692,14 +1746,14 @@ function PricingSection() {
 }
 
 // ─────────────────────────────────────────────
-// S8 — FAQ
+// S8 FAQ
 // ─────────────────────────────────────────────
 const faqItems = [
   { q: "Orio est-il adapté à mon type de centre ?", a: "Orio a été conçu pour les centres spécialisés qui accompagnent des enfants avec autisme, TDAH, troubles du langage ou difficultés d'apprentissage. Si vous gérez des familles, des paiements mensuels et une équipe pluridisciplinaire, Orio est fait pour vous." },
   { q: "Combien de temps prend la mise en place ?", a: "La plupart des centres sont opérationnels en moins de 48h. Nous vous accompagnons à chaque étape : import de vos données existantes, formation de votre équipe et premier paramétrage inclus." },
   { q: "Mes données sont-elles en sécurité ?", a: "Absolument. Toutes les données sont chiffrées, hébergées sur des serveurs sécurisés, et accessibles uniquement par les personnes autorisées de votre centre. Nous respectons les bonnes pratiques RGPD adaptées au contexte marocain." },
-  { q: "Puis-je tester avant de m'engager ?", a: "Oui. Explorez la démo interactive directement sur cette page — aucun compte requis. Vous pouvez aussi demander une démo personnalisée avec vos propres cas d'usage via le formulaire ci-dessous." },
-  { q: "Est-ce que ça fonctionne sur mobile ?", a: "Orio est entièrement responsive. Votre équipe peut accéder au tableau de bord depuis n'importe quel appareil — ordinateur, tablette ou smartphone — sans installer d'application." },
+  { q: "Puis-je tester avant de m'engager ?", a: "Oui. Explorez la démo interactive directement sur cette page aucun compte requis. Vous pouvez aussi demander une démo personnalisée avec vos propres cas d'usage via le formulaire ci-dessous." },
+  { q: "Est-ce que ça fonctionne sur mobile ?", a: "Orio est entièrement responsive. Votre équipe peut accéder au tableau de bord depuis n'importe quel appareil ordinateur, tablette ou smartphone sans installer d'application." },
 ];
 
 function FaqSection() {
@@ -1745,17 +1799,18 @@ function FaqSection() {
 }
 
 // ─────────────────────────────────────────────
-// S9 — Contact CTA
+// S9 Contact CTA
 // ─────────────────────────────────────────────
 function ContactSection() {
   const [sent, setSent] = useState(false);
+  const reduceMotion = useReducedMotion();
   return (
-    <section id="contact" className="relative overflow-hidden py-24 sm:py-32">
+    <section id="contact" className="relative overflow-x-hidden py-24 pb-[max(6rem,calc(6rem+env(safe-area-inset-bottom)))] sm:py-32 sm:pb-[max(8rem,calc(8rem+env(safe-area-inset-bottom)))]">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-20 right-1/4 h-80 w-80 bg-primary/15 blur-3xl animate-blob" />
         <div className="absolute bottom-0 left-1/4 h-80 w-80 bg-accent/20 blur-3xl animate-blob" style={{ animationDelay: "-6s" }} />
       </div>
-      <div className="mx-auto grid min-w-0 max-w-7xl gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+      <div className="mx-auto grid min-w-0 max-w-7xl gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-2 lg:items-start lg:gap-16 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1773,12 +1828,29 @@ function ContactSection() {
             Laissez vos coordonnées : nous vous proposons un créneau pour présenter Orio et répondre à vos questions spécifiques.
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
-            {[{ i: Phone, t: "00 00 00 00 00" }, { i: Mail, t: "contact@orio.ma" }, { i: MapPin, t: "Maroc — support local" }].map((row) => (
-              <li key={row.t} className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center bg-[var(--gradient-hero)] text-primary-foreground shadow-[var(--shadow-soft)]">
-                  <row.i className="h-5 w-5" />
+            {(
+              [
+                { Icon: Phone, text: "07 77 77 74 28 Maroc", href: "tel:+212777777428" },
+                { Icon: Globe, text: "+1 613 706 9011 États-Unis / Canada", href: "tel:+16137069011" },
+                { Icon: Mail, text: "contact@eiden-group.com", href: "mailto:contact@eiden-group.com" },
+                {
+                  Icon: MapPin,
+                  text: "Agadir Bay, Technopole 1 Bloc B, Agadir 80000",
+                  href: "https://maps.app.goo.gl/e1PTQQJUb3kh7J48A",
+                },
+              ] as const
+            ).map(({ Icon, text, href }) => (
+              <li key={text} className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center" style={{color: "#122620"}}>
+                  <Icon className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
                 </span>
-                <span className="min-w-0 break-words text-base font-medium text-foreground">{row.t}</span>
+                <a
+                  href={href}
+                  {...(href.startsWith("http") ? ({ target: "_blank", rel: "noopener noreferrer" } as const) : {})}
+                  className="min-w-0 break-words text-base font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:text-primary hover:decoration-primary"
+                >
+                  {text}
+                </a>
               </li>
             ))}
           </motion.ul>
@@ -1798,12 +1870,12 @@ function ContactSection() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
           onSubmit={(e) => { e.preventDefault(); setSent(true); }}
-          className="min-w-0 border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-10"
+          className="relative z-10 flex min-w-0 flex-col overflow-visible border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-10"
         >
           <AnimatePresence mode="wait">
             {sent ? (
               <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
-                <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center bg-[var(--gradient-hero)] text-primary-foreground shadow-[var(--shadow-elegant)]">
+                <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center bg-[var(--gradient-hero)] text-background shadow-[var(--shadow-elegant)]">
                   <Check className="h-8 w-8" />
                 </motion.div>
                 <h3 className="mt-6 text-2xl font-black">Demande envoyée !</h3>
@@ -1813,7 +1885,7 @@ function ContactSection() {
                 </button>
               </motion.div>
             ) : (
-              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-5">
+              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-5">
                 <div className="grid gap-5 sm:grid-cols-2">
                   {[{ l: "Nom complet", t: "text", p: "Mohammed Alami", id: "name" }, { l: "Nom du centre", t: "text", p: "Centre Lumière", id: "center" }].map((f) => (
                     <div key={f.id}>
@@ -1822,23 +1894,26 @@ function ContactSection() {
                     </div>
                   ))}
                 </div>
-                {[{ l: "Téléphone", t: "tel", p: "+212 6 00 00 00 00", id: "phone" }, { l: "Email professionnel", t: "email", p: "vous@centre.ma", id: "email" }].map((f) => (
+                {[{ l: "Téléphone", t: "tel", p: "07 77 77 74 28", id: "phone" }, { l: "Email professionnel", t: "email", p: "vous@entreprise.com", id: "email" }].map((f) => (
                   <div key={f.id}>
                     <label htmlFor={f.id} className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{f.l} *</label>
                     <input id={f.id} type={f.t} placeholder={f.p} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
                   </div>
                 ))}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   type="submit"
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 bg-[var(--gradient-hero)] py-4 text-sm font-black text-primary-foreground shadow-[var(--shadow-elegant)] transition hover:brightness-110"
+                  className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[var(--shadow-elegant)] transition hover:bg-primary sm:py-4"
                 >
-                  Demander ma démo gratuite
-                  <Send className="h-4 w-4" />
+                  {!reduceMotion && (
+                    <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
+                  )}
+                  <span className="relative z-[1]">Demander ma démo gratuite</span>
+                  <Send className="relative z-[1] h-4 w-4 transition group-hover:translate-x-0.5" />
                 </motion.button>
-                <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-                  <Lock className="h-3.5 w-3.5" />
+                <p className="flex shrink-0 items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+                  <Lock className="h-3.5 w-3.5 shrink-0" />
                   Vos données sont sécurisées et ne seront jamais partagées.
                 </p>
               </motion.div>
@@ -1882,8 +1957,14 @@ function Footer() {
           <div>
             <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background/40">Contact</p>
             <ul className="space-y-2 text-sm text-background/70">
-              <li>contact@orio.ma</li>
-              <li>Maroc — Support local</li>
+              <li>
+                <a href="mailto:contact@eiden-group.com" className="transition hover:text-background">
+                  contact@eiden-group.com
+                </a>
+              </li>
+              <li className="text-balance">Agadir Bay, Technopole 1 Bloc B, Agadir 80000</li>
+              <li>07 77 77 74 28 (Maroc)</li>
+              <li>+1 613 706 9011 (US / Canada)</li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -1917,8 +1998,8 @@ function LandingPage() {
       <Hero />
       <PainPointsSection />
       <SolutionSection />
-      <DemoSection />
       <ModulesSection />
+      <DemoSection />
       <SocialProofSection />
       <PricingSection />
       <FaqSection />

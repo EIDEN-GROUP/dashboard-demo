@@ -50,15 +50,15 @@ type Client = {
 };
 
 const inputClass =
-  "rounded-none border-zinc-300 bg-white shadow-none focus-visible:border-zinc-950 focus-visible:ring-0";
+  "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
 
 const selectTriggerClass =
-  "h-10 rounded-none border-zinc-300 bg-white shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-zinc-400";
+  "h-10 rounded-none border-border bg-card shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/70";
 
-const labelClass = "text-[10px] font-medium uppercase tracking-wider text-zinc-500";
+const labelClass = "text-[10px] font-medium uppercase tracking-wider text-muted-foreground";
 
 const dialogSurface =
-  "gap-0 overflow-hidden border border-zinc-200 bg-white p-0 shadow-none sm:rounded-none rounded-none max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-zinc-300 [&>button]:bg-white [&>button]:opacity-100 [&>button]:hover:bg-zinc-100 [&>button]:focus:ring-0";
+  "gap-0 overflow-hidden border border-border bg-card p-0 shadow-none sm:rounded-none rounded-none max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0";
 
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
@@ -77,8 +77,8 @@ function Badge({ children, variant }: { children: ReactNode; variant: "neutral" 
       className={cn(
         "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         variant === "dark"
-          ? "border-zinc-800 bg-zinc-900 text-white"
-          : "border-zinc-300 bg-zinc-50 text-zinc-800",
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-muted text-foreground/90",
       )}
     >
       <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
@@ -208,29 +208,29 @@ function CrmParentsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">CRM — Gestion</p>
-          <h1 className="mt-1 font-display text-3xl tracking-tight text-zinc-950 md:text-4xl">
-            Mes <span className="italic text-zinc-600">clients</span>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">CRM — Gestion</p>
+          <h1 className="mt-1 font-display text-3xl tracking-tight text-foreground md:text-4xl">
+            Mes <span className="italic text-muted-foreground">clients</span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-zinc-600">
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             Gérez vos clients et leur progression dans le pipeline de vente
           </p>
         </div>
         <button
           type="button"
           onClick={() => setAddOpen(true)}
-          className="inline-flex items-center gap-2 border border-zinc-950 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-900"
+          className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
           Ajouter un client
         </button>
       </header>
 
-      <section className="border border-zinc-200 bg-white p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Filtres & recherche</p>
+      <section className="border border-border bg-card p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Filtres & recherche</p>
         <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-end">
           <div className="relative min-w-0">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -244,7 +244,7 @@ function CrmParentsPage() {
               <SelectTrigger className={selectTriggerClass} aria-label="Filtrer par statut">
                 <SelectValue placeholder="Tous les statuts" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-zinc-200">
+              <SelectContent className="rounded-none border-border">
                 <SelectItem value="tous">Tous les statuts</SelectItem>
                 <SelectItem value="nouveau">Stade : Nouveau</SelectItem>
                 <SelectItem value="converti">Stade : Converti</SelectItem>
@@ -253,31 +253,31 @@ function CrmParentsPage() {
               </SelectContent>
             </Select>
           </div>
-          <label className="flex cursor-pointer items-center gap-2 border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-sm text-zinc-800">
+          <label className="flex cursor-pointer items-center gap-2 border border-border bg-muted px-3 py-2.5 text-sm text-foreground/90">
             <Checkbox
               checked={overdueOnly}
               onCheckedChange={(v) => setOverdueOnly(v === true)}
-              className="rounded-none border-zinc-400 data-[state=checked]:bg-zinc-900 data-[state=checked]:text-white data-[state=checked]:border-zinc-900"
+              className="rounded-none border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary"
             />
             <span className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 shrink-0 bg-zinc-900" aria-hidden />
+              <span className="h-1.5 w-1.5 shrink-0 bg-primary" aria-hidden />
               En retard
             </span>
           </label>
         </div>
-        <p className="mt-3 text-xs text-zinc-500">
+        <p className="mt-3 text-xs text-muted-foreground">
           {filtered.length} client{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
         </p>
       </section>
 
-      <section className="border border-zinc-200 bg-white">
-        <div className="border-b border-zinc-200 px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">— Liste des clients</p>
+      <section className="border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Liste des clients</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[840px] text-left text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+              <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">Parent</th>
                 <th className="px-4 py-3">Enfant</th>
                 <th className="px-4 py-3">Contact</th>
@@ -288,19 +288,19 @@ function CrmParentsPage() {
                 <th className="px-4 py-3 w-24">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200">
+            <tbody className="divide-y divide-border">
               {filtered.map((c) => (
-                <tr key={c.id} className="hover:bg-zinc-50/80">
-                  <td className="px-4 py-3 font-medium text-zinc-950">{c.parent}</td>
-                  <td className="px-4 py-3 text-zinc-800">
+                <tr key={c.id} className="hover:bg-muted/80">
+                  <td className="px-4 py-3 font-medium text-foreground">{c.parent}</td>
+                  <td className="px-4 py-3 text-foreground/90">
                     <span className="block">{c.child}</span>
                     {c.childSubtitle ? (
-                      <span className="mt-0.5 block text-xs text-zinc-500">{c.childSubtitle}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">{c.childSubtitle}</span>
                     ) : null}
                   </td>
-                  <td className="px-4 py-3 text-zinc-700">
+                  <td className="px-4 py-3 text-muted-foreground">
                     <span className="block">{c.email}</span>
-                    <span className="mt-0.5 block text-xs text-zinc-500">{c.phone}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{c.phone}</span>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={c.stade === "converti" ? "dark" : "neutral"}>
@@ -312,14 +312,14 @@ function CrmParentsPage() {
                       {c.payment === "impaye" ? "Impayé" : "Payé"}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-zinc-800">{c.mensuel} MAD</td>
-                  <td className="px-4 py-3 tabular-nums text-zinc-800">{c.dette} MAD</td>
+                  <td className="px-4 py-3 tabular-nums text-foreground/90">{c.mensuel} MAD</td>
+                  <td className="px-4 py-3 tabular-nums text-foreground/90">{c.dette} MAD</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
                       <button
                         type="button"
                         onClick={() => setDetailId(c.id)}
-                        className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                        className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
                         aria-label={`Voir ${c.child}`}
                       >
                         <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
@@ -327,7 +327,7 @@ function CrmParentsPage() {
                       <button
                         type="button"
                         onClick={() => setEditId(c.id)}
-                        className="grid h-9 w-9 place-items-center border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100"
+                        className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
                         aria-label={`Modifier ${c.child}`}
                       >
                         <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
@@ -340,7 +340,7 @@ function CrmParentsPage() {
           </table>
         </div>
         {filtered.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-zinc-500">Aucun client ne correspond aux filtres.</p>
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun client ne correspond aux filtres.</p>
         ) : null}
       </section>
 
@@ -397,10 +397,10 @@ function AddClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[640px]")}>
         <DialogDescription className="sr-only">Créer un nouveau client</DialogDescription>
-        <div className="border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">— Ajouter un client</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-zinc-950">
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— Ajouter un client</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
               Nouveau client CRM
             </DialogTitle>
           </div>
@@ -451,17 +451,17 @@ function AddClientDialog({
                 <Input id="nc-niveau" name="niveau" className={inputClass} placeholder="ex. CM2" />
               </Field>
             </div>
-            <div className="mt-6 flex justify-end gap-3 border-t border-zinc-200 pt-5">
+            <div className="mt-6 flex justify-end gap-3 border-t border-border pt-5">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="border border-zinc-950 bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-900"
+                className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 Ajouter le client
               </button>
@@ -488,56 +488,56 @@ function DetailClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={dialogSurface}>
         <DialogDescription className="sr-only">Détails du client {client.child}</DialogDescription>
-        <div className="border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">CRM</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-zinc-950">
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">CRM</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
               Détails du client
             </DialogTitle>
           </div>
           <div className="grid max-h-[60vh] grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto px-6 py-5 sm:grid-cols-2">
             <Field id="d-eleve" label="Nom d'élève">
-              <p className="text-sm font-semibold text-zinc-950">{client.child}</p>
+              <p className="text-sm font-semibold text-foreground">{client.child}</p>
             </Field>
             <Field id="d-dob" label="Date de naissance">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.dob)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.dob)}</p>
             </Field>
             <Field id="d-pere" label="Nom du père">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.pere)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.pere)}</p>
             </Field>
             <Field id="d-mere" label="Nom de mère">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.mere)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.mere)}</p>
             </Field>
             <Field id="d-cin" label="CIN ou passeport">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.cin)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.cin)}</p>
             </Field>
             <Field id="d-email1" label="Email 1">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.email)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.email)}</p>
             </Field>
             <Field id="d-email2" label="Email 2">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.email2)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.email2)}</p>
             </Field>
             <Field id="d-tel1" label="Téléphone 1">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.phone)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.phone)}</p>
             </Field>
             <Field id="d-tel2" label="Téléphone 2">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.tel2)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.tel2)}</p>
             </Field>
             <Field id="d-niveau" label="Niveau">
-              <p className="text-sm font-semibold text-zinc-950">{dash(client.niveau)}</p>
+              <p className="text-sm font-semibold text-foreground">{dash(client.niveau)}</p>
             </Field>
             <Field id="d-frais" label="Frais mensuels">
-              <p className="text-sm font-semibold text-zinc-950">{client.mensuel} MAD</p>
+              <p className="text-sm font-semibold text-foreground">{client.mensuel} MAD</p>
             </Field>
           </div>
-          <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-zinc-200 px-6 py-4">
+          <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4">
             <button
               type="button"
               onClick={() => {
                 onPayment();
                 onOpenChange(false);
               }}
-              className="inline-flex items-center gap-2 border border-zinc-950 bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-900"
+              className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
               Enregistrer un paiement
@@ -545,7 +545,7 @@ function DetailClientDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+              className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
               Fermer
             </button>
@@ -569,10 +569,10 @@ function PaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[480px]")}>
         <DialogDescription className="sr-only">Enregistrer un paiement pour {clientLabel}</DialogDescription>
-        <div className="border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">— CRM</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-zinc-950">
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— CRM</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
               Enregistrer un paiement
             </DialogTitle>
           </div>
@@ -594,7 +594,7 @@ function PaymentDialog({
                 <SelectTrigger id="pay-mode" className={selectTriggerClass}>
                   <SelectValue placeholder="Mode" />
                 </SelectTrigger>
-                <SelectContent className="rounded-none border-zinc-200">
+                <SelectContent className="rounded-none border-border">
                   <SelectItem value="especes">Espèces</SelectItem>
                   <SelectItem value="virement">Virement</SelectItem>
                   <SelectItem value="carte">Carte</SelectItem>
@@ -602,17 +602,17 @@ function PaymentDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <div className="flex flex-wrap justify-end gap-3 border-t border-zinc-200 pt-5">
+            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="border border-zinc-950 bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-900"
+                className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 Confirmer le paiement
               </button>
@@ -645,10 +645,10 @@ function EditClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
         <DialogDescription className="sr-only">Modifier le client {client.child}</DialogDescription>
-        <div className="border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">— CRM</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-zinc-950">
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— CRM</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
               Modifier le client
             </DialogTitle>
           </div>
@@ -686,7 +686,7 @@ function EditClientDialog({
                   <SelectTrigger id="e-stade" className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-none border-zinc-200">
+                  <SelectContent className="rounded-none border-border">
                     <SelectItem value="nouveau">Nouveau</SelectItem>
                     <SelectItem value="converti">Converti</SelectItem>
                   </SelectContent>
@@ -714,17 +714,17 @@ function EditClientDialog({
                 />
               </Field>
             </div>
-            <div className="flex flex-wrap justify-end gap-3 border-t border-zinc-200 pt-5">
+            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
                 Annuler
               </button>
               <button
                 type="submit"
-                className="border border-zinc-950 bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-900"
+                className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 Enregistrer les modifications
               </button>

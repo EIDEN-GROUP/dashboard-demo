@@ -191,24 +191,24 @@ const TOTAL_IMPAYE = FAMILLES_IMPAYEES.length;
 const TOTAL_FAMILLES_RAPPORTS = TOTAL_PAYE + TOTAL_IMPAYE;
 
 const chartTooltip = {
-  background: "#ffffff",
-  border: "1px solid #d4d4d8",
+  background: "var(--card)",
+  border: "1px solid var(--border)",
   borderRadius: 0,
-  color: "#09090b",
+  color: "var(--foreground)",
 } as const;
 
 /** Même enveloppe que `NouveauClientModal` (dashboard.index) — min-w-0 pour scroll horizontal des tableaux sur mobile */
 const listeDialogContent = cn(
-  "grid min-w-0 grid-cols-1 gap-0 overflow-hidden border border-zinc-200 bg-white p-0 shadow-none sm:rounded-none rounded-none",
+  "grid min-w-0 grid-cols-1 gap-0 overflow-hidden border border-border bg-card p-0 shadow-none sm:rounded-none rounded-none",
   "max-h-[min(90vh,860px)] w-[min(100vw-1.5rem,640px)] max-w-[min(100vw-1.5rem,640px)] translate-y-[-50%] sm:max-w-[640px]",
-  "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-zinc-300 [&>button]:bg-white [&>button]:opacity-100 [&>button]:hover:bg-zinc-100 [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0",
+  "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0",
 );
 
 const cardClass =
-  "relative block w-full overflow-hidden border border-zinc-200 bg-white p-5 text-left outline-none transition-colors hover:border-zinc-300 hover:bg-zinc-50/60 focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 border-t-4";
+  "relative block w-full overflow-hidden border border-border bg-card p-5 text-left outline-none transition-colors hover:border-border hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border-t-4";
 
 const listeSearchInputClass =
-  "h-10 rounded-none border-zinc-300 bg-white shadow-none focus-visible:border-zinc-950 focus-visible:ring-0";
+  "h-10 rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
 
 function ListeFamillesModal({
   open,
@@ -245,13 +245,13 @@ function ListeFamillesModal({
         <DialogDescription className="sr-only min-w-0">
           Liste des familles pour le statut de paiement sélectionné.
         </DialogDescription>
-        <div className="min-w-0 max-w-full border-t-4 border-t-zinc-900">
-          <div className="border-b border-zinc-200 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">{eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-zinc-950">
+        <div className="min-w-0 max-w-full border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               {title}
             </DialogTitle>
-            <p className="mt-1 text-xs text-zinc-600">
+            <p className="mt-1 text-xs text-muted-foreground">
               {query.trim() ? (
                 <>
                   {filtered.length} résultat{filtered.length !== 1 ? "s" : ""} sur {rows.length} — démo
@@ -263,13 +263,13 @@ function ListeFamillesModal({
               )}
             </p>
           </div>
-          <div className="border-b border-zinc-200 px-6 py-3">
+          <div className="border-b border-border px-6 py-3">
             <label htmlFor={searchFieldId} className="sr-only">
               Rechercher dans la liste
             </label>
             <div className="relative min-w-0">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
                 aria-hidden
               />
               <Input
@@ -283,9 +283,9 @@ function ListeFamillesModal({
               />
             </div>
           </div>
-          <div className="max-h-[calc(90vh-15.5rem)] min-w-0 w-full max-w-full overflow-x-auto overflow-y-auto scroll-touch border-b border-zinc-200">
+          <div className="max-h-[calc(90vh-15.5rem)] min-w-0 w-full max-w-full overflow-x-auto overflow-y-auto scroll-touch border-b border-border">
             <table className="w-full min-w-[480px] text-left text-sm">
-              <thead className="sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+              <thead className="sticky top-0 z-10 border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Parent</th>
                   <th className="px-4 py-3">Enfant</th>
@@ -293,23 +293,23 @@ function ListeFamillesModal({
                   <th className="px-4 py-3">Situation</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200">
+              <tbody className="divide-y divide-border">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-zinc-500">
+                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
                       Aucune famille ne correspond à votre recherche.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((row) => (
-                    <tr key={row.id} className="hover:bg-zinc-50/80">
-                      <td className="px-4 py-3 font-medium text-zinc-950">{row.parent}</td>
-                      <td className="px-4 py-3 text-zinc-800">{row.child}</td>
-                      <td className="px-4 py-3 text-zinc-700">
+                    <tr key={row.id} className="hover:bg-muted/80">
+                      <td className="px-4 py-3 font-medium text-foreground">{row.parent}</td>
+                      <td className="px-4 py-3 text-foreground/90">{row.child}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
                         <span className="block">{row.email}</span>
-                        <span className="mt-0.5 block text-xs text-zinc-500">{row.phone}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{row.phone}</span>
                       </td>
-                      <td className="max-w-[11rem] px-4 py-3 text-xs leading-snug text-zinc-600">{row.remarque}</td>
+                      <td className="max-w-[11rem] px-4 py-3 text-xs leading-snug text-muted-foreground">{row.remarque}</td>
                     </tr>
                   ))
                 )}
@@ -343,13 +343,13 @@ function RapportsPage() {
       />
 
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">Analyse — CRM</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">Analyse — CRM</p>
         <div>
-          <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-zinc-950">
+          <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
             <span className="font-semibold">Rapports</span>{" "}
-            <span className="font-normal italic text-zinc-500">et indicateurs</span>
+            <span className="font-normal italic text-muted-foreground">et indicateurs</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Synthèse des inscriptions et de l&apos;activité commerciale (données de démonstration).
           </p>
         </div>
@@ -359,72 +359,72 @@ function RapportsPage() {
       <div
           className={cn(
             cardClass,
-            "border-t-zinc-900 sm:col-span-2 xl:col-span-1",
-            "cursor-default hover:border-zinc-200 hover:bg-white",
+            "border-t-primary sm:col-span-2 xl:col-span-1",
+            "cursor-default hover:border-border hover:bg-card",
           )}
         >
-          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">03 — Synthèse</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">03 — Synthèse</p>
           <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Payé</p>
-              <p className="font-display text-2xl font-semibold tracking-tight text-zinc-950 tabular-nums">{TOTAL_PAYE}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Payé</p>
+              <p className="font-display text-2xl font-semibold tracking-tight text-foreground tabular-nums">{TOTAL_PAYE}</p>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Impayé</p>
-              <p className="font-display text-2xl font-semibold tracking-tight text-zinc-950 tabular-nums">{TOTAL_IMPAYE}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Impayé</p>
+              <p className="font-display text-2xl font-semibold tracking-tight text-foreground tabular-nums">{TOTAL_IMPAYE}</p>
             </div>
-            <div className="min-w-[6rem] border-l border-zinc-200 pl-6">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Total familles</p>
-              <p className="font-display text-3xl font-semibold tracking-tight text-zinc-950 tabular-nums">{TOTAL_FAMILLES_RAPPORTS}</p>
+            <div className="min-w-[6rem] border-l border-border pl-6">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total familles</p>
+              <p className="font-display text-3xl font-semibold tracking-tight text-foreground tabular-nums">{TOTAL_FAMILLES_RAPPORTS}</p>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-3 border-t border-zinc-100 pt-3">
-            <p className="text-xs text-zinc-600">Somme des familles suivies dans ces deux statuts (démo).</p>
-            <span className="grid h-10 w-10 shrink-0 place-items-center border border-zinc-300 bg-zinc-50 text-zinc-800" aria-hidden>
+          <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+            <p className="text-xs text-muted-foreground">Somme des familles suivies dans ces deux statuts (démo).</p>
+            <span className="grid h-10 w-10 shrink-0 place-items-center border border-border bg-muted text-foreground/90" aria-hidden>
               <Users className="h-5 w-5" />
             </span>
           </div>
         </div>
 
-        <button type="button" onClick={() => setModal("paye")} className={cn(cardClass, "border-t-zinc-600")}>
-          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-zinc-500">01 — Payé</p>
+        <button type="button" onClick={() => setModal("paye")} className={cn(cardClass, "border-t-chart-4")}>
+          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">01 — Payé</p>
           <div className="mt-3 flex items-start justify-between gap-3">
-            <p className="font-display text-3xl font-semibold tracking-tight text-zinc-950">{TOTAL_PAYE}</p>
-            <span className="grid h-10 w-10 shrink-0 place-items-center border border-zinc-300 bg-zinc-100 text-zinc-800">
+            <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_PAYE}</p>
+            <span className="grid h-10 w-10 shrink-0 place-items-center border border-border bg-muted text-foreground/90">
               <CheckCircle2 className="h-5 w-5" aria-hidden />
             </span>
           </div>
-          <p className="mt-1 text-xs text-zinc-600">Familles avec paiement à jour (mois en cours)</p>
+          <p className="mt-1 text-xs text-muted-foreground">Familles avec paiement à jour (mois en cours)</p>
         </button>
 
-        <button type="button" onClick={() => setModal("impaye")} className={cn(cardClass, "border-t-zinc-800")}>
-          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-zinc-500">02 — Impayé</p>
+        <button type="button" onClick={() => setModal("impaye")} className={cn(cardClass, "border-t-chart-3")}>
+          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">02 — Impayé</p>
           <div className="mt-3 flex items-start justify-between gap-3">
-            <p className="font-display text-3xl font-semibold tracking-tight text-zinc-950">{TOTAL_IMPAYE}</p>
-            <span className="grid h-10 w-10 shrink-0 place-items-center border border-zinc-400 bg-zinc-200 text-zinc-900">
+            <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_IMPAYE}</p>
+            <span className="grid h-10 w-10 shrink-0 place-items-center border border-input bg-muted text-foreground">
               <XCircle className="h-5 w-5" aria-hidden />
             </span>
           </div>
-          <p className="mt-1 text-xs text-zinc-600">Sans règlement ou avec dette ouverte</p>
+          <p className="mt-1 text-xs text-muted-foreground">Sans règlement ou avec dette ouverte</p>
         </button>
 
         
       </div>
 
-      <div className="border border-zinc-200 bg-white p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Graphique</p>
-        <h2 className="mt-1 font-display text-xl text-zinc-950">
-          Inscriptions <span className="font-normal italic text-zinc-500">par mois</span>
+      <div className="border border-border bg-card p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Graphique</p>
+        <h2 className="mt-1 font-display text-xl text-foreground">
+          Inscriptions <span className="font-normal italic text-muted-foreground">par mois</span>
         </h2>
-        <p className="mt-1 text-xs text-zinc-600">Volume mensuel sur la période affichée (démo).</p>
+        <p className="mt-1 text-xs text-muted-foreground">Volume mensuel sur la période affichée (démo).</p>
         <div className="mt-4 h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
-              <XAxis dataKey="m" stroke="#52525b" fontSize={12} />
-              <YAxis stroke="#52525b" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="m" stroke="var(--muted-foreground)" fontSize={12} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} />
               <Tooltip contentStyle={chartTooltip} />
-              <Bar dataKey="v" fill="#18181b" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="v" fill="var(--primary)" radius={[0, 0, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

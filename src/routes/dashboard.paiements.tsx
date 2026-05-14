@@ -31,10 +31,10 @@ type PaymentRow = {
 };
 
 const inputClass =
-  "rounded-none border-zinc-300 bg-white shadow-none focus-visible:border-zinc-950 focus-visible:ring-0";
+  "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
 
 const selectTriggerClass =
-  "h-10 rounded-none border-zinc-300 bg-white shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-zinc-400";
+  "h-10 rounded-none border-border bg-card shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/70";
 
 const rowsSeed: PaymentRow[] = [
   {
@@ -109,27 +109,27 @@ function CrmPaiementsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">CRM — Paiements</p>
-          <h1 className="mt-1 font-display text-3xl tracking-tight text-zinc-950 md:text-4xl">
-            Historique des <span className="italic text-zinc-600">paiements</span>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">CRM — Paiements</p>
+          <h1 className="mt-1 font-display text-3xl tracking-tight text-foreground md:text-4xl">
+            Historique des <span className="italic text-muted-foreground">paiements</span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-zinc-600">Historique et gestion des paiements parents</p>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">Historique et gestion des paiements parents</p>
         </div>
         <button
           type="button"
           onClick={() => exportCsv(filtered)}
-          className="inline-flex items-center gap-2 border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+          className="inline-flex items-center gap-2 border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
         >
           <Download className="h-4 w-4" />
           Exporter
         </button>
       </header>
 
-      <section className="border border-zinc-200 bg-white p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Filtres et recherche</p>
+      <section className="border border-border bg-card p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres et recherche</p>
         <div className="mt-4 space-y-4">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -143,7 +143,7 @@ function CrmPaiementsPage() {
               <SelectTrigger className={selectTriggerClass} aria-label="Mode de paiement">
                 <SelectValue placeholder="Tous les modes" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-zinc-200">
+              <SelectContent className="rounded-none border-border">
                 <SelectItem value="tous">Tous les modes</SelectItem>
                 <SelectItem value="espèces">Espèces</SelectItem>
                 <SelectItem value="virement">Virement</SelectItem>
@@ -155,7 +155,7 @@ function CrmPaiementsPage() {
               <SelectTrigger className={selectTriggerClass} aria-label="Facture">
                 <SelectValue placeholder="Tous les factures" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-zinc-200">
+              <SelectContent className="rounded-none border-border">
                 <SelectItem value="tous">Tous les factures</SelectItem>
                 <SelectItem value="non_envoye">Non envoyé</SelectItem>
                 <SelectItem value="envoye">Envoyé</SelectItem>
@@ -165,11 +165,11 @@ function CrmPaiementsPage() {
         </div>
       </section>
 
-      <section className="border border-zinc-200 bg-white">
+      <section className="border border-border bg-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+              <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">Parent</th>
                 <th className="px-4 py-3">Enfant</th>
                 <th className="px-4 py-3">Montant</th>
@@ -180,28 +180,28 @@ function CrmPaiementsPage() {
                 <th className="px-4 py-3">Facture</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200">
+            <tbody className="divide-y divide-border">
               {filtered.map((r) => (
-                <tr key={r.id} className="hover:bg-zinc-50/80">
-                  <td className="px-4 py-3 font-medium text-zinc-950">{r.parent}</td>
-                  <td className="px-4 py-3 text-zinc-800">{r.enfant}</td>
-                  <td className="px-4 py-3 font-semibold tabular-nums text-zinc-950">{r.montant} MAD</td>
-                  <td className="px-4 py-3 tabular-nums text-zinc-800">{r.date}</td>
+                <tr key={r.id} className="hover:bg-muted/80">
+                  <td className="px-4 py-3 font-medium text-foreground">{r.parent}</td>
+                  <td className="px-4 py-3 text-foreground/90">{r.enfant}</td>
+                  <td className="px-4 py-3 font-semibold tabular-nums text-foreground">{r.montant} MAD</td>
+                  <td className="px-4 py-3 tabular-nums text-foreground/90">{r.date}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1 border border-zinc-800 bg-zinc-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                      <span className="h-1 w-1 shrink-0 bg-white" aria-hidden />
+                    <span className="inline-flex items-center gap-1 border border-primary bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                      <span className="h-1 w-1 shrink-0 bg-card" aria-hidden />
                       {r.mode}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-800">{r.periode}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-800">{r.recu}</td>
+                  <td className="px-4 py-3 text-foreground/90">{r.periode}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-foreground/90">{r.recu}</td>
                   <td className="px-4 py-3">
                     <span
                       className={cn(
                         "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                         r.facture === "non_envoye"
-                          ? "border-zinc-300 bg-zinc-50 text-zinc-800"
-                          : "border-zinc-800 bg-zinc-200 text-zinc-900",
+                          ? "border-border bg-muted text-foreground/90"
+                          : "border-primary bg-muted text-foreground",
                       )}
                     >
                       <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
@@ -214,7 +214,7 @@ function CrmPaiementsPage() {
           </table>
         </div>
         {filtered.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-zinc-500">Aucun paiement ne correspond aux filtres.</p>
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun paiement ne correspond aux filtres.</p>
         ) : null}
       </section>
     </div>
