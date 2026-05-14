@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, CheckCircle2, Plus, Search, XCircle } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Plus, Search, Users, XCircle } from "lucide-react";
 import { CartesianGrid, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +13,7 @@ import {
   mirrorRapportsChart,
   mirrorRapportsImpayeCount,
   mirrorRapportsPayeCount,
+  mirrorRapportsTotalFamilles,
   type DashboardMiniaturePageId,
 } from "@/lib/dashboard-mirror-data";
 
@@ -346,50 +347,107 @@ export function HeroPreviewPageBody({
         </div>
       );
 
-    case "rapports":
+    case "rapports": {
+      const rapportsCard =
+        "relative block w-full overflow-hidden border border-zinc-200 bg-white p-1.5 text-left outline-none transition-colors sm:p-2 border-t-[3px]";
       return (
         <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <div className="shrink-0">
+          <header className="shrink-0 space-y-0.5">
             <p className="text-[6px] font-medium uppercase tracking-[0.22em] text-zinc-500">Analyse — CRM</p>
-            <p className="font-display text-[9px] leading-tight text-zinc-950 sm:text-[10px]">
-              <span className="font-semibold">Rapports</span> <span className="font-normal italic text-zinc-500">et indicateurs</span>
-            </p>
-          </div>
+            <div>
+              <p className="font-display text-[9px] leading-tight text-zinc-950 sm:text-[10px]">
+                <span className="font-semibold">Rapports</span>{" "}
+                <span className="font-normal italic text-zinc-500">et indicateurs</span>
+              </p>
+              <p className="mt-0.5 text-[5px] leading-snug text-zinc-600 sm:text-[6px]">
+                Synthèse des inscriptions et de l&apos;activité commerciale (données de démonstration).
+              </p>
+            </div>
+          </header>
+
           <div className="grid shrink-0 grid-cols-2 gap-0.5">
+            <div
+              className={cn(
+                rapportsCard,
+                "col-span-2 border-t-zinc-900",
+                "cursor-default hover:border-zinc-200 hover:bg-white",
+              )}
+            >
+              <p className="text-[5px] font-medium uppercase tracking-wider text-zinc-500 sm:text-[6px]">03 — Synthèse</p>
+              <div className="mt-1 flex flex-wrap items-end gap-x-2 gap-y-1">
+                <div>
+                  <p className="text-[5px] font-semibold uppercase tracking-wider text-zinc-500 sm:text-[6px]">Payé</p>
+                  <p className="font-display text-[10px] font-semibold tabular-nums leading-none text-zinc-950 sm:text-[11px]">
+                    {mirrorRapportsPayeCount}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[5px] font-semibold uppercase tracking-wider text-zinc-500 sm:text-[6px]">Impayé</p>
+                  <p className="font-display text-[10px] font-semibold tabular-nums leading-none text-zinc-950 sm:text-[11px]">
+                    {mirrorRapportsImpayeCount}
+                  </p>
+                </div>
+                <div className="min-w-0 border-l border-zinc-200 pl-2">
+                  <p className="text-[5px] font-semibold uppercase tracking-wider text-zinc-500 sm:text-[6px]">Total familles</p>
+                  <p className="font-display text-[11px] font-semibold tabular-nums leading-none text-zinc-950 sm:text-xs">
+                    {mirrorRapportsTotalFamilles}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-1 border-t border-zinc-100 pt-1">
+                <p className="min-w-0 flex-1 text-[5px] leading-tight text-zinc-600 sm:text-[6px]">
+                  Somme des familles suivies dans ces deux statuts (démo).
+                </p>
+                <span
+                  className="grid h-5 w-5 shrink-0 place-items-center border border-zinc-300 bg-zinc-50 text-zinc-800"
+                  aria-hidden
+                >
+                  <Users className="h-2.5 w-2.5" />
+                </span>
+              </div>
+            </div>
+
             <button
               type="button"
-              className="relative block border border-zinc-200 bg-white p-1.5 text-left border-t-2 border-t-zinc-600 sm:p-2"
-              onClick={() => showLocked("Liste familles payées : modal dans l'app connectée.")}
+              className={cn(rapportsCard, "border-t-zinc-600 hover:border-zinc-300 hover:bg-zinc-50/60")}
+              onClick={() => showLocked("Liste familles payées : ouvrez une session pour la liste complète.")}
             >
-              <p className="pr-6 text-[5px] font-medium uppercase tracking-wider text-zinc-500 sm:text-[6px]">01 — Payé</p>
+              <p className="pr-5 text-[5px] font-medium uppercase tracking-wider text-zinc-500 sm:text-[6px]">01 — Payé</p>
               <div className="mt-0.5 flex items-start justify-between gap-1">
                 <p className="font-display text-[11px] font-semibold text-zinc-950 sm:text-xs">{mirrorRapportsPayeCount}</p>
                 <span className="grid h-5 w-5 shrink-0 place-items-center border border-zinc-300 bg-zinc-100 text-zinc-800">
-                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  <CheckCircle2 className="h-2.5 w-2.5" aria-hidden />
                 </span>
               </div>
-              <p className="mt-0.5 text-[5px] text-zinc-600 sm:text-[6px]">Familles avec paiement à jour</p>
+              <p className="mt-0.5 text-[5px] leading-tight text-zinc-600 sm:text-[6px]">
+                Familles avec paiement à jour (mois en cours)
+              </p>
             </button>
+
             <button
               type="button"
-              className="relative block border border-zinc-200 bg-white p-1.5 text-left border-t-2 border-t-zinc-800 sm:p-2"
-              onClick={() => showLocked("Liste familles impayées : modal dans l'app connectée.")}
+              className={cn(rapportsCard, "border-t-zinc-800 hover:border-zinc-300 hover:bg-zinc-50/60")}
+              onClick={() => showLocked("Liste familles impayées : ouvrez une session pour la liste complète.")}
             >
-              <p className="pr-6 text-[5px] font-medium uppercase tracking-wider text-zinc-500 sm:text-[6px]">02 — Impayé</p>
+              <p className="pr-5 text-[5px] font-medium uppercase tracking-wider text-zinc-500 sm:text-[6px]">02 — Impayé</p>
               <div className="mt-0.5 flex items-start justify-between gap-1">
                 <p className="font-display text-[11px] font-semibold text-zinc-950 sm:text-xs">{mirrorRapportsImpayeCount}</p>
                 <span className="grid h-5 w-5 shrink-0 place-items-center border border-zinc-400 bg-zinc-200 text-zinc-900">
-                  <XCircle className="h-2.5 w-2.5" />
+                  <XCircle className="h-2.5 w-2.5" aria-hidden />
                 </span>
               </div>
-              <p className="mt-0.5 text-[5px] text-zinc-600 sm:text-[6px]">Sans règlement ou dette ouverte</p>
+              <p className="mt-0.5 text-[5px] leading-tight text-zinc-600 sm:text-[6px]">
+                Sans règlement ou avec dette ouverte
+              </p>
             </button>
           </div>
+
           <div className="flex min-h-0 flex-1 flex-col border border-zinc-200 bg-white p-1 sm:p-1.5">
             <p className="text-[5px] font-semibold uppercase tracking-[0.18em] text-zinc-500 sm:text-[6px]">Graphique</p>
             <h2 className="mt-0.5 font-display text-[8px] text-zinc-950 sm:text-[9px]">
               Inscriptions <span className="font-normal italic text-zinc-500">par mois</span>
             </h2>
+            <p className="mt-0.5 text-[5px] text-zinc-600 sm:text-[6px]">Volume mensuel sur la période affichée (démo).</p>
             <div className="mt-1 min-h-0 flex-1" style={{ minHeight: "4rem" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={[...mirrorRapportsChart]}>
@@ -404,6 +462,7 @@ export function HeroPreviewPageBody({
           </div>
         </div>
       );
+    }
 
     default:
       return null;

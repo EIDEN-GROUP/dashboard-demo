@@ -1,6 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
-import { Search, Download, Eye, X, Reply, CheckCircle, Send } from "lucide-react";
+import {
+  Search,
+  Download,
+  Eye,
+  X,
+  Reply,
+  CheckCircle,
+  Send,
+  Mail,
+  Phone,
+  MessageSquare,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/rendez-vous")({
   head: () => ({ meta: [{ title: "Rendez-vous — CRM" }] }),
@@ -23,6 +35,58 @@ type Demande = {
   ageEnfant: string;
   message: string;
 };
+
+const MOIS_COURTS = [
+  "jan.",
+  "fév.",
+  "mars",
+  "avr.",
+  "mai",
+  "juin",
+  "juil.",
+  "août",
+  "sept.",
+  "oct.",
+  "nov.",
+  "déc.",
+] as const;
+
+function dateBadgeFromTable(dateTable: string) {
+  const m = dateTable.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return { day: "—", month: "", year: dateTable };
+  const day = m[1];
+  const monthIdx = Number.parseInt(m[2], 10) - 1;
+  const month = MOIS_COURTS[monthIdx] ?? m[2];
+  return { day, month, year: m[3] };
+}
+
+function typeLabel(t: DemandeType) {
+  return t === "rdv" ? "Rendez-vous" : "Contact";
+}
+
+function statusLabel(s: DemandeStatut) {
+  if (s === "nouveau") return "Nouveau";
+  if (s === "contacte") return "Contacté";
+  return "Converti";
+}
+
+function statusRowClass(s: DemandeStatut) {
+  if (s === "nouveau") return "border-l-zinc-900";
+  if (s === "contacte") return "border-l-zinc-400";
+  return "border-l-emerald-700";
+}
+
+function statusPillClass(s: DemandeStatut) {
+  if (s === "nouveau") return "border-zinc-200 bg-zinc-900 text-white";
+  if (s === "contacte") return "border-zinc-300 bg-zinc-100 text-zinc-800";
+  return "border-emerald-200 bg-emerald-50 text-emerald-900";
+}
+
+function typePillClass(t: DemandeType) {
+  return t === "rdv"
+    ? "border-zinc-300 bg-white text-zinc-800"
+    : "border-dashed border-zinc-300 bg-zinc-50 text-zinc-700";
+}
 
 const DEMO_DEMANDES: Demande[] = [
   {
@@ -140,73 +204,110 @@ function CrmRendezVous() {
       </div>
 
       <div className="border border-zinc-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] text-left text-sm">
-            <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50">
-                {["Nom", "Email", "Date", "Actions"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-12 text-center text-sm text-zinc-500">
-                    Aucune demande ne correspond à ces critères.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((r) => (
-                  <tr key={r.id} className="border-b border-zinc-100 last:border-0">
-                    <td className="px-4 py-4 font-semibold text-zinc-900">{r.nom}</td>
-                    <td className="px-4 py-4 text-zinc-600">{r.email}</td>
-                    <td className="px-4 py-4 text-zinc-600">{r.dateTable}</td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setModal({ kind: "detail", row: r })}
-                          className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
-                          aria-label="Voir le détail"
-                        >
-                          <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setModal({ kind: "reply", row: r })}
-                          className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
-                          aria-label="Répondre"
-                        >
-                          <Reply className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setModal({ kind: "crm", row: r })}
-                          className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
-                          aria-label="Convertir CRM"
-                        >
-                          <CheckCircle className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 sm:px-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Liste</p>
+          <h2 className="mt-0.5 font-display text-lg font-semibold tracking-tight text-zinc-950">
+            Demandes <span className="font-normal italic text-zinc-500">reçues</span>
+          </h2>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 px-4 py-3">
+        <ul role="list" className="divide-y divide-zinc-100">
+          {filtered.length === 0 ? (
+            <li className="px-4 py-14 text-center text-sm text-zinc-500 sm:px-5">
+              Aucune demande ne correspond à ces critères.
+            </li>
+          ) : (
+            filtered.map((r) => {
+              const d = dateBadgeFromTable(r.dateTable);
+              return (
+                <li
+                  key={r.id}
+                  className={cn(
+                    "flex flex-col gap-4 border-l-[3px] bg-white p-4 transition-colors sm:flex-row sm:items-stretch sm:gap-5 sm:p-5",
+                    statusRowClass(r.status),
+                    "hover:bg-zinc-50/80",
+                  )}
+                >
+                  <div className="flex shrink-0 gap-3 sm:flex-col sm:items-center">
+                    <div className="grid h-[4.25rem] w-[4.25rem] shrink-0 place-content-center border border-zinc-200 bg-zinc-50 text-center leading-none">
+                      <span className="font-display text-xl font-semibold text-zinc-950">{d.day}</span>
+                      {d.month ? (
+                        <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                          {d.month}
+                        </span>
+                      ) : null}
+                      <span className="mt-1 text-[10px] font-medium text-zinc-400">{d.year}</span>
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-display text-base font-semibold text-zinc-950">{r.nom}</span>
+                      <span
+                        className={cn(
+                          "inline-flex border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                          typePillClass(r.type),
+                        )}
+                      >
+                        {typeLabel(r.type)}
+                      </span>
+                      <span
+                        className={cn(
+                          "inline-flex border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                          statusPillClass(r.status),
+                        )}
+                      >
+                        {statusLabel(r.status)}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-col gap-1.5 text-xs text-zinc-600 sm:flex-row sm:flex-wrap sm:gap-x-5">
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                        <span className="truncate">{r.email}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                        {r.phone}
+                      </span>
+                    </div>
+                    <p className="mt-2 flex items-start gap-1.5 text-sm text-zinc-800">
+                      <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" aria-hidden />
+                      <span className="leading-snug">{r.sujet}</span>
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center justify-end gap-1 border-t border-zinc-100 pt-3 sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:border-zinc-100 sm:pl-5 sm:pt-0">
+                    <button
+                      type="button"
+                      onClick={() => setModal({ kind: "detail", row: r })}
+                      className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+                      aria-label="Voir le détail"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModal({ kind: "reply", row: r })}
+                      className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+                      aria-label="Répondre"
+                    >
+                      <Reply className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModal({ kind: "crm", row: r })}
+                      className="grid h-9 w-9 place-items-center border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
+                      aria-label="Convertir CRM"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </button>
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
+        <div className="border-t border-zinc-200 bg-zinc-50/80 px-4 py-3 sm:px-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
             {filtered.length} résultat{filtered.length === 1 ? "" : "s"}
           </p>
-          <div className="flex gap-1.5" aria-hidden>
-            {[0.35, 0.5, 0.65, 0.8].map((op, i) => (
-              <span key={i} className="h-1 w-6 bg-zinc-300" style={{ opacity: op }} />
-            ))}
-          </div>
         </div>
       </div>
 

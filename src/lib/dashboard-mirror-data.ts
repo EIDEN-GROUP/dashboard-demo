@@ -11,7 +11,6 @@ export type DashboardMiniaturePageId =
   | "familles"
   | "paiements"
   | "rendez-vous"
-  | "leads"
   | "affiches"
   | "rapports";
 
@@ -257,3 +256,4 @@ export const mirrorRapportsChart = [
 /** Same counts as `FAMILLES_PAYEES.length` / `FAMILLES_IMPAYEES.length` in dashboard.rapports */
 export const mirrorRapportsPayeCount = 22;
 export const mirrorRapportsImpayeCount = 22;
+export const mirrorRapportsTotalFamilles = mirrorRapportsPayeCount + mirrorRapportsImpayeCount;
