@@ -20,6 +20,9 @@ jobs:
 
       - run: npm run build
 
+      - name: Remove stale .wrangler artifacts
+        run: rm -rf .wrangler
+
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
