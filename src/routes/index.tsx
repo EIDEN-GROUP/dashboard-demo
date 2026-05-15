@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { ArrowRight, BarChart3, Calendar, Check, CreditCard, GraduationCap, Globe, Images, LayoutDashboard, LogOut, Mail, MapPin, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, Eye, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
+import { ArrowRight, BarChart3, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, LogOut, Mail, MapPin, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
@@ -388,7 +388,7 @@ function Hero() {
                 ))}
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">10+ centres actifs au Maroc</span> · 4.9/5 ⭐
+                <span className="font-semibold text-foreground">10+ centres actifs au Maroc</span> · 4.9/5 <Star className="inline h-3 w-3 fill-amber-400 text-amber-400" />
               </p>
             </div>
           </motion.div>
@@ -418,7 +418,7 @@ function Hero() {
           </motion.div>
           <motion.div variants={fadeUp} className="mt-4">
             <span className="inline-flex items-center gap-2 border border-amber-400/30 bg-amber-50/60 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-              🗓 5 créneaux disponibles cette semaine
+              <CalendarDays className="h-3.5 w-3.5 shrink-0" /> 5 créneaux disponibles cette semaine
             </span>
           </motion.div>
 
@@ -891,7 +891,6 @@ function DemoSection() {
 const painPoints = [
   {
     icon: FileSpreadsheet,
-    emoji: "📋",
     title: "Le chaos des classeurs",
     quote: "« Dans quel Excel est le dossier Benali ? »",
     text: "Chaque fichier est sur un ordinateur différent, dans des versions différentes. Retrouver une information prend 10 minutes.",
@@ -900,7 +899,6 @@ const painPoints = [
   },
   {
     icon: CreditCard,
-    emoji: "💸",
     title: "Les impayés invisibles",
     quote: "« 3 dossiers n'ont pas réglé leur mensualité depuis 2 mois. »",
     text: "Vous le découvrez en fin de mois, trop tard pour agir sans créer de tension. Le manque à gagner s'accumule silencieusement.",
@@ -909,7 +907,6 @@ const painPoints = [
   },
   {
     icon: UserPlus,
-    emoji: "👨‍👩‍👦",
     title: "Les nouvelles demandes qui s'évaporent",
     quote: "« J'avais noté ça quelque part… »",
     text: "Un nouveau contact vous appelle, vous griffonnez un post-it. Trois jours après, la note a disparu. Cette inscription est perdue pour toujours.",
@@ -955,8 +952,8 @@ function PainPointsSection() {
               className={cn("flex flex-col gap-4 border-t-4 border-2 border-foreground/10 p-6 transition-shadow hover:shadow-lg", p.accent, p.bg)}
             >
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-12 w-12 items-center justify-center border bg-white text-2xl">
-                  {p.emoji}
+                <span className="inline-flex h-12 w-12 items-center justify-center border-2 border-foreground/10 bg-white">
+                  <p.icon className="h-5 w-5 text-foreground/70" strokeWidth={1.5} />
                 </span>
                 <h3 className="text-base font-bold text-foreground">{p.title}</h3>
               </div>
@@ -1605,7 +1602,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.35, ease, delay: 0.15 }}
             className="absolute right-0 top-0 z-20 border-b-2 border-l-2 border-foreground bg-background px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-foreground sm:px-4 sm:text-[10px] rounded-none"
           >
-            ★ Populaire
+            <Star className="inline h-3 w-3 fill-current" /> Populaire
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -1614,7 +1611,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.35, ease, delay: 0.25 }}
             className="mt-2 inline-flex items-center gap-1.5 border border-amber-400/40 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-300"
           >
-            🎁 Onboarding offert jusqu'au 30 juin
+            <Gift className="h-3.5 w-3.5 shrink-0" /> Onboarding offert jusqu'au 30 juin
           </motion.div>
         </>
       )}
@@ -1950,7 +1947,7 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
             </motion.button>
             <p className="flex shrink-0 items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
               <Lock className="h-3.5 w-3.5 shrink-0" />
-              🔒 Données sécurisées · Réponse garantie sous 2h · Sans engagement
+              <Lock className="h-3.5 w-3.5 shrink-0" /> Données sécurisées · Réponse garantie sous 2h · Sans engagement
             </p>
           </motion.div>
         )}
