@@ -14,7 +14,7 @@ const MotionLink = motion.create(Link);
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Gestio — CRM pour Centres Spécialisés au Maroc | Quittez Excel" },
+      { title: "Gestio CRM pour Centres Spécialisés au Maroc | Quittez Excel" },
       {
         name: "description",
         content:
@@ -71,15 +71,16 @@ function Header() {
 
   return (
     <>
-      <motion.header
-        initial={{ y: -40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease }}
-        className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[padding:max(0px)]:pt-[max(0px,env(safe-area-inset-top))]"
-      >
+      <header className="sticky top-0 z-40 supports-[padding:max(0px)]:pt-[max(0px,env(safe-area-inset-top))]">
+        <motion.div
+          initial={{ y: -40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease }}
+          className="border-b border-border/60 bg-background/80 backdrop-blur-xl"
+        >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <Link to="/" className="flex min-w-0 shrink items-center gap-2 sm:gap-3">
-            <motion.div whileHover={{ rotate: -8, scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--gradient-hero)] text-primary-foreground shadow-[var(--shadow-elegant)] sm:h-10 sm:w-10">
+            <motion.div whileHover={{ rotate: -8, scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10" style={{ color: "#122620"}}>
               <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
             </motion.div>
             <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
@@ -115,12 +116,10 @@ function Header() {
               <span className="truncate sm:whitespace-normal">Réserver une démo</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
             </motion.button>
-            <MotionLink to="/login" className="hidden text-sm font-medium text-foreground/50 transition hover:text-foreground sm:inline-flex">
-              Connexion
-            </MotionLink>
           </div>
         </div>
-      </motion.header>
+        </motion.div>
+      </header>
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="right" id="landing-nav-sheet" className="flex w-[min(100%,20rem)] flex-col sm:max-w-sm">
@@ -144,13 +143,6 @@ function Header() {
                 {item.label}
               </button>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              className="rounded-md px-3 py-3 text-base font-medium text-foreground/50 transition hover:bg-muted"
-            >
-              Connexion
-            </Link>
           </nav>
           <div className="mt-auto border-t border-border pt-4">
             <button
@@ -158,7 +150,7 @@ function Header() {
               onClick={() => { scrollToId("contact"); setMenuOpen(false); }}
               className="flex w-full items-center justify-center gap-2 bg-foreground px-4 py-3.5 text-sm font-black text-background transition hover:bg-primary"
             >
-              Réserver ma démo — 20 min
+              Réserver ma démo 20 min
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -369,7 +361,7 @@ function Hero() {
           </motion.h1>
 
           <motion.p variants={fadeUp} className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Gestio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning — tout au même endroit, accessible en 2 clics.
+            Gestio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning tout au même endroit, accessible en 2 clics.
           </motion.p>
 
           {/* Social proof mini row */}
@@ -403,7 +395,7 @@ function Hero() {
               {!reduceMotion && (
                 <motion.span className="absolute inset-0 -z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
               )}
-              <span className="relative">Réserver ma démo — 20 min, sans engagement</span>
+              <span className="relative">Réserver ma démo 20 min, sans engagement</span>
               <ArrowRight className="relative h-4 w-4 transition group-hover:translate-x-1" />
             </motion.button>
             <motion.button
@@ -466,7 +458,7 @@ const tourSteps: {
     icon: LayoutDashboard,
     label: "Tableau de bord",
     headline: "Vos KPIs en temps réel",
-    description: "Recettes du mois, dettes en cours, nouveaux inscrits — tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
+    description: "Recettes du mois, dettes en cours, nouveaux inscrits tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
     tag: "Vue d'ensemble",
   },
   {
@@ -875,7 +867,7 @@ function DemoSection() {
             onClick={() => scrollToId("contact")}
             className="inline-flex items-center gap-2 bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-primary"
           >
-            Réserver ma démo — 20 min, sans engagement
+            Réserver ma démo 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1033,7 +1025,7 @@ function SolutionSection() {
             onClick={() => scrollToId("contact")}
             className="mt-10 inline-flex items-center gap-2 bg-background px-7 py-4 text-sm font-black text-foreground transition hover:bg-background/90"
           >
-            Réserver ma démo — 20 min, sans engagement
+            Réserver ma démo 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1083,7 +1075,7 @@ const modules = [
     icon: ClipboardList,
     title: "Planifications",
     benefit: "Tous vos événements centralisés",
-    text: "Conseils pédagogiques, ateliers parents, sorties, formations internes — planifiez et retrouvez chaque événement en un coup d'œil, sans risque d'oubli.",
+    text: "Conseils pédagogiques, ateliers parents, sorties, formations internes planifiez et retrouvez chaque événement en un coup d'œil, sans risque d'oubli.",
   },
   {
     icon: Calendar,
@@ -1526,7 +1518,7 @@ function SocialProofSection() {
             onClick={() => scrollToId("contact")}
             className="inline-flex items-center gap-2 bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-primary"
           >
-            Réserver ma démo — 20 min, sans engagement
+            Réserver ma démo 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1566,7 +1558,7 @@ const pricingPlans: Plan[] = [
     monthly: 1590,
     yearly: 15200,
     features: ["Tout Essentiel", "Paiements & relances auto", "Suivi des nouvelles demandes", "Exports & tableaux avancés", "Support prioritaire", "✓ Onboarding + Formation + Support inclus"],
-    cta: "Démarrer avec Pro — le plus populaire →",
+    cta: "Démarrer avec Pro le plus populaire →",
     popular: true,
   },
   {
@@ -1718,7 +1710,7 @@ function PricingSection() {
             Des formules claires et transparentes.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Prix de départ transparents — adaptés si votre centre a des besoins spécifiques après un appel de 20 min.
+            Prix de départ transparents adaptés si votre centre a des besoins spécifiques après un appel de 20 min.
           </motion.p>
         </motion.div>
 
@@ -1837,7 +1829,7 @@ const faqItems = [
   { q: "Ma secrétaire peut-elle utiliser Gestio sans formation ?", a: "Oui. Gestio a été conçu pour les équipes non-techniques. L'interface est en français, intuitive, et nous assurons une formation incluse à la mise en service. La plupart des secrétaires sont autonomes en moins d'une heure." },
   { q: "Puis-je exporter mes données si je quitte Gestio ?", a: "Absolument. Toutes vos données (dossiers, paiements, historique) sont exportables en CSV à tout moment. Vous n'êtes jamais pris en otage. Votre centre reste propriétaire de ses données." },
   { q: "Combien de dossiers le logiciel peut-il gérer ?", a: "Essentiel supporte jusqu'à ~50 dossiers actifs. Pro est sans limite pratique. Réseau est conçu pour les groupes multi-sites. Contactez-nous pour un diagnostic personnalisé." },
-  { q: "Y a-t-il une application mobile ?", a: "Gestio est entièrement responsive — il fonctionne parfaitement sur mobile et tablette depuis votre navigateur, sans installation. Vous gérez votre centre depuis n'importe quel appareil." },
+  { q: "Y a-t-il une application mobile ?", a: "Gestio est entièrement responsive il fonctionne parfaitement sur mobile et tablette depuis votre navigateur, sans installation. Vous gérez votre centre depuis n'importe quel appareil." },
   { q: "Gestio fonctionne-t-il en arabe ?", a: "L'interface est actuellement en français, langue de travail de la majorité de nos centres clients. Le support est disponible en français et en arabe. Une interface arabe est en cours de développement." },
   { q: "Comment sont protégées mes données (RGPD / Maroc) ?", a: "Toutes les données sont chiffrées et hébergées sur des serveurs sécurisés. Nous appliquons les bonnes pratiques RGPD adaptées au contexte marocain (loi 09-08). Aucune donnée n'est partagée avec des tiers." },
 ];
@@ -1914,11 +1906,11 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
       <AnimatePresence mode="wait">
         {sent ? (
           <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
-            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center bg-[var(--gradient-hero)] text-background shadow-[var(--shadow-elegant)]">
+            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center" style={{ color: "#122620"}}>
               <Check className="h-8 w-8" />
             </motion.div>
             <h3 className="mt-6 text-2xl font-black">WhatsApp ouvert !</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Envoyez le message pré-rempli — nous répondons sous 2h.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Envoyez le message pré-rempli nous répondons sous 2h.</p>
             <button onClick={() => setSent(false)} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
               Recommencer
             </button>
@@ -1982,7 +1974,7 @@ function ContactSection() {
             20 minutes. Votre centre dans Gestio. En direct.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Réservez un créneau WhatsApp — on vous montre Gestio avec vos cas concrets, sans engagement.
+            Réservez un créneau WhatsApp on vous montre Gestio avec vos cas concrets, sans engagement.
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {(
@@ -2012,7 +2004,7 @@ function ContactSection() {
             ))}
           </motion.ul>
           <motion.div variants={fadeUp} className="mt-8 space-y-3">
-            {["Présentation personnalisée selon votre type de centre", "Réponse garantie sous 2h sur WhatsApp", "Aucun engagement requis", "Les créneaux partent vite — réservez le vôtre"].map((item) => (
+            {["Présentation personnalisée selon votre type de centre", "Réponse garantie sous 2h sur WhatsApp", "Aucun engagement requis", "Les créneaux partent vite réservez le vôtre"].map((item) => (
               <div key={item} className="flex items-center gap-2 text-sm text-foreground/70">
                 <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={3} />
                 {item}
@@ -2095,7 +2087,7 @@ function Footer() {
 // ─────────────────────────────────────────────
 function LandingPage() {
   return (
-    <div className="min-h-screen min-w-0 overflow-x-hidden bg-background text-foreground">
+    <div className="min-h-screen min-w-0 overflow-x-clip bg-background text-foreground">
       <Header />
       <Hero />
       <PainPointsSection />
