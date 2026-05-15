@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, CreditCard, Calendar, Images, BarChart3 } from 
 const topNav: NavItem[] = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/rendez-vous", label: "Rendez-vous", icon: Calendar },
-  { to: "/dashboard/familles", label: "Parents", icon: Users },
+  { to: "/dashboard/familles", label: "Dossiers", icon: Users },
   { to: "/dashboard/paiements", label: "Paiements", icon: CreditCard },
 ];
 

@@ -14,11 +14,11 @@ const MotionLink = motion.create(Link);
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Orio CRM pour centres éducatifs spécialisés." },
+      { title: "Orio — CRM pour Centres Spécialisés au Maroc | Quittez Excel" },
       {
         name: "description",
         content:
-          "La plateforme tout-en-un pour les centres dédiés aux enfants avec autisme, TDAH et troubles d'apprentissage. Familles, paiements, prospects et planning centralisés.",
+          "CRM pour centres autisme, TDAH et troubles d'apprentissage au Maroc. Dossiers, paiements, planning centralisés. En ligne en 48h. Sans engagement.",
       },
     ],
   }),
@@ -27,6 +27,16 @@ export const Route = createFileRoute("/")({
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+declare global {
+  interface Window {
+    clarity?: (action: string, key: string, value?: string) => void;
+  }
+}
+
+function track(event: string, value?: string) {
+  window.clarity?.("event", event, value);
 }
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -39,7 +49,7 @@ const fadeUp = {
 const previewTopNav: { id: DashboardMiniaturePageId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { id: "rendez-vous", label: "Rendez-vous", icon: Calendar },
-  { id: "familles", label: "Parents", icon: Users },
+  { id: "familles", label: "Dossiers", icon: Users },
   { id: "paiements", label: "Paiements", icon: CreditCard },
 ];
 
@@ -102,7 +112,7 @@ function Header() {
               onClick={() => scrollToId("contact")}
               className="inline-flex max-w-[11rem] items-center justify-center gap-1.5 bg-foreground px-3 py-2.5 text-xs font-semibold text-background shadow-[var(--shadow-soft)] transition hover:bg-primary sm:max-w-none sm:gap-2 sm:px-5 sm:text-sm"
             >
-              <span className="truncate sm:whitespace-normal">Demander une démo</span>
+              <span className="truncate sm:whitespace-normal">Réserver une démo</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
             </motion.button>
             <MotionLink to="/login" className="hidden text-sm font-medium text-foreground/50 transition hover:text-foreground sm:inline-flex">
@@ -137,11 +147,21 @@ function Header() {
             <Link
               to="/login"
               onClick={() => setMenuOpen(false)}
-              className="rounded-md px-3 py-3 text-base font-medium text-primary transition hover:bg-muted"
+              className="rounded-md px-3 py-3 text-base font-medium text-foreground/50 transition hover:bg-muted"
             >
               Connexion
             </Link>
           </nav>
+          <div className="mt-auto border-t border-border pt-4">
+            <button
+              type="button"
+              onClick={() => { scrollToId("contact"); setMenuOpen(false); }}
+              className="flex w-full items-center justify-center gap-2 bg-foreground px-4 py-3.5 text-sm font-black text-background transition hover:bg-primary"
+            >
+              Réserver ma démo — 20 min
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
         </SheetContent>
       </Sheet>
     </>
@@ -349,7 +369,7 @@ function Hero() {
           </motion.h1>
 
           <motion.p variants={fadeUp} className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Orio est le CRM pensé pour les centres spécialisés au Maroc. Familles, paiements, planning tout au même endroit, accessible en 2 clics.
+            Orio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning — tout au même endroit, accessible en 2 clics.
           </motion.p>
 
           {/* Social proof mini row */}
@@ -368,31 +388,45 @@ function Hero() {
                 ))}
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">10+ centres</span> font confiance à Orio
+                <span className="font-semibold text-foreground">10+ centres actifs au Maroc</span> · 4.9/5 ⭐
               </p>
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="mt-8">
+          <motion.div variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <motion.button
               whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => scrollToId("contact")}
+              onClick={() => { track("cta_hero_click"); scrollToId("contact"); }}
               className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[var(--shadow-elegant)] transition hover:bg-primary sm:w-auto sm:px-7 sm:py-4"
             >
               {!reduceMotion && (
                 <motion.span className="absolute inset-0 -z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
               )}
-              <span className="relative">Demander une démo gratuite</span>
+              <span className="relative">Réserver ma démo — 20 min, sans engagement</span>
               <ArrowRight className="relative h-4 w-4 transition group-hover:translate-x-1" />
             </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { track("secondary_cta_click"); scrollToId("demo"); }}
+              className="inline-flex w-full items-center justify-center gap-2 border-2 border-foreground/30 bg-transparent px-6 py-3.5 text-sm font-bold text-foreground transition hover:border-foreground sm:w-auto sm:px-7 sm:py-4"
+            >
+              Voir la démo en direct
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
+          </motion.div>
+          <motion.div variants={fadeUp} className="mt-4">
+            <span className="inline-flex items-center gap-2 border border-amber-400/30 bg-amber-50/60 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+              🗓 5 créneaux disponibles cette semaine
+            </span>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-6 flex flex-wrap gap-2">
             {[
-              { icon: BadgeDollarSign, label: "100 % local" },
-              { icon: Lock, label: "Données sécurisées" },
-              { icon: Phone, label: "07 77 77 74 28" },
+              { icon: Lock, label: "Données hébergées au Maroc" },
+              { icon: BadgeDollarSign, label: "En ligne en moins de 48h" },
+              { icon: Check, label: "Sans engagement" },
             ].map(({ icon: Icon, label }) => (
               <span key={label} className="inline-flex items-center gap-1.5 border border-foreground/10 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground/70">
                 <Icon className="h-3.5 w-3.5" />
@@ -432,7 +466,7 @@ const tourSteps: {
     icon: LayoutDashboard,
     label: "Tableau de bord",
     headline: "Vos KPIs en temps réel",
-    description: "Recettes du mois, dettes en cours, prospects actifs tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
+    description: "Recettes du mois, dettes en cours, nouveaux inscrits — tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
     tag: "Vue d'ensemble",
   },
   {
@@ -446,17 +480,17 @@ const tourSteps: {
   {
     page: "familles",
     icon: Users,
-    label: "Familles",
-    headline: "Dossiers familles complets",
-    description: "Chaque famille, chaque enfant, chaque document. Historique des rendez-vous, notes et statut de paiement accessibles en 2 clics.",
-    tag: "Gestion familles",
+    label: "Dossiers",
+    headline: "Dossiers complets en 2 clics",
+    description: "Chaque dossier, chaque document, l'historique des séances et le statut de paiement accessibles immédiatement, depuis n'importe quel appareil.",
+    tag: "Gestion dossiers",
   },
   {
     page: "paiements",
     icon: CreditCard,
     label: "Paiements",
     headline: "Zéro impayé oublié",
-    description: "Reçus numérotés automatiquement, suivi mensuel par famille et relances automatiques. Plus besoin de courir après les paiements.",
+    description: "Reçus numérotés automatiquement, suivi mensuel par dossier et relances automatiques. Plus besoin de courir après les paiements.",
     tag: "Paiements & relances",
   },
   {
@@ -621,6 +655,14 @@ function DemoSection() {
       </div>
     );
   }
+
+  useEffect(() => {
+    const el = document.getElementById("demo");
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { track("demo_section_view"); observer.disconnect(); } }, { threshold: 0.2 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section id="demo" className="relative overflow-hidden border-t border-border/60 bg-secondary/20 py-20 sm:py-28">
@@ -825,7 +867,7 @@ function DemoSection() {
           className="mt-12 flex flex-col items-center gap-3 text-center"
         >
           <p className="text-sm text-muted-foreground">
-            Cette démo vous a convaincu ? Réservez une session avec vos propres données.
+            Cette démo vous a convaincu ? Réservez votre créneau avec vos propres données.
           </p>
           <motion.button
             whileHover={{ scale: 1.04, y: -2 }}
@@ -833,7 +875,7 @@ function DemoSection() {
             onClick={() => scrollToId("contact")}
             className="inline-flex items-center gap-2 bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-primary"
           >
-            Demander ma démo gratuite
+            Réserver ma démo — 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -851,7 +893,7 @@ const painPoints = [
     icon: FileSpreadsheet,
     emoji: "📋",
     title: "Le chaos des classeurs",
-    quote: "« Dans quel Excel est la famille Benali ? »",
+    quote: "« Dans quel Excel est le dossier Benali ? »",
     text: "Chaque fichier est sur un ordinateur différent, dans des versions différentes. Retrouver une information prend 10 minutes.",
     accent: "border-t-[#0c5752]",
     bg: "bg-[color-mix(in_srgb,#0c5752_7%,#f8f3e8)]",
@@ -860,7 +902,7 @@ const painPoints = [
     icon: CreditCard,
     emoji: "💸",
     title: "Les impayés invisibles",
-    quote: "« 3 familles n'ont pas payé depuis 2 mois. »",
+    quote: "« 3 dossiers n'ont pas réglé leur mensualité depuis 2 mois. »",
     text: "Vous le découvrez en fin de mois, trop tard pour agir sans créer de tension. Le manque à gagner s'accumule silencieusement.",
     accent: "border-t-[#b8a876]",
     bg: "bg-[color-mix(in_srgb,#cfc292_22%,#fefdfb)]",
@@ -868,9 +910,9 @@ const painPoints = [
   {
     icon: UserPlus,
     emoji: "👨‍👩‍👦",
-    title: "Les prospects qui s'évaporent",
+    title: "Les nouvelles demandes qui s'évaporent",
     quote: "« J'avais noté ça quelque part… »",
-    text: "Une famille vous contacte, vous griffonnez un post-it. Trois jours après, la note a disparu. Ce prospect est perdu pour toujours.",
+    text: "Un nouveau contact vous appelle, vous griffonnez un post-it. Trois jours après, la note a disparu. Cette inscription est perdue pour toujours.",
     accent: "border-t-[#122620]",
     bg: "bg-[color-mix(in_srgb,#122620_6%,#f4ebd0)]",
   },
@@ -903,7 +945,7 @@ function PainPointsSection() {
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
           variants={{ show: { transition: { staggerChildren: 0.1 } } }}
-          className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-16 grid gap-6 md:grid-cols-3"
         >
           {painPoints.map((p) => (
             <motion.div
@@ -950,8 +992,8 @@ function PainPointsSection() {
 // ─────────────────────────────────────────────
 function SolutionSection() {
   const benefits = [
-    "Tous les dossiers familles en un seul endroit, accessibles en 2 clics",
-    "Pipeline prospects Kanban pour ne plus jamais perdre un lead",
+    "Tous les dossiers en un seul endroit, accessibles en 2 clics",
+    "Suivi des nouvelles demandes pour ne plus jamais perdre une inscription",
     "Suivi des paiements automatisé avec alertes d'impayés en temps réel",
   ];
 
@@ -994,7 +1036,7 @@ function SolutionSection() {
             onClick={() => scrollToId("contact")}
             className="mt-10 inline-flex items-center gap-2 bg-background px-7 py-4 text-sm font-black text-foreground transition hover:bg-background/90"
           >
-            Demander ma démo gratuite
+            Réserver ma démo — 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1032,19 +1074,19 @@ const modules = [
     icon: LayoutDashboard,
     title: "Tableau de bord",
     benefit: "Tout votre centre en un regard",
-    text: "Dès que vous ouvrez Orio, vous voyez ce qui se passe : combien de familles actives, combien d'impayés, quels rendez-vous sont prévus aujourd'hui. Aucun rapport à générer.",
+    text: "Dès que vous ouvrez Orio, vous voyez ce qui se passe : combien de dossiers actifs, combien d'impayés, quels rendez-vous sont prévus aujourd'hui. Aucun rapport à générer.",
   },
   {
     icon: UsersRound,
-    title: "Familles",
+    title: "Dossiers",
     benefit: "Fini les dossiers éparpillés",
-    text: "Chaque famille a une fiche complète : enfant, parents, contrat, historique des séances et documents. Vous trouvez tout en moins de 10 secondes, depuis n'importe quel appareil.",
+    text: "Chaque dossier est complet : enfant, contrat, historique des séances et documents. Vous trouvez tout en moins de 10 secondes, depuis n'importe quel appareil.",
   },
   {
     icon: ClipboardList,
-    title: "Prospects",
-    benefit: "Ne perdez plus aucune inscription",
-    text: "Quand une famille vous contacte, elle entre dans un pipeline visuel. Vous suivez chaque étape de la première demande jusqu'à la signature sans post-it ni tableur.",
+    title: "Planifications",
+    benefit: "Tous vos événements centralisés",
+    text: "Conseils pédagogiques, ateliers parents, sorties, formations internes — planifiez et retrouvez chaque événement en un coup d'œil, sans risque d'oubli.",
   },
   {
     icon: Calendar,
@@ -1056,7 +1098,7 @@ const modules = [
     icon: CreditCard,
     title: "Paiements",
     benefit: "Zéro impayé qui passe entre les mailles",
-    text: "Orio génère les reçus, suit ce que chaque famille doit payer chaque mois et envoie des relances automatiques. Vous n'avez plus à courir après les paiements en retard.",
+    text: "Orio génère les reçus, suit ce que chaque dossier doit régler chaque mois et envoie des relances automatiques. Vous n'avez plus à courir après les paiements en retard.",
   },
   {
     icon: Layers,
@@ -1085,7 +1127,7 @@ function ModulesSection() {
             Tout ce dont votre centre a besoin.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            6 modules intégrés conçus pour les réalités d'un centre spécialisé. Pas de fonctionnalités inutiles, pas de configuration complexe.
+            6 modules intégrés conçus pour les réalités d'un centre spécialisé. En ligne en 48h. Formé avec vous. Aucun développeur requis.
           </motion.p>
         </motion.div>
 
@@ -1146,7 +1188,8 @@ function ModulesSection() {
 // ─────────────────────────────────────────────
 const testimonials = [
   {
-    avatar: "https://i.pravatar.cc/80?img=47",
+    initials: "FB",
+    avatarColor: "#1a4f8a",
     name: "Fatima Benali",
     role: "Directrice",
     center: "Centre Lumière",
@@ -1157,7 +1200,8 @@ const testimonials = [
     quote: "Avant Orio, je passais mes lundis matin à réconcilier trois fichiers Excel différents. Maintenant tout est là, en temps réel. Je me concentre sur les enfants, pas sur l'administratif.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=12",
+    initials: "KM",
+    avatarColor: "#0c5752",
     name: "Karim Mounir",
     role: "Administrateur",
     center: "Centre Avenir",
@@ -1168,7 +1212,8 @@ const testimonials = [
     quote: "Le module paiements a tout changé. On a réduit les impayés de 40 % grâce aux relances automatiques. L'export CSV nous fait gagner une demi-journée chaque mois.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=32",
+    initials: "SR",
+    avatarColor: "#7c3aed",
     name: "Samira Raji",
     role: "Directrice",
     center: "Institut Espoir",
@@ -1179,18 +1224,20 @@ const testimonials = [
     quote: "Ce qui m'a convaincue c'est la simplicité. Mon équipe n'est pas technique mais tout le monde était à l'aise dès le premier jour. La mise en place a pris moins de 48 heures.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=57",
+    initials: "YF",
+    avatarColor: "#b45309",
     name: "Youssef El Fassi",
     role: "Co-fondateur",
     center: "Centre Nour",
     city: "Fès",
     stars: 5,
     date: "Il y a 5 jours",
-    highlight: "Le pipeline prospects est excellent",
-    quote: "On ne perdait plus aucun prospect depuis qu'on utilise le Kanban. Avant, un post-it tombait et la famille disparaissait. Maintenant chaque lead est suivi jusqu'à l'inscription.",
+    highlight: "Zéro inscription perdue depuis l'adoption",
+    quote: "On ne perd plus aucune demande depuis qu'on utilise Orio. Avant, un post-it tombait et le contact disparaissait. Maintenant chaque dossier est suivi jusqu'à l'inscription.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=44",
+    initials: "HA",
+    avatarColor: "#be185d",
     name: "Houda Alaoui",
     role: "Responsable administrative",
     center: "Centre Rayane",
@@ -1201,7 +1248,8 @@ const testimonials = [
     quote: "L'équipe Orio nous a accompagnés pas à pas. La formation était incluse, le paramétrage fait avec nous. Je recommande à tous les centres qui veulent se moderniser sans prise de tête.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=15",
+    initials: "AC",
+    avatarColor: "#0f766e",
     name: "Anas Chraibi",
     role: "Directeur",
     center: "Institut Al Amal",
@@ -1212,18 +1260,20 @@ const testimonials = [
     quote: "Je gère mon centre depuis mon téléphone quand je suis en déplacement. Le tableau de bord s'affiche parfaitement sur mobile. C'est devenu indispensable.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=39",
+    initials: "NB",
+    avatarColor: "#6d28d9",
     name: "Nadia Berrada",
     role: "Directrice pédagogique",
     center: "Centre Soleil",
     city: "Meknès",
     stars: 5,
     date: "Il y a 6 semaines",
-    highlight: "Dossiers familles ultra-clairs",
-    quote: "Chaque dossier famille est complet : enfant, parents, historique, documents. En une recherche je trouve tout. Mes thérapeutes n'ont plus à me demander des informations basiques.",
+    highlight: "Dossiers ultra-clairs et accessibles",
+    quote: "Chaque dossier est complet : enfant, historique, documents. En une recherche je trouve tout. Mes thérapeutes n'ont plus à me demander des informations basiques.",
   },
   {
-    avatar: "https://i.pravatar.cc/80?img=68",
+    initials: "OT",
+    avatarColor: "#b91c1c",
     name: "Omar Tahir",
     role: "Fondateur",
     center: "Centre Wafa",
@@ -1257,14 +1307,13 @@ function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
       </blockquote>
       {/* Author */}
       <div className="flex items-center gap-3 border-t border-foreground/8 pt-4">
-        <img
-          src={t.avatar}
-          alt={t.name}
-          width={44}
-          height={44}
-          className="h-11 w-11 rounded-full object-cover ring-2 ring-foreground/10"
-          loading="lazy"
-        />
+        <div
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black text-white ring-2 ring-foreground/10"
+          style={{ backgroundColor: t.avatarColor }}
+          aria-label={t.name}
+        >
+          {t.initials}
+        </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold">{t.name}</p>
           <p className="truncate text-[11px] text-muted-foreground">{t.role} · {t.center}</p>
@@ -1473,14 +1522,14 @@ function SocialProofSection() {
           transition={{ duration: 0.5, ease, delay: 0.2 }}
           className="mt-12 flex flex-col items-center gap-3 text-center"
         >
-          <p className="text-sm text-muted-foreground">Votre centre pourrait être le prochain.</p>
+          <p className="text-sm text-muted-foreground">Votre centre pourrait être le prochain. 5 créneaux disponibles cette semaine.</p>
           <motion.button
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
             className="inline-flex items-center gap-2 bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-primary"
           >
-            Rejoindre ces directeurs
+            Réserver ma démo — 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1507,11 +1556,11 @@ const pricingPlans: Plan[] = [
   {
     id: "essentiel",
     name: "Essentiel",
-    blurb: "Jusqu'à ~50 familles. Un seul administrateur.",
+    blurb: "Jusqu'à ~50 dossiers actifs. Un seul administrateur.",
     monthly: 890,
     yearly: 8500,
-    features: ["CRM familles & élèves", "Planning & rendez-vous", "Rapports de base", "Support par email"],
-    cta: "Demander une démo",
+    features: ["CRM dossiers & élèves", "Planning & rendez-vous", "Rapports de base", "Support par email"],
+    cta: "Démarrer avec Essentiel →",
   },
   {
     id: "pro",
@@ -1519,8 +1568,8 @@ const pricingPlans: Plan[] = [
     blurb: "Centres actifs : équipe multi-rôles et pilotage renforcé.",
     monthly: 1590,
     yearly: 15200,
-    features: ["Tout Essentiel", "Paiements & relances auto", "Pipeline prospects Kanban", "Exports & tableaux avancés", "Support prioritaire"],
-    cta: "Choisir Pro",
+    features: ["Tout Essentiel", "Paiements & relances auto", "Suivi des nouvelles demandes", "Exports & tableaux avancés", "Support prioritaire", "✓ Onboarding + Formation + Support inclus"],
+    cta: "Démarrer avec Pro — le plus populaire →",
     popular: true,
   },
   {
@@ -1548,15 +1597,26 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
       )}
     >
       {plan.popular && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.35, ease, delay: 0.15 }}
-          className="absolute right-0 top-0 z-20 border-b-2 border-l-2 border-foreground bg-background px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-foreground sm:px-4 sm:text-[10px] rounded-none"
-        >
-          ★ Populaire
-        </motion.div>
+        <>
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35, ease, delay: 0.15 }}
+            className="absolute right-0 top-0 z-20 border-b-2 border-l-2 border-foreground bg-background px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-foreground sm:px-4 sm:text-[10px] rounded-none"
+          >
+            ★ Populaire
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35, ease, delay: 0.25 }}
+            className="mt-2 inline-flex items-center gap-1.5 border border-amber-400/40 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-300"
+          >
+            🎁 Onboarding offert jusqu'au 30 juin
+          </motion.div>
+        </>
       )}
       <div className="flex items-center justify-between gap-2">
         <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-background/60" : "text-muted-foreground")}>0{idx + 1} / 03</span>
@@ -1626,6 +1686,14 @@ function PricingSection() {
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   useEffect(() => {
+    const el = document.getElementById("tarifs");
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { track("pricing_view"); observer.disconnect(); } }, { threshold: 0.2 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (!carouselApi) return;
     const onSelect = () => setCarouselIndex(carouselApi.selectedScrollSnap());
     onSelect();
@@ -1653,7 +1721,7 @@ function PricingSection() {
             Des formules claires et transparentes.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Montants indicatifs l'offre finale est toujours ajustée après un court diagnostic de votre centre.
+            Prix de départ transparents — adaptés si votre centre a des besoins spécifiques après un appel de 20 min.
           </motion.p>
         </motion.div>
 
@@ -1740,6 +1808,26 @@ function PricingSection() {
             <PricingCard key={plan.id} plan={plan} idx={idx} yearly={yearly} />
           ))}
         </motion.div>
+
+        {/* Mini pricing FAQ */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease, delay: 0.2 }}
+          className="mt-12 grid gap-4 border-2 border-foreground/10 bg-card p-6 sm:grid-cols-3 sm:gap-6 sm:p-8"
+        >
+          {[
+            { q: "Puis-je payer mensuellement ?", a: "Oui, les deux options sont disponibles. L'annuel vous offre 2 mois offerts." },
+            { q: "Y a-t-il des frais cachés ?", a: "Non. Le prix affiché inclut l'onboarding, la formation et le support. Aucune surprise." },
+            { q: "Que se passe-t-il si mon centre grandit ?", a: "Passez de Essentiel à Pro en un clic, sans perdre vos données. Notre équipe vous accompagne." },
+          ].map(({ q, a }) => (
+            <div key={q}>
+              <p className="text-sm font-bold text-foreground">{q}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{a}</p>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
@@ -1749,11 +1837,12 @@ function PricingSection() {
 // S8 FAQ
 // ─────────────────────────────────────────────
 const faqItems = [
-  { q: "Orio est-il adapté à mon type de centre ?", a: "Orio a été conçu pour les centres spécialisés qui accompagnent des enfants avec autisme, TDAH, troubles du langage ou difficultés d'apprentissage. Si vous gérez des familles, des paiements mensuels et une équipe pluridisciplinaire, Orio est fait pour vous." },
-  { q: "Combien de temps prend la mise en place ?", a: "La plupart des centres sont opérationnels en moins de 48h. Nous vous accompagnons à chaque étape : import de vos données existantes, formation de votre équipe et premier paramétrage inclus." },
-  { q: "Mes données sont-elles en sécurité ?", a: "Absolument. Toutes les données sont chiffrées, hébergées sur des serveurs sécurisés, et accessibles uniquement par les personnes autorisées de votre centre. Nous respectons les bonnes pratiques RGPD adaptées au contexte marocain." },
-  { q: "Puis-je tester avant de m'engager ?", a: "Oui. Explorez la démo interactive directement sur cette page aucun compte requis. Vous pouvez aussi demander une démo personnalisée avec vos propres cas d'usage via le formulaire ci-dessous." },
-  { q: "Est-ce que ça fonctionne sur mobile ?", a: "Orio est entièrement responsive. Votre équipe peut accéder au tableau de bord depuis n'importe quel appareil ordinateur, tablette ou smartphone sans installer d'application." },
+  { q: "Ma secrétaire peut-elle utiliser Orio sans formation ?", a: "Oui. Orio a été conçu pour les équipes non-techniques. L'interface est en français, intuitive, et nous assurons une formation incluse à la mise en service. La plupart des secrétaires sont autonomes en moins d'une heure." },
+  { q: "Puis-je exporter mes données si je quitte Orio ?", a: "Absolument. Toutes vos données (dossiers, paiements, historique) sont exportables en CSV à tout moment. Vous n'êtes jamais pris en otage. Votre centre reste propriétaire de ses données." },
+  { q: "Combien de dossiers le logiciel peut-il gérer ?", a: "Essentiel supporte jusqu'à ~50 dossiers actifs. Pro est sans limite pratique. Réseau est conçu pour les groupes multi-sites. Contactez-nous pour un diagnostic personnalisé." },
+  { q: "Y a-t-il une application mobile ?", a: "Orio est entièrement responsive — il fonctionne parfaitement sur mobile et tablette depuis votre navigateur, sans installation. Vous gérez votre centre depuis n'importe quel appareil." },
+  { q: "Orio fonctionne-t-il en arabe ?", a: "L'interface est actuellement en français, langue de travail de la majorité de nos centres clients. Le support est disponible en français et en arabe. Une interface arabe est en cours de développement." },
+  { q: "Comment sont protégées mes données (RGPD / Maroc) ?", a: "Toutes les données sont chiffrées et hébergées sur des serveurs sécurisés. Nous appliquons les bonnes pratiques RGPD adaptées au contexte marocain (loi 09-08). Aucune donnée n'est partagée avec des tiers." },
 ];
 
 function FaqSection() {
@@ -1784,7 +1873,7 @@ function FaqSection() {
           transition={{ duration: 0.6, ease }}
           className="mt-12 border-2 border-foreground/10 bg-card p-2 shadow-[var(--shadow-soft)]"
         >
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="multiple" defaultValue={["item-0", "item-1"]} className="w-full">
             {faqItems.map((item, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="border-b border-border last:border-b-0">
                 <AccordionTrigger className="px-3 py-4 text-left text-sm font-bold hover:no-underline sm:px-4 sm:py-5 sm:text-base">{item.q}</AccordionTrigger>
@@ -1799,10 +1888,81 @@ function FaqSection() {
 }
 
 // ─────────────────────────────────────────────
+// WhatsApp demo form (2-field)
+// ─────────────────────────────────────────────
+function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
+  const [sent, setSent] = useState(false);
+  const centerRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const centerName = centerRef.current?.value ?? "";
+    track("form_submit");
+    track("whatsapp_open", centerName || "unknown");
+    const waText = encodeURIComponent(`Bonjour, je veux une démo Orio pour ${centerName || "mon centre"}`);
+    window.open(`https://wa.me/212777777428?text=${waText}`, "_blank", "noopener,noreferrer");
+    setSent(true);
+  };
+
+  return (
+    <motion.form
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.7, ease }}
+      onSubmit={handleSubmit}
+      className="relative z-10 flex min-w-0 flex-col overflow-visible border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-10"
+    >
+      <AnimatePresence mode="wait">
+        {sent ? (
+          <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
+            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center bg-[var(--gradient-hero)] text-background shadow-[var(--shadow-elegant)]">
+              <Check className="h-8 w-8" />
+            </motion.div>
+            <h3 className="mt-6 text-2xl font-black">WhatsApp ouvert !</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Envoyez le message pré-rempli — nous répondons sous 2h.</p>
+            <button onClick={() => setSent(false)} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
+              Recommencer
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-5">
+            <div>
+              <label htmlFor="wa-center" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Nom du centre *</label>
+              <input ref={centerRef} id="wa-center" type="text" placeholder="Centre Lumière" required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
+            </div>
+            <div>
+              <label htmlFor="wa-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">WhatsApp *</label>
+              <input ref={phoneRef} id="wa-phone" type="tel" placeholder="06 12 34 56 78" required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              type="submit"
+              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[var(--shadow-elegant)] transition hover:bg-primary sm:py-4"
+            >
+              {!reduceMotion && (
+                <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
+              )}
+              <span className="relative z-[1]">Réserver ma démo sur WhatsApp →</span>
+              <Send className="relative z-[1] h-4 w-4 transition group-hover:translate-x-0.5" />
+            </motion.button>
+            <p className="flex shrink-0 items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              🔒 Données sécurisées · Réponse garantie sous 2h · Sans engagement
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.form>
+  );
+}
+
+// ─────────────────────────────────────────────
 // S9 Contact CTA
 // ─────────────────────────────────────────────
 function ContactSection() {
-  const [sent, setSent] = useState(false);
   const reduceMotion = useReducedMotion();
   return (
     <section id="contact" className="relative overflow-hidden py-24 pb-[max(6rem,calc(6rem+env(safe-area-inset-bottom)))] sm:py-32 sm:pb-[max(8rem,calc(8rem+env(safe-area-inset-bottom)))]">
@@ -1822,10 +1982,10 @@ function ContactSection() {
             Démo gratuite
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Demandez votre démo.
+            20 minutes. Votre centre dans Orio. En direct.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Laissez vos coordonnées : nous vous proposons un créneau pour présenter Orio et répondre à vos questions spécifiques.
+            Réservez un créneau WhatsApp — on vous montre Orio avec vos cas concrets, sans engagement.
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {(
@@ -1855,7 +2015,7 @@ function ContactSection() {
             ))}
           </motion.ul>
           <motion.div variants={fadeUp} className="mt-8 space-y-3">
-            {["Présentation personnalisée selon votre type de centre", "Aucun engagement requis", "Réponse sous 24h ouvrées"].map((item) => (
+            {["Présentation personnalisée selon votre type de centre", "Réponse garantie sous 2h sur WhatsApp", "Aucun engagement requis", "Les créneaux partent vite — réservez le vôtre"].map((item) => (
               <div key={item} className="flex items-center gap-2 text-sm text-foreground/70">
                 <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={3} />
                 {item}
@@ -1864,62 +2024,7 @@ function ContactSection() {
           </motion.div>
         </motion.div>
 
-        <motion.form
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
-          onSubmit={(e) => { e.preventDefault(); setSent(true); }}
-          className="relative z-10 flex min-w-0 flex-col overflow-visible border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-10"
-        >
-          <AnimatePresence mode="wait">
-            {sent ? (
-              <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
-                <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center bg-[var(--gradient-hero)] text-background shadow-[var(--shadow-elegant)]">
-                  <Check className="h-8 w-8" />
-                </motion.div>
-                <h3 className="mt-6 text-2xl font-black">Demande envoyée !</h3>
-                <p className="mt-2 text-sm text-muted-foreground">Nous vous recontactons sous 24h ouvrées pour fixer un créneau.</p>
-                <button onClick={() => setSent(false)} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
-                  Envoyer un autre message
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-5">
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {[{ l: "Nom complet", t: "text", p: "Mohammed Alami", id: "name" }, { l: "Nom du centre", t: "text", p: "Centre Lumière", id: "center" }].map((f) => (
-                    <div key={f.id}>
-                      <label htmlFor={f.id} className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{f.l} *</label>
-                      <input id={f.id} type={f.t} placeholder={f.p} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
-                    </div>
-                  ))}
-                </div>
-                {[{ l: "Téléphone", t: "tel", p: "07 77 77 74 28", id: "phone" }, { l: "Email professionnel", t: "email", p: "vous@entreprise.com", id: "email" }].map((f) => (
-                  <div key={f.id}>
-                    <label htmlFor={f.id} className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{f.l} *</label>
-                    <input id={f.id} type={f.t} placeholder={f.p} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
-                  </div>
-                ))}
-                <motion.button
-                  whileHover={{ scale: 1.04, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
-                  type="submit"
-                  className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[var(--shadow-elegant)] transition hover:bg-primary sm:py-4"
-                >
-                  {!reduceMotion && (
-                    <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
-                  )}
-                  <span className="relative z-[1]">Demander ma démo gratuite</span>
-                  <Send className="relative z-[1] h-4 w-4 transition group-hover:translate-x-0.5" />
-                </motion.button>
-                <p className="flex shrink-0 items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-                  <Lock className="h-3.5 w-3.5 shrink-0" />
-                  Vos données sont sécurisées et ne seront jamais partagées.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.form>
+        <WhatsAppDemoForm reduceMotion={reduceMotion} />
       </div>
     </section>
   );
@@ -1963,8 +2068,8 @@ function Footer() {
                 </a>
               </li>
               <li className="text-balance">Agadir Bay, Technopole 1 Bloc B, Agadir 80000</li>
-              <li>07 77 77 74 28 (Maroc)</li>
-              <li>+1 613 706 9011 (US / Canada)</li>
+              <li><a href="tel:+212777777428" className="transition hover:text-background">07 77 77 74 28 (Maroc)</a></li>
+              <li><a href="tel:+16137069011" className="transition hover:text-background">+1 613 706 9011 (US / Canada)</a></li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -1972,7 +2077,7 @@ function Footer() {
               onClick={() => scrollToId("contact")}
               className="mt-6 inline-flex items-center gap-2 border border-background/30 bg-background/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-background transition hover:bg-background hover:text-foreground"
             >
-              Demander une démo
+              Réserver une démo
               <ArrowRight className="h-3 w-3" />
             </motion.button>
           </div>
