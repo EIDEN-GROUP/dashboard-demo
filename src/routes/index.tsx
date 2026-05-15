@@ -14,7 +14,7 @@ const MotionLink = motion.create(Link);
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kairo — CRM pour Centres Spécialisés au Maroc | Quittez Excel" },
+      { title: "Gestio — CRM pour Centres Spécialisés au Maroc | Quittez Excel" },
       {
         name: "description",
         content:
@@ -82,7 +82,7 @@ function Header() {
             <motion.div whileHover={{ rotate: -8, scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--gradient-hero)] text-primary-foreground shadow-[var(--shadow-elegant)] sm:h-10 sm:w-10">
               <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
             </motion.div>
-            <span className="truncate text-base font-bold tracking-tight sm:text-lg">Kairo</span>
+            <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
             <button onClick={() => scrollToId("demo")} className="px-2 py-2 text-sm font-medium text-foreground/70 transition hover:text-foreground md:px-4">
@@ -205,7 +205,7 @@ function HeroDashboardPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
           <span className="ml-2 flex-1 rounded border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-            kairo.ma · aperçu démo
+            gestio.ma · aperçu démo
           </span>
           <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -219,7 +219,7 @@ function HeroDashboardPreview() {
           <div className="shrink-0 border-b border-border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold tracking-tight text-foreground sm:text-xs">Kairo</p>
+                <p className="text-[11px] font-bold tracking-tight text-foreground sm:text-xs">Gestio</p>
                 <p className="text-[8px] uppercase tracking-widest text-muted-foreground sm:text-[9px]">Centre spécialisé</p>
               </div>
               <div className="flex items-center gap-0.5">
@@ -369,7 +369,7 @@ function Hero() {
           </motion.h1>
 
           <motion.p variants={fadeUp} className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Kairo est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning — tout au même endroit, accessible en 2 clics.
+            Gestio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning — tout au même endroit, accessible en 2 clics.
           </motion.p>
 
           {/* Social proof mini row */}
@@ -566,7 +566,7 @@ function DemoSection() {
           <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
           <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
           <span className="ml-2 flex-1 truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:ml-3 sm:px-3 sm:text-xs">
-            kairo.ma · {currentStep.label.toLowerCase()}
+            gestio.ma · {currentStep.label.toLowerCase()}
           </span>
           <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary sm:px-2 sm:text-[11px]">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -580,7 +580,7 @@ function DemoSection() {
           <div className="border-b border-border bg-card px-3 py-2 sm:px-5 sm:py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold tracking-tight text-foreground sm:text-base">Kairo</p>
+                <p className="text-sm font-bold tracking-tight text-foreground sm:text-base">Gestio</p>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-[11px]">Centre spécialisé</p>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -683,7 +683,7 @@ function DemoSection() {
             Démo interactive sans compte requis
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Explorez Kairo maintenant.
+            Explorez Gestio maintenant.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground sm:text-xl">
             Cliquez sur chaque module pour voir comment il fonctionne comme si c'était votre vrai tableau de bord.
@@ -1013,11 +1013,11 @@ function SolutionSection() {
             La solution
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            Kairo centralise tout.{" "}
+            Gestio centralise tout.{" "}
             <span className="opacity-60">Un seul tableau de bord.</span>
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-6 text-lg text-background/70">
-            Fini les outils éparpillés. Kairo a été conçu de A à Z pour les centres spécialisés avec les contraintes réelles des directeurs en tête.
+            Fini les outils éparpillés. Gestio a été conçu de A à Z pour les centres spécialisés avec les contraintes réelles des directeurs en tête.
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {benefits.map((b) => (
@@ -1074,7 +1074,7 @@ const modules = [
     icon: LayoutDashboard,
     title: "Tableau de bord",
     benefit: "Tout votre centre en un regard",
-    text: "Dès que vous ouvrez Kairo, vous voyez ce qui se passe : combien de dossiers actifs, combien d'impayés, quels rendez-vous sont prévus aujourd'hui. Aucun rapport à générer.",
+    text: "Dès que vous ouvrez Gestio, vous voyez ce qui se passe : combien de dossiers actifs, combien d'impayés, quels rendez-vous sont prévus aujourd'hui. Aucun rapport à générer.",
   },
   {
     icon: UsersRound,
@@ -1098,7 +1098,7 @@ const modules = [
     icon: CreditCard,
     title: "Paiements",
     benefit: "Zéro impayé qui passe entre les mailles",
-    text: "Kairo génère les reçus, suit ce que chaque dossier doit régler chaque mois et envoie des relances automatiques. Vous n'avez plus à courir après les paiements en retard.",
+    text: "Gestio génère les reçus, suit ce que chaque dossier doit régler chaque mois et envoie des relances automatiques. Vous n'avez plus à courir après les paiements en retard.",
   },
   {
     icon: Layers,
@@ -1197,7 +1197,7 @@ const testimonials = [
     stars: 5,
     date: "Il y a 2 semaines",
     highlight: "Zéro Excel depuis 3 mois",
-    quote: "Avant Kairo, je passais mes lundis matin à réconcilier trois fichiers Excel différents. Maintenant tout est là, en temps réel. Je me concentre sur les enfants, pas sur l'administratif.",
+    quote: "Avant Gestio, je passais mes lundis matin à réconcilier trois fichiers Excel différents. Maintenant tout est là, en temps réel. Je me concentre sur les enfants, pas sur l'administratif.",
   },
   {
     initials: "KM",
@@ -1233,7 +1233,7 @@ const testimonials = [
     stars: 5,
     date: "Il y a 5 jours",
     highlight: "Zéro inscription perdue depuis l'adoption",
-    quote: "On ne perd plus aucune demande depuis qu'on utilise Kairo. Avant, un post-it tombait et le contact disparaissait. Maintenant chaque dossier est suivi jusqu'à l'inscription.",
+    quote: "On ne perd plus aucune demande depuis qu'on utilise Gestio. Avant, un post-it tombait et le contact disparaissait. Maintenant chaque dossier est suivi jusqu'à l'inscription.",
   },
   {
     initials: "HA",
@@ -1245,7 +1245,7 @@ const testimonials = [
     stars: 5,
     date: "Il y a 2 mois",
     highlight: "Support réactif et formation incluse",
-    quote: "L'équipe Kairo nous a accompagnés pas à pas. La formation était incluse, le paramétrage fait avec nous. Je recommande à tous les centres qui veulent se moderniser sans prise de tête.",
+    quote: "L'équipe Gestio nous a accompagnés pas à pas. La formation était incluse, le paramétrage fait avec nous. Je recommande à tous les centres qui veulent se moderniser sans prise de tête.",
   },
   {
     initials: "AC",
@@ -1421,7 +1421,7 @@ function SocialProofSection() {
             Ce que disent nos directeurs.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Des centres à travers tout le Maroc qui utilisent Kairo au quotidien.
+            Des centres à travers tout le Maroc qui utilisent Gestio au quotidien.
           </motion.p>
         </motion.div>
 
@@ -1437,7 +1437,7 @@ function SocialProofSection() {
             { value: "10+", label: "centres actifs" },
             { value: "4.9 / 5", label: "note moyenne" },
             { value: "< 48h", label: "mise en service" },
-            { value: "100%", label: "recommandent Kairo" },
+            { value: "100%", label: "recommandent Gestio" },
           ].map((s) => (
             <div key={s.label} className="py-6 text-center">
               <p className="text-2xl font-black tracking-tight sm:text-3xl">{s.value}</p>
@@ -1837,11 +1837,11 @@ function PricingSection() {
 // S8 FAQ
 // ─────────────────────────────────────────────
 const faqItems = [
-  { q: "Ma secrétaire peut-elle utiliser Kairo sans formation ?", a: "Oui. Kairo a été conçu pour les équipes non-techniques. L'interface est en français, intuitive, et nous assurons une formation incluse à la mise en service. La plupart des secrétaires sont autonomes en moins d'une heure." },
-  { q: "Puis-je exporter mes données si je quitte Kairo ?", a: "Absolument. Toutes vos données (dossiers, paiements, historique) sont exportables en CSV à tout moment. Vous n'êtes jamais pris en otage. Votre centre reste propriétaire de ses données." },
+  { q: "Ma secrétaire peut-elle utiliser Gestio sans formation ?", a: "Oui. Gestio a été conçu pour les équipes non-techniques. L'interface est en français, intuitive, et nous assurons une formation incluse à la mise en service. La plupart des secrétaires sont autonomes en moins d'une heure." },
+  { q: "Puis-je exporter mes données si je quitte Gestio ?", a: "Absolument. Toutes vos données (dossiers, paiements, historique) sont exportables en CSV à tout moment. Vous n'êtes jamais pris en otage. Votre centre reste propriétaire de ses données." },
   { q: "Combien de dossiers le logiciel peut-il gérer ?", a: "Essentiel supporte jusqu'à ~50 dossiers actifs. Pro est sans limite pratique. Réseau est conçu pour les groupes multi-sites. Contactez-nous pour un diagnostic personnalisé." },
-  { q: "Y a-t-il une application mobile ?", a: "Kairo est entièrement responsive — il fonctionne parfaitement sur mobile et tablette depuis votre navigateur, sans installation. Vous gérez votre centre depuis n'importe quel appareil." },
-  { q: "Kairo fonctionne-t-il en arabe ?", a: "L'interface est actuellement en français, langue de travail de la majorité de nos centres clients. Le support est disponible en français et en arabe. Une interface arabe est en cours de développement." },
+  { q: "Y a-t-il une application mobile ?", a: "Gestio est entièrement responsive — il fonctionne parfaitement sur mobile et tablette depuis votre navigateur, sans installation. Vous gérez votre centre depuis n'importe quel appareil." },
+  { q: "Gestio fonctionne-t-il en arabe ?", a: "L'interface est actuellement en français, langue de travail de la majorité de nos centres clients. Le support est disponible en français et en arabe. Une interface arabe est en cours de développement." },
   { q: "Comment sont protégées mes données (RGPD / Maroc) ?", a: "Toutes les données sont chiffrées et hébergées sur des serveurs sécurisés. Nous appliquons les bonnes pratiques RGPD adaptées au contexte marocain (loi 09-08). Aucune donnée n'est partagée avec des tiers." },
 ];
 
@@ -1900,7 +1900,7 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
     const centerName = centerRef.current?.value ?? "";
     track("form_submit");
     track("whatsapp_open", centerName || "unknown");
-    const waText = encodeURIComponent(`Bonjour, je veux une démo Kairo pour ${centerName || "mon centre"}`);
+    const waText = encodeURIComponent(`Bonjour, je veux une démo Gestio pour ${centerName || "mon centre"}`);
     window.open(`https://wa.me/212777777428?text=${waText}`, "_blank", "noopener,noreferrer");
     setSent(true);
   };
@@ -1982,10 +1982,10 @@ function ContactSection() {
             Démo gratuite
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            20 minutes. Votre centre dans Kairo. En direct.
+            20 minutes. Votre centre dans Gestio. En direct.
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Réservez un créneau WhatsApp — on vous montre Kairo avec vos cas concrets, sans engagement.
+            Réservez un créneau WhatsApp — on vous montre Gestio avec vos cas concrets, sans engagement.
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {(
@@ -2043,10 +2043,10 @@ function Footer() {
               <div className="flex h-10 w-10 items-center justify-center bg-background/10">
                 <GraduationCap className="h-5 w-5 text-background" />
               </div>
-              <span className="text-lg font-black tracking-tight">Kairo</span>
+              <span className="text-lg font-black tracking-tight">Gestio</span>
             </div>
             <p className="mt-3 text-sm text-background/60 leading-relaxed">
-              CRM pour centres éducatifs spécialisés au Maroc. Autisme · TDAH · Troubles d'apprentissage.
+              La plateforme de gestion tout-en-un pour centres spécialisés. Dossiers · Paiements · Planning.
             </p>
           </div>
           <div>
@@ -2083,7 +2083,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-10 flex flex-col-reverse gap-4 border-t border-background/10 pt-6 text-xs text-background/40 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-center sm:text-left">© 2026 Kairo · Tous droits réservés</span>
+          <span className="text-center sm:text-left">© 2026 Gestio · Tous droits réservés</span>
           <MotionLink to="/login" className="text-center text-background/30 transition hover:text-background/60 sm:text-right">
             Espace client
           </MotionLink>
