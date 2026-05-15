@@ -14,7 +14,7 @@ const MotionLink = motion.create(Link);
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Orio CRM pour centres éducatifs spécialisés" },
+      { title: "Orio CRM pour centres éducatifs spécialisés." },
       {
         name: "description",
         content:
