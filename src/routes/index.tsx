@@ -1805,7 +1805,7 @@ function ContactSection() {
   const [sent, setSent] = useState(false);
   const reduceMotion = useReducedMotion();
   return (
-    <section id="contact" className="relative overflow-x-hidden py-24 pb-[max(6rem,calc(6rem+env(safe-area-inset-bottom)))] sm:py-32 sm:pb-[max(8rem,calc(8rem+env(safe-area-inset-bottom)))]">
+    <section id="contact" className="relative overflow-hidden py-24 pb-[max(6rem,calc(6rem+env(safe-area-inset-bottom)))] sm:py-32 sm:pb-[max(8rem,calc(8rem+env(safe-area-inset-bottom)))]">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-20 right-1/4 h-80 w-80 bg-primary/15 blur-3xl animate-blob" />
         <div className="absolute bottom-0 left-1/4 h-80 w-80 bg-accent/20 blur-3xl animate-blob" style={{ animationDelay: "-6s" }} />
