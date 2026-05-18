@@ -1862,7 +1862,7 @@ function FaqSection() {
           transition={{ duration: 0.6, ease }}
           className="mt-12 border-2 border-foreground/10 bg-card p-2 shadow-[var(--shadow-soft)]"
         >
-          <Accordion type="multiple" defaultValue={["item-0", "item-1"]} className="w-full">
+          <Accordion type="multiple" className="w-full">
             {faqItems.map((item, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="border-b border-border last:border-b-0">
                 <AccordionTrigger className="px-3 py-4 text-left text-sm font-bold hover:no-underline sm:px-4 sm:py-5 sm:text-base">{item.q}</AccordionTrigger>
