@@ -63,6 +63,16 @@ const previewSecondaryNav: { id: DashboardMiniaturePageId; label: string; icon: 
 // ─────────────────────────────────────────────
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 48);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const navScroll = (id: string) => {
     scrollToId(id);
@@ -76,30 +86,71 @@ function Header() {
           initial={{ y: -40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease }}
-          className="border-b border-border/60 bg-background/80 backdrop-blur-xl"
+          className={cn(
+            "border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 ease-out",
+            isScrolled
+              ? "border-border/60 bg-background/90 shadow-sm"
+              : "border-white/10 bg-[#0a0f0c] shadow-[0_1px_0_rgba(255,255,255,0.04)]",
+          )}
         >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
-          <Link to="/" className="flex min-w-0 shrink items-center gap-2 sm:gap-3">
-            <motion.div whileHover={{ rotate: -8, scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10" style={{ color: "#122620"}}>
+          <Link
+            to="/"
+            className={cn(
+              "flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors",
+              isScrolled ? "text-foreground" : "text-[#f8f3e8]",
+            )}
+          >
+            <motion.div
+              whileHover={{ rotate: -8, scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className={cn(
+                "flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10",
+                isScrolled ? "text-[#122620]" : "text-emerald-400",
+              )}
+            >
               <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
             </motion.div>
             <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
-            <button onClick={() => scrollToId("demo")} className="px-2 py-2 text-sm font-medium text-foreground/70 transition hover:text-foreground md:px-4">
+            <button
+              onClick={() => scrollToId("demo")}
+              className={cn(
+                "px-2 py-2 text-sm font-medium transition md:px-4",
+                isScrolled ? "text-foreground/70 hover:text-foreground" : "text-white/65 hover:text-white",
+              )}
+            >
               Démo
             </button>
-            <button onClick={() => scrollToId("modules")} className="px-2 py-2 text-sm font-medium text-foreground/70 transition hover:text-foreground md:px-4">
+            <button
+              onClick={() => scrollToId("modules")}
+              className={cn(
+                "px-2 py-2 text-sm font-medium transition md:px-4",
+                isScrolled ? "text-foreground/70 hover:text-foreground" : "text-white/65 hover:text-white",
+              )}
+            >
               Modules
             </button>
-            <button onClick={() => scrollToId("tarifs")} className="px-2 py-2 text-sm font-medium text-foreground/70 transition hover:text-foreground md:px-4">
+            <button
+              onClick={() => scrollToId("tarifs")}
+              className={cn(
+                "px-2 py-2 text-sm font-medium transition md:px-4",
+                isScrolled ? "text-foreground/70 hover:text-foreground" : "text-white/65 hover:text-white",
+              )}
+            >
               Tarifs
             </button>
           </nav>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
-              className="grid h-10 w-10 place-items-center border border-border/80 text-foreground/80 transition hover:bg-muted sm:hidden"
+              className={cn(
+                "grid h-10 w-10 place-items-center border transition sm:hidden",
+                isScrolled
+                  ? "border-border/80 text-foreground/80 hover:bg-muted"
+                  : "border-white/15 text-white/85 hover:bg-white/10",
+              )}
               aria-expanded={menuOpen}
               aria-controls="landing-nav-sheet"
               aria-label="Ouvrir le menu"
@@ -111,7 +162,7 @@ function Header() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => scrollToId("contact")}
-              className="inline-flex max-w-[11rem] items-center justify-center gap-1.5 bg-foreground px-3 py-2.5 text-xs font-semibold text-background shadow-[var(--shadow-soft)] transition hover:bg-primary sm:max-w-none sm:gap-2 sm:px-5 sm:text-sm"
+              className="landing-cta-primary inline-flex max-w-[11rem] items-center justify-center gap-1.5 rounded-none px-3 py-2.5 text-xs font-semibold transition sm:max-w-none sm:gap-2 sm:px-5 sm:text-sm"
             >
               <span className="truncate sm:whitespace-normal">Réserver une démo</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
@@ -148,7 +199,7 @@ function Header() {
             <button
               type="button"
               onClick={() => { scrollToId("contact"); setMenuOpen(false); }}
-              className="flex w-full items-center justify-center gap-2 bg-foreground px-4 py-3.5 text-sm font-black text-background transition hover:bg-primary"
+              className="landing-cta-primary flex w-full items-center justify-center gap-2 rounded-none px-4 py-3.5 text-sm font-black transition"
             >
               Réserver ma démo 20 min
               <ArrowRight className="h-4 w-4" />
@@ -161,7 +212,7 @@ function Header() {
 }
 
 // ─────────────────────────────────────────────
-// Hero miniature dashboard (right column)
+// Hero miniature dashboard
 // ─────────────────────────────────────────────
 function HeroDashboardPreview() {
   const reduceMotion = useReducedMotion();
@@ -173,8 +224,7 @@ function HeroDashboardPreview() {
     window.setTimeout(() => setNotice(null), 4000);
   };
 
-  const previewBtn =
-    "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-1.5 py-0.5 text-[9px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[10px]";
+  const previewBtn = "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-1.5 py-0.5 text-[9px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[10px]";
 
   const panelTransition = reduceMotion
     ? { duration: 0.15 }
@@ -182,261 +232,216 @@ function HeroDashboardPreview() {
 
   return (
     <div className="relative w-full">
-      {/* Glow behind the frame */}
-      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-foreground/5 blur-2xl" />
+      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-transparent to-amber-500/10 blur-2xl" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.9, ease, delay: 0.25 }}
-        className="relative min-w-0 overflow-hidden rounded-2xl border-2 border-border bg-card shadow-[var(--shadow-elegant)] ring-1 ring-foreground/[0.06]"
+        className="relative min-w-0 overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl ring-1 ring-black/[0.06]"
       >
-        {/* Browser chrome */}
         <div className="flex items-center gap-1.5 border-b border-border bg-muted px-3 py-2">
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
-          <span className="ml-2 flex-1 rounded border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+          <span className="ml-2 flex-1 truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-[9px] text-muted-foreground">
             gestio.ma · aperçu démo
           </span>
-          <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Live
           </span>
         </div>
 
-        {/* App shell */}
-        <div className="flex flex-col bg-muted text-[9px] sm:text-[10px]">
-          {/* App header */}
-          <div className="shrink-0 border-b border-border bg-card px-2 py-1.5 sm:px-3 sm:py-2">
+        <div className="flex flex-col bg-muted text-[10px] text-foreground">
+          <div className="shrink-0 border-b border-border bg-card px-2.5 py-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold tracking-tight text-foreground sm:text-xs">Gestio</p>
                 <p className="text-[8px] uppercase tracking-widest text-muted-foreground sm:text-[9px]">Centre spécialisé</p>
               </div>
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-1">
                 <div className="grid h-5 w-5 place-items-center bg-primary text-[8px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[9px]">A</div>
-                <motion.button
+                <button
                   type="button"
-                  whileTap={{ scale: 0.92 }}
-                  className="grid h-5 w-5 place-items-center border border-border text-muted-foreground hover:bg-muted sm:h-6 sm:w-6"
-                  onClick={() => showLocked("Connectez-vous pour accéder à votre espace réel.")}
+                  className="grid h-5 w-5 place-items-center rounded border border-border text-muted-foreground transition hover:bg-muted sm:h-6 sm:w-6"
+                  onClick={() => showLocked("Connectez-vous pour accéder à votre espace.")}
                 >
-                  <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2} />
-                </motion.button>
+                  <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                </button>
               </div>
             </div>
-            {/* Top nav */}
-            <nav className="mt-1.5 flex flex-nowrap gap-0.5 overflow-x-auto border-t border-border/70 pt-1">
+            <nav className="mt-2 flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
               {previewTopNav.map((n) => {
                 const Icon = n.icon;
                 const active = page === n.id;
                 return (
-                  <motion.button
+                  <button
                     key={n.id}
-                    type="button"
                     onClick={() => setPage(n.id)}
-                    whileTap={{ scale: 0.96 }}
                     className={cn(
-                      "flex shrink-0 items-center gap-0.5 border px-1 py-1 sm:px-1.5",
-                      active ? "border-border bg-muted font-semibold text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:bg-muted/80",
+                      "flex shrink-0 items-center gap-1 border px-1.5 py-1 transition",
+                      active
+                        ? "border-border bg-muted font-semibold text-foreground shadow-sm"
+                        : "border-transparent text-muted-foreground hover:bg-muted/80",
                     )}
                   >
-                    <Icon className="h-2.5 w-2.5 shrink-0 opacity-75 sm:h-3 sm:w-3" />
-                    <span className="whitespace-nowrap">{n.label}</span>
-                  </motion.button>
+                    <Icon className="h-2.5 w-2.5 opacity-70" />
+                    <span>{n.label}</span>
+                  </button>
                 );
               })}
             </nav>
-            {/* Secondary nav */}
-            <div className="mt-1 flex flex-wrap gap-0.5 border-t border-border bg-muted px-1 py-1">
-              {previewSecondaryNav.map((n) => {
-                const Icon = n.icon;
-                const active = page === n.id;
-                return (
-                  <motion.button
-                    key={n.id}
-                    type="button"
-                    onClick={() => setPage(n.id)}
-                    whileTap={{ scale: 0.96 }}
-                    className={cn(
-                      "flex items-center gap-0.5 border px-1 py-0.5 font-medium",
-                      active ? "border-border bg-card text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:bg-card/90",
-                    )}
-                  >
-                    <Icon className="h-2.5 w-2.5 shrink-0 opacity-75 sm:h-3 sm:w-3" />
-                    {n.label}
-                  </motion.button>
-                );
-              })}
-            </div>
           </div>
 
-          {/* Page area */}
-          <main className="relative h-[min(42vh,280px)] min-h-[220px] shrink-0 overflow-hidden bg-muted sm:h-[280px] sm:min-h-0 md:h-[300px]">
-            <AnimatePresence initial={false} mode="wait">
+          <main className="relative flex h-[240px] flex-col overflow-hidden bg-background sm:h-[300px]">
+            <AnimatePresence mode="wait">
               {notice && (
                 <motion.div
-                  key={notice}
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.25, ease }}
-                  className="pointer-events-none absolute left-2 right-2 top-2 z-20 flex justify-center"
+                  className="absolute left-2 right-2 top-2 z-20 flex justify-center"
                 >
-                  <p className="max-w-full rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-xs text-muted-foreground shadow-md backdrop-blur-sm">
+                  <p className="max-w-xs rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-[10px] text-muted-foreground shadow-md backdrop-blur-sm">
                     {notice}
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={page}
-                initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -12 }}
-                transition={panelTransition}
-                className="absolute inset-0 overflow-y-auto overscroll-contain p-2 sm:p-2.5"
-              >
-                <HeroPreviewPageBody page={page} previewBtn={previewBtn} showLocked={showLocked} />
-              </motion.div>
-            </AnimatePresence>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 text-foreground">
+               <HeroPreviewPageBody page={page} previewBtn={previewBtn} showLocked={showLocked} />
+            </div>
           </main>
         </div>
-      </motion.div>
-
-      {/* Floating badge in-flow on narrow screens to avoid clipping */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease, delay: 0.8 }}
-        className="relative mt-3 flex w-max max-w-full items-center gap-1.5 self-end border-2 border-foreground bg-background px-2.5 py-1.5 shadow-[4px_4px_0_0_var(--foreground)] sm:absolute sm:right-0 sm:top-0 sm:mt-0 sm:self-auto sm:px-3 md:-right-5 md:-top-4"
-      >
-        <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" />
-        <span className="text-[11px] font-black uppercase tracking-wider sm:text-xs">Démo interactive</span>
       </motion.div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────
-// S1 Hero
+// S1 Hero - REDESIGNED DARK
 // ─────────────────────────────────────────────
 function Hero() {
   const reduceMotion = useReducedMotion();
   return (
-    <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-background">
-        <div className="absolute inset-0 hero-mesh-grid hero-mesh-fade" />
-        {!reduceMotion && (
-          <>
-            <motion.div className="absolute left-[10%] top-[20%] h-2 w-2 bg-foreground" animate={{ y: [0, 30, 0], opacity: [0.3, 1, 0.3] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} />
-            <motion.div className="absolute right-[15%] top-[35%] h-2 w-2 bg-foreground/60" animate={{ y: [0, -25, 0], opacity: [0.2, 0.9, 0.2] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }} />
-          </>
-        )}
+    <section className="relative overflow-hidden bg-[#0a0f0c] py-12 lg:py-20">
+      {/* Dynamic Background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(52,211,153,0.15)_0%,_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,_rgba(214,173,96,0.1)_0%,_transparent_50%)]" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        
+        {/* Floating Blobs */}
+        <motion.div 
+          animate={!reduceMotion ? { scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] } : {}}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-emerald-500/20 blur-[120px]" 
+        />
+        <motion.div 
+          animate={!reduceMotion ? { scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] } : {}}
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-amber-500/10 blur-[120px]" 
+        />
       </div>
 
-      <div className="mx-auto grid min-w-0 max-w-7xl items-center gap-10 px-4 py-12 sm:gap-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-16 lg:py-28 lg:px-8">
-        {/* Left: copy + CTAs */}
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={{ show: { transition: { staggerChildren: 0.1 } } }}
-          className="flex min-w-0 flex-col"
-        >
-          <motion.div variants={fadeUp} className="inline-flex w-fit max-w-full items-center gap-2 border border-primary/20 bg-primary/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary sm:px-4 sm:text-xs">
-            {!reduceMotion && (
-              <motion.span animate={{ rotate: [0, 20, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-                <Sparkles className="h-3.5 w-3.5" />
-              </motion.span>
-            )}
-            Plateforme de gestion tout-en-un
-          </motion.div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+          {/* Copy Area */}
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={{ show: { transition: { staggerChildren: 0.1 } } }}
+          >
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
+              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+              Plateforme Tout-en-un · Maroc
+            </motion.div>
 
-          <motion.h1 variants={fadeUp} className="mt-5 text-balance text-[clamp(1.85rem,5.5vw+0.6rem,4.25rem)] font-black leading-[1.08] tracking-tight sm:leading-[1.05]">
-            Gérez votre centre{" "}
-            <span className="text-shimmer">sans Excel</span>,{" "}
-            sans chaos.
-          </motion.h1>
+            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#f8f3e8] sm:text-6xl lg:text-7xl">
+              Gérez votre centre <br />
+              <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">sans Excel</span>, <br />
+              sans chaos.
+            </motion.h1>
 
-          <motion.p variants={fadeUp} className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Gestio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning tout au même endroit, accessible en 2 clics.
-          </motion.p>
+            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-white/60 sm:text-xl">
+              Gestio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning tout au même endroit, accessible en 2 clics.
+            </motion.p>
 
-          {/* Social proof mini row */}
-          <motion.div variants={fadeUp} className="mt-6 flex flex-wrap items-center gap-4">
-            <div className="flex -space-x-2">
-              {["FB", "KM", "SR", "AM"].map((initials) => (
-                <div key={initials} className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-foreground text-[9px] font-bold text-background shadow-sm">
-                  {initials}
+            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
+               <div className="flex -space-x-3">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="h-10 w-10 rounded-full border-2 border-[#122620] bg-emerald-900 grid place-items-center text-[10px] font-bold text-emerald-100 shadow-xl">
+                       {["FB", "KM", "SR", "AM"][i-1]}
+                    </div>
+                  ))}
+               </div>
+               <div className="text-sm">
+                  <div className="flex items-center gap-0.5 text-amber-500">
+                    {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                  </div>
+                  <p className="mt-1 text-white/40">10+ centres actifs · <span className="text-white font-bold">4.9/5 satisfaction</span></p>
+               </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(52, 211, 153, 0.3)" }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => scrollToId("contact")}
+                className="group inline-flex items-center justify-center gap-2 bg-emerald-500 px-8 py-4 text-md font-black text-white transition-all hover:bg-emerald-400"
+              >
+                Réserver ma démo gratuite
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => scrollToId("demo")}
+                className="inline-flex items-center justify-center gap-2 border border-white/20 bg-white px-8 py-4 text-sm font-bold text-[#0a0f0c] shadow-sm transition-colors hover:bg-neutral-100"
+              >
+                Voir une démo live
+                <MousePointerClick className="h-4 w-4" />
+              </motion.button>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
+              {[
+                { icon: Lock, text: "Serveurs au Maroc" },
+                { icon: BadgeDollarSign, text: "En ligne en 48h" },
+                { icon: Check, text: "Sans engagement" },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-2 text-xs font-medium text-white/40">
+                   <Icon className="h-3.5 w-3.5 text-emerald-500/70" />
+                   {text}
                 </div>
               ))}
-            </div>
-            <div>
-              <div className="flex items-center gap-0.5 text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                ))}
-              </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">10+ centres actifs au Maroc</span> · 4.9/5 <Star className="inline h-3 w-3 fill-amber-400 text-amber-400" />
-              </p>
-            </div>
+            </motion.div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <motion.button
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => { track("cta_hero_click"); scrollToId("contact"); }}
-              className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[var(--shadow-elegant)] transition hover:bg-primary sm:w-auto sm:px-7 sm:py-4"
+          {/* Visual Area */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+            className="relative lg:ml-12"
+          >
+            <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-transparent blur-sm" />
+            <HeroDashboardPreview />
+            
+            {/* Promotional Badge */}
+            <motion.div
+              animate={!reduceMotion ? { y: [0, -10, 0] } : {}}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-6 -right-6 flex flex-col items-center justify-center rounded-2xl border-2 border-amber-500/30 bg-black/80 p-4 text-center shadow-2xl backdrop-blur-md"
             >
-              {!reduceMotion && (
-                <motion.span className="absolute inset-0 -z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
-              )}
-              <span className="relative">Réserver ma démo 20 min, sans engagement</span>
-              <ArrowRight className="relative h-4 w-4 transition group-hover:translate-x-1" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => { track("secondary_cta_click"); scrollToId("demo"); }}
-              className="inline-flex w-full items-center justify-center gap-2 border-2 border-foreground/30 bg-transparent px-6 py-3.5 text-sm font-bold text-foreground transition hover:border-foreground sm:w-auto sm:px-7 sm:py-4"
-            >
-              Voir la démo en direct
-              <ArrowRight className="h-4 w-4" />
-            </motion.button>
+              <Gift className="h-6 w-6 text-amber-500 mb-1" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#d6ad60]">Promo</p>
+              <p className="text-xs font-bold text-white">-20% sur l'annuel</p>
+            </motion.div>
           </motion.div>
-          <motion.div variants={fadeUp} className="mt-4">
-            <span className="inline-flex items-center gap-2 border border-amber-400/30 bg-amber-50/60 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-              <CalendarDays className="h-3.5 w-3.5 shrink-0" /> 5 créneaux disponibles cette semaine
-            </span>
-          </motion.div>
-
-          <motion.div variants={fadeUp} className="mt-6 flex flex-wrap gap-2">
-            {[
-              { icon: Lock, label: "Données hébergées au Maroc" },
-              { icon: BadgeDollarSign, label: "En ligne en moins de 48h" },
-              { icon: Check, label: "Sans engagement" },
-            ].map(({ icon: Icon, label }) => (
-              <span key={label} className="inline-flex items-center gap-1.5 border border-foreground/10 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground/70">
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </span>
-            ))}
-          </motion.div>
-        </motion.div>
-
-        {/* Right: interactive dashboard miniature */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease, delay: 0.15 }}
-          className="relative flex w-full min-w-0 flex-col lg:pl-4"
-        >
-          <HeroDashboardPreview />
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -657,7 +662,7 @@ function DemoSection() {
   }, []);
 
   return (
-    <section id="demo" className="relative overflow-hidden border-t border-border/60 bg-secondary/20 py-20 sm:py-28">
+    <section id="demo" className="relative overflow-hidden border-t border-border/60 bg-secondary/20 py-12 sm:py-16">
       <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-30" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -688,7 +693,7 @@ function DemoSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, ease }}
-          className="mt-16 hidden lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:items-start"
+          className="mt-10 hidden lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:items-start"
         >
           {/* Left: step list */}
           <div className="flex flex-col gap-2">
@@ -781,7 +786,7 @@ function DemoSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, ease }}
-          className="mt-10 flex flex-col gap-4 lg:hidden"
+          className="mt-8 flex flex-col gap-4 lg:hidden"
         >
           {/* Tab bar horizontal scroll */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
@@ -856,7 +861,7 @@ function DemoSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease, delay: 0.2 }}
-          className="mt-12 flex flex-col items-center gap-3 text-center"
+          className="mt-8 flex flex-col items-center gap-3 text-center"
         >
           <p className="text-sm text-muted-foreground">
             Cette démo vous a convaincu ? Réservez votre créneau avec vos propres données.
@@ -865,7 +870,7 @@ function DemoSection() {
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
-            className="inline-flex items-center gap-2 bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-primary"
+            className="landing-cta-primary inline-flex items-center gap-2 rounded-none px-8 py-4 text-md font-black transition"
           >
             Réserver ma démo 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
@@ -909,7 +914,7 @@ const painPoints = [
 
 function PainPointsSection() {
   return (
-    <section className="relative py-24 sm:py-32">
+    <section className="relative py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -934,7 +939,7 @@ function PainPointsSection() {
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
           variants={{ show: { transition: { staggerChildren: 0.1 } } }}
-          className="mt-16 grid gap-6 md:grid-cols-3"
+          className="mt-10 grid gap-6 md:grid-cols-3"
         >
           {painPoints.map((p) => (
             <motion.div
@@ -962,7 +967,7 @@ function PainPointsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease, delay: 0.3 }}
-          className="mt-12 text-center"
+          className="mt-8 text-center"
         >
           <p className="text-base font-semibold text-foreground/60">
             Il existe une solution conçue exactement pour votre réalité.
@@ -987,11 +992,11 @@ function SolutionSection() {
   ];
 
   return (
-    <section className="relative overflow-hidden border-y border-border bg-foreground py-24 text-background sm:py-32">
+    <section className="relative overflow-hidden border-y border-border bg-foreground py-14 text-background sm:py-20">
       <div className="pointer-events-none absolute -left-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-background/[0.04] blur-3xl" />
       <div className="pointer-events-none absolute -right-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-background/[0.04] blur-3xl" />
 
-      <div className="mx-auto grid min-w-0 max-w-7xl items-center gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:px-8">
+      <div className="mx-auto grid min-w-0 max-w-7xl items-center gap-8 px-4 sm:gap-10 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -1023,7 +1028,7 @@ function SolutionSection() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
-            className="mt-10 inline-flex items-center gap-2 bg-background px-7 py-4 text-sm font-black text-foreground transition hover:bg-background/90"
+            className="landing-cta-primary mt-10 inline-flex items-center gap-2 rounded-none px-7 py-4 text-md font-black transition"
           >
             Réserver ma démo 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
@@ -1099,7 +1104,7 @@ const modules = [
 
 function ModulesSection() {
   return (
-    <section id="modules" className="relative py-24 sm:py-32">
+    <section id="modules" className="relative py-14 sm:py-20">
       <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-40" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -1125,7 +1130,7 @@ function ModulesSection() {
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
-          className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {modules.map((mod) => (
             <motion.div
@@ -1155,13 +1160,13 @@ function ModulesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease, delay: 0.4 }}
-          className="mt-12 flex justify-center"
+          className="mt-8 flex justify-center"
         >
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("demo")}
-            className="inline-flex items-center gap-2 border-2 border-foreground bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-transparent hover:text-foreground"
+            className="landing-cta-secondary-light inline-flex items-center gap-2 rounded-none border-2 px-8 py-4 text-sm font-black transition"
           >
             Explorer tous les modules en démo
             <ArrowRight className="h-4 w-4" />
@@ -1392,7 +1397,7 @@ function SocialProofSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-secondary/30 py-24 sm:py-32">
+    <section className="relative overflow-hidden bg-secondary/30 py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -1420,7 +1425,7 @@ function SocialProofSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease }}
-          className="mt-14 grid grid-cols-2 divide-x-2 divide-foreground/10 border-2 border-foreground/10 bg-card sm:grid-cols-4"
+          className="mt-10 grid grid-cols-2 divide-x-2 divide-foreground/10 border-2 border-foreground/10 bg-card sm:grid-cols-4"
         >
           {[
             { value: "10+", label: "centres actifs" },
@@ -1509,14 +1514,14 @@ function SocialProofSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease, delay: 0.2 }}
-          className="mt-12 flex flex-col items-center gap-3 text-center"
+          className="mt-8 flex flex-col items-center gap-3 text-center"
         >
           <p className="text-sm text-muted-foreground">Votre centre pourrait être le prochain. 5 créneaux disponibles cette semaine.</p>
           <motion.button
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
-            className="inline-flex items-center gap-2 bg-foreground px-8 py-4 text-sm font-black text-background transition hover:bg-primary"
+            className="landing-cta-primary inline-flex items-center gap-2 rounded-none px-8 py-4 text-md font-black transition"
           >
             Réserver ma démo 20 min, sans engagement
             <ArrowRight className="h-4 w-4" />
@@ -1656,12 +1661,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => scrollToId("contact")}
-        className={cn(
-          "mt-8 w-full py-4 text-sm font-black uppercase tracking-wider transition rounded-none",
-          plan.popular
-            ? "border-2 border-background bg-background text-foreground hover:bg-transparent hover:text-background"
-            : "border-2 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background",
-        )}
+        className="landing-cta-primary mt-8 w-full rounded-none border-2 border-transparent py-4 text-sm font-black uppercase tracking-wider transition hover:brightness-110"
       >
         {plan.cta}
       </motion.button>
@@ -1693,7 +1693,7 @@ function PricingSection() {
   }, [carouselApi]);
 
   return (
-    <section id="tarifs" className="relative overflow-hidden py-24 sm:py-32">
+    <section id="tarifs" className="relative overflow-hidden py-14 sm:py-20">
       <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-60" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -1719,7 +1719,7 @@ function PricingSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease }}
-          className="mt-12 flex flex-col items-center gap-4"
+          className="mt-8 flex flex-col items-center gap-4"
         >
           <div className="flex w-full max-w-md border-2 border-foreground shadow-[6px_6px_0_0_var(--foreground)] rounded-none">
             <button
@@ -1758,7 +1758,7 @@ function PricingSection() {
           </AnimatePresence>
         </motion.div>
 
-        <div className="mt-16 w-full min-w-0 lg:hidden">
+        <div className="mt-10 w-full min-w-0 lg:hidden">
           <Carousel setApi={setCarouselApi} opts={{ align: "start", loop: false }} className="w-full">
             <CarouselContent className="-ml-3 sm:-ml-4">
               {pricingPlans.map((plan, idx) => (
@@ -1791,7 +1791,7 @@ function PricingSection() {
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
           variants={{ show: { transition: { staggerChildren: 0.12 } } }}
-          className="mt-16 hidden min-w-0 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid lg:grid-cols-3 lg:items-stretch"
+          className="mt-10 hidden min-w-0 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid lg:grid-cols-3 lg:items-stretch"
         >
           {pricingPlans.map((plan, idx) => (
             <PricingCard key={plan.id} plan={plan} idx={idx} yearly={yearly} />
@@ -1804,7 +1804,7 @@ function PricingSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease, delay: 0.2 }}
-          className="mt-12 grid gap-4 border-2 border-foreground/10 bg-card p-6 sm:grid-cols-3 sm:gap-6 sm:p-8"
+          className="mt-8 grid gap-4 border-2 border-foreground/10 bg-card p-6 sm:grid-cols-3 sm:gap-6 sm:p-8"
         >
           {[
             { q: "Puis-je payer mensuellement ?", a: "Oui, les deux options sont disponibles. L'annuel vous offre 2 mois offerts." },
@@ -1836,7 +1836,7 @@ const faqItems = [
 
 function FaqSection() {
   return (
-    <section id="faq" className="relative bg-secondary/30 py-24 sm:py-32">
+    <section id="faq" className="relative bg-secondary/30 py-14 sm:py-20">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -1860,7 +1860,7 @@ function FaqSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.6, ease }}
-          className="mt-12 border-2 border-foreground/10 bg-card p-2 shadow-[var(--shadow-soft)]"
+          className="mt-8 border-2 border-foreground/10 bg-card p-2 shadow-[var(--shadow-soft)]"
         >
           <Accordion type="multiple" className="w-full">
             {faqItems.map((item, i) => (
@@ -1929,7 +1929,7 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
               whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
               type="submit"
-              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden bg-foreground px-6 py-3.5 text-sm font-bold text-background shadow-[var(--shadow-elegant)] transition hover:bg-primary sm:py-4"
+              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden rounded-none px-6 py-3.5 text-sm font-bold shadow-[var(--shadow-elegant)] transition sm:py-4 landing-cta-primary"
             >
               {!reduceMotion && (
                 <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
@@ -1954,12 +1954,12 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
 function ContactSection() {
   const reduceMotion = useReducedMotion();
   return (
-    <section id="contact" className="relative overflow-hidden py-24 pb-[max(6rem,calc(6rem+env(safe-area-inset-bottom)))] sm:py-32 sm:pb-[max(8rem,calc(8rem+env(safe-area-inset-bottom)))]">
+    <section id="contact" className="relative overflow-hidden py-14 pb-[max(4rem,calc(4rem+env(safe-area-inset-bottom)))] sm:py-20 sm:pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))]">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-20 right-1/4 h-80 w-80 bg-primary/15 blur-3xl animate-blob" />
         <div className="absolute bottom-0 left-1/4 h-80 w-80 bg-accent/20 blur-3xl animate-blob" style={{ animationDelay: "-6s" }} />
       </div>
-      <div className="mx-auto grid min-w-0 max-w-7xl gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-2 lg:items-start lg:gap-16 lg:px-8">
+      <div className="mx-auto grid min-w-0 max-w-7xl gap-8 px-4 sm:gap-10 sm:px-6 lg:grid-cols-2 lg:items-start lg:gap-12 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -2025,8 +2025,8 @@ function ContactSection() {
 function Footer() {
   return (
     <footer className="border-t border-border/60 bg-foreground text-background">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center bg-background/10">
@@ -2064,14 +2064,14 @@ function Footer() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => scrollToId("contact")}
-              className="mt-6 inline-flex items-center gap-2 border border-background/30 bg-background/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-background transition hover:bg-background hover:text-foreground"
+              className="landing-cta-primary mt-6 inline-flex items-center gap-2 rounded-none px-4 py-2 text-xs font-bold uppercase tracking-wider transition"
             >
               Réserver une démo
               <ArrowRight className="h-3 w-3" />
             </motion.button>
           </div>
         </div>
-        <div className="mt-10 flex flex-col-reverse gap-4 border-t border-background/10 pt-6 text-xs text-background/40 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col-reverse gap-4 border-t border-background/10 pt-6 text-xs text-background/40 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-center sm:text-left">© 2026 Gestio · Tous droits réservés</span>
           <MotionLink to="/login" className="text-center text-background/30 transition hover:text-background/60 sm:text-right">
             Espace client

@@ -42,7 +42,7 @@ export function HeroPreviewPageBody({
   switch (page) {
     case "dashboard":
       return (
-        <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-y-auto">
+        <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden">
           <div className="shrink-0 space-y-0.5">
             <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Vue d&apos;ensemble — CRM</p>
             <p className="font-display text-[11px] font-semibold leading-tight text-foreground sm:text-[12px]">
@@ -87,12 +87,14 @@ export function HeroPreviewPageBody({
             ))}
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col border border-border bg-card p-1.5 sm:p-2">
-              <p className="text-[7px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[8px]">Actions rapides</p>
-              <h2 className="mt-0.5 font-display text-[10px] text-foreground sm:text-[11px]">
-                Navigation <span className="font-normal italic text-muted-foreground">rapide</span>
-              </h2>
-              <ul className="mt-1 min-h-0 flex-1 space-y-0.5 overflow-y-auto">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-border bg-card p-1.5 sm:p-2">
+              <div className="shrink-0">
+                <p className="text-[7px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[8px]">Actions rapides</p>
+                <h2 className="mt-0.5 font-display text-[10px] text-foreground sm:text-[11px]">
+                  Navigation <span className="font-normal italic text-muted-foreground">rapide</span>
+                </h2>
+              </div>
+              <ul className="mt-1 min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
                 {mirrorQuickActions.map((a) => {
                   const QIcon = a.icon;
                   return (

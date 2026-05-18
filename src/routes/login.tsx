@@ -107,7 +107,7 @@ function Login() {
             </div>
             <button
               type="submit"
-              className="flex w-full items-center justify-between bg-primary px-6 py-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              className="flex w-full items-center justify-between rounded-none bg-primary px-6 py-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
             >
               Entrer dans l'espace
               <span className="grid h-7 w-7 place-items-center bg-primary-foreground text-primary">

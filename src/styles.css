@@ -50,27 +50,36 @@
   /* EIDEN Group — Brand Identity System v2 (Outfit / DM Serif / Cormorant / Inter) */
   --font-display: "Outfit", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
+  --animate-brand-mark-pulse: brand-mark-pulse 1.8s ease-in-out infinite;
 }
 
 :root {
   --radius: 0.875rem;
 
-  /* Raw palette — eiden-brand-identity-system V.html */
-  --eiden-canvas: #fefdfb;
+  /* Coolors palette — https://coolors.co/f4ebd0-122620-d6ad60-1a372f (accent #10b981) */
+  --eiden-brass: #10b981;
+  --eiden-canvas: color-mix(in srgb, #fefdfb 62%, #f4ebd0 38%);
   --eiden-beige: #f4ebd0;
-  --eiden-beige-dk: #e8dcc8;
+  --eiden-beige-dk: color-mix(in srgb, #e8dcc8 70%, var(--eiden-brass) 30%);
   --eiden-forest: #122620;
-  --eiden-forest-md: #0e1b17;
-  --eiden-teal: #0c5752;
-  --eiden-teal-lt: #0e7a73;
-  --eiden-gold: #cfc292;
-  --eiden-gold-dk: #b8a876;
+  --eiden-forest-md: #1a372f;
+  --eiden-deep: #1a372f;
+  --eiden-teal: #1a372f;
+  --eiden-teal-lt: #2a4f45;
+  --eiden-gold: #d6ad60;
+  --eiden-gold-dk: color-mix(in srgb, var(--eiden-brass) 58%, #122620 42%);
   --eiden-mint: #34d399;
   --eiden-cream: #f8f3e8;
   --eiden-ink: #0a0f0c;
   --eiden-white: #ffffff;
   --eiden-red: #ef4444;
   --eiden-blue: #60a5fa;
+
+  /* Landing — match reference hero (flat dark green + emerald CTAs) */
+  --landing-hero-bg: color-mix(in srgb, var(--eiden-forest) 22%, #060908 78%);
+  --landing-cta-primary: #10b981;
+  --landing-cta-primary-hover: #059669;
+  --landing-cta-on-primary: var(--eiden-white);
 
   --background: var(--eiden-canvas);
   --foreground: var(--eiden-forest);
@@ -80,25 +89,25 @@
   --popover: var(--eiden-white);
   --popover-foreground: var(--eiden-forest);
 
-  /* Brand accent / CTA */
-  --primary: var(--eiden-teal);
-  --primary-foreground: var(--eiden-white);
+  /* Brand accent / CTA — brass + forest for strong contrast */
+  --primary: var(--eiden-brass);
+  --primary-foreground: var(--eiden-forest);
 
   --secondary: var(--eiden-beige);
   --secondary-foreground: var(--eiden-forest);
 
   --muted: var(--eiden-cream);
-  --muted-foreground: #4e605b;
+  --muted-foreground: color-mix(in srgb, var(--eiden-forest) 62%, var(--eiden-deep) 38%);
 
-  --accent: color-mix(in srgb, var(--eiden-gold) 28%, var(--eiden-cream) 72%);
+  --accent: color-mix(in srgb, var(--eiden-gold) 38%, var(--eiden-beige) 62%);
   --accent-foreground: var(--eiden-forest);
 
   --destructive: var(--eiden-red);
   --destructive-foreground: var(--eiden-white);
 
-  --border: color-mix(in srgb, var(--eiden-beige-dk) 85%, var(--eiden-forest) 15%);
+  --border: color-mix(in srgb, var(--eiden-beige-dk) 78%, var(--eiden-forest) 22%);
   --input: var(--eiden-beige-dk);
-  --ring: var(--eiden-teal);
+  --ring: var(--eiden-deep);
 
   /* Supporting accents (charts, badges, utilities) */
   --sun: var(--eiden-gold);
@@ -106,7 +115,7 @@
   --leaf: var(--eiden-mint);
   --coral: var(--eiden-gold-dk);
 
-  --chart-1: var(--eiden-teal);
+  --chart-1: var(--eiden-brass);
   --chart-2: var(--eiden-gold);
   --chart-3: var(--eiden-forest);
   --chart-4: var(--eiden-teal-lt);
@@ -114,19 +123,19 @@
 
   --sidebar: var(--eiden-canvas);
   --sidebar-foreground: var(--eiden-forest);
-  --sidebar-primary: var(--eiden-teal);
-  --sidebar-primary-foreground: var(--eiden-white);
+  --sidebar-primary: var(--eiden-brass);
+  --sidebar-primary-foreground: var(--eiden-forest);
   --sidebar-accent: var(--eiden-beige);
   --sidebar-accent-foreground: var(--eiden-forest);
   --sidebar-border: var(--eiden-beige-dk);
-  --sidebar-ring: var(--eiden-teal);
+  --sidebar-ring: var(--eiden-deep);
 
-  --scrollbar-thumb: color-mix(in srgb, var(--eiden-teal) 42%, transparent);
-  --scrollbar-thumb-hover: color-mix(in srgb, var(--eiden-teal) 62%, transparent);
+  --scrollbar-thumb: color-mix(in srgb, var(--eiden-brass) 44%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--eiden-gold) 55%, transparent);
 
-  --gradient-hero: linear-gradient(135deg, var(--eiden-forest-md), var(--eiden-teal) 55%, var(--eiden-teal-lt));
-  --shadow-elegant: 0 20px 60px -20px color-mix(in srgb, var(--eiden-forest) 28%, transparent);
-  --shadow-soft: 0 8px 30px -10px color-mix(in srgb, var(--eiden-teal) 18%, transparent);
+  --gradient-hero: linear-gradient(135deg, var(--eiden-forest) 0%, var(--eiden-deep) 42%, color-mix(in srgb, var(--eiden-brass) 55%, var(--eiden-deep) 45%) 100%);
+  --shadow-elegant: 0 20px 60px -20px color-mix(in srgb, var(--eiden-forest) 34%, transparent);
+  --shadow-soft: 0 8px 30px -10px color-mix(in srgb, var(--eiden-brass) 22%, transparent);
 }
 
 .dark {
@@ -136,45 +145,45 @@
   --card-foreground: var(--eiden-canvas);
   --popover: var(--eiden-forest);
   --popover-foreground: var(--eiden-canvas);
-  --primary: var(--eiden-teal-lt);
-  --primary-foreground: var(--eiden-ink);
-  --secondary: color-mix(in srgb, var(--eiden-forest) 88%, var(--eiden-teal) 12%);
+  --primary: var(--eiden-gold);
+  --primary-foreground: var(--eiden-forest);
+  --secondary: color-mix(in srgb, var(--eiden-forest) 86%, var(--eiden-deep) 14%);
   --secondary-foreground: var(--eiden-canvas);
-  --muted: color-mix(in srgb, var(--eiden-forest) 82%, var(--eiden-teal-lt) 18%);
-  --muted-foreground: color-mix(in srgb, var(--eiden-canvas) 58%, transparent);
-  --accent: color-mix(in srgb, var(--eiden-gold-dk) 22%, var(--eiden-forest) 78%);
+  --muted: color-mix(in srgb, var(--eiden-forest) 78%, var(--eiden-deep) 22%);
+  --muted-foreground: color-mix(in srgb, var(--eiden-beige) 58%, transparent);
+  --accent: color-mix(in srgb, var(--eiden-brass) 28%, var(--eiden-forest) 72%);
   --accent-foreground: var(--eiden-canvas);
   --destructive: color-mix(in srgb, var(--eiden-red) 92%, white 8%);
   --destructive-foreground: var(--eiden-ink);
   --border: color-mix(in srgb, var(--eiden-canvas) 14%, transparent);
   --input: color-mix(in srgb, var(--eiden-canvas) 16%, transparent);
-  --ring: var(--eiden-teal-lt);
+  --ring: var(--eiden-gold);
   --sidebar: var(--eiden-ink);
   --sidebar-foreground: var(--eiden-canvas);
-  --sidebar-primary: var(--eiden-teal-lt);
-  --sidebar-primary-foreground: var(--eiden-ink);
+  --sidebar-primary: var(--eiden-gold);
+  --sidebar-primary-foreground: var(--eiden-forest);
   --sidebar-accent: var(--eiden-forest);
   --sidebar-accent-foreground: var(--eiden-canvas);
   --sidebar-border: color-mix(in srgb, var(--eiden-canvas) 12%, transparent);
-  --sidebar-ring: var(--eiden-teal-lt);
+  --sidebar-ring: var(--eiden-gold);
 
   --sun: var(--eiden-gold);
   --sky: var(--eiden-teal-lt);
   --leaf: var(--eiden-mint);
   --coral: var(--eiden-gold-dk);
 
-  --chart-1: var(--eiden-teal-lt);
-  --chart-2: var(--eiden-gold);
+  --chart-1: var(--eiden-gold);
+  --chart-2: var(--eiden-brass);
   --chart-3: var(--eiden-canvas);
   --chart-4: var(--eiden-mint);
   --chart-5: var(--eiden-blue);
 
-  --scrollbar-thumb: color-mix(in srgb, var(--eiden-teal-lt) 38%, transparent);
-  --scrollbar-thumb-hover: color-mix(in srgb, var(--eiden-gold) 45%, transparent);
+  --scrollbar-thumb: color-mix(in srgb, var(--eiden-gold) 42%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--eiden-brass) 52%, transparent);
 
-  --gradient-hero: linear-gradient(135deg, var(--eiden-ink), var(--eiden-teal) 50%, var(--eiden-forest-md));
+  --gradient-hero: linear-gradient(135deg, var(--eiden-ink) 0%, var(--eiden-deep) 45%, color-mix(in srgb, var(--eiden-brass) 40%, var(--eiden-forest) 60%) 100%);
   --shadow-elegant: 0 20px 60px -20px color-mix(in srgb, black 55%, transparent);
-  --shadow-soft: 0 8px 30px -10px color-mix(in srgb, black 42%, transparent);
+  --shadow-soft: 0 8px 30px -10px color-mix(in srgb, var(--eiden-brass) 28%, transparent);
 }
 
 @layer base {
@@ -264,6 +273,17 @@
     mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
   }
+
+  /* Landing hero — flat dark slab (reference screenshot) */
+  .hero-promo-section {
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  }
+
+  .hero-backdrop-aurora {
+    background: var(--landing-hero-bg);
+  }
+
   .text-shimmer {
     background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, var(--primary) 100%);
     background-size: 200% auto;
@@ -271,6 +291,57 @@
     background-clip: text;
     color: transparent;
     animation: landing-shimmer 4s linear infinite;
+  }
+
+  .text-shimmer-neon {
+    background: linear-gradient(
+      90deg,
+      #059669 0%,
+      var(--landing-cta-primary) 35%,
+      #6ee7b7 52%,
+      var(--landing-cta-primary) 70%,
+      #059669 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: landing-shimmer 4.5s linear infinite;
+    text-shadow: 0 0 20px color-mix(in srgb, var(--landing-cta-primary) 35%, transparent);
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--landing-cta-primary) 30%, transparent));
+  }
+
+  .landing-cta-primary {
+    background-color: var(--landing-cta-primary);
+    color: var(--landing-cta-on-primary);
+    border: 2px solid color-mix(in srgb, var(--landing-cta-primary) 72%, #000 28%);
+    box-shadow: 0 12px 32px -14px color-mix(in srgb, var(--landing-cta-primary) 50%, transparent);
+  }
+
+  .landing-cta-primary:hover {
+    background-color: var(--landing-cta-primary-hover);
+  }
+
+  .landing-cta-secondary-dark {
+    border: 2px solid rgb(255 255 255 / 0.38);
+    background-color: transparent;
+    color: rgb(248 250 252);
+  }
+
+  .landing-cta-secondary-dark:hover {
+    border-color: rgb(255 255 255 / 0.55);
+    background-color: rgb(255 255 255 / 0.06);
+  }
+
+  .landing-cta-secondary-light {
+    border: 2px solid color-mix(in srgb, var(--foreground) 28%, transparent);
+    background-color: transparent;
+    color: var(--foreground);
+  }
+
+  .landing-cta-secondary-light:hover {
+    border-color: color-mix(in srgb, var(--foreground) 48%, transparent);
+    background-color: color-mix(in srgb, var(--muted) 40%, transparent);
   }
 }
 
@@ -385,5 +456,17 @@
   [data-dashboard-main] button[data-placeholder] span {
     font-size: 0.75rem !important;
     line-height: 1.35;
+  }
+}
+
+@keyframes brand-mark-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.94);
   }
 }
