@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 
 export const Route = createFileRoute("/dashboard/affiches")({
   head: () => ({ meta: [{ title: "Affiches — Équipe" }] }),
@@ -82,6 +83,7 @@ function Badge({ children, variant }: { children: ReactNode; variant: "neutral" 
 
 /** Tag seul (sans libellé « Statut ») pour la fiche employé */
 function StatutTag({ actif }: { actif: boolean }) {
+  const { t } = useDashboardI18n();
   return (
     <span
       role="status"
@@ -90,7 +92,7 @@ function StatutTag({ actif }: { actif: boolean }) {
         actif ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted text-muted-foreground",
       )}
     >
-      {actif ? "Actif" : "Inactif"}
+      {actif ? t.status.actif : t.status.inactif}
     </span>
   );
 }
@@ -207,59 +209,65 @@ function DetailEmployeDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const a = t.affiches;
+
   if (!employe) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={dialogSurface}>
-        <DialogDescription className="sr-only">Détails de l&apos;employé {employe.nomComplet}</DialogDescription>
+        <DialogDescription className="sr-only">
+          {interpolate(a.detailModal.srDesc, { name: employe.nomComplet })}
+        </DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Équipe</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.team}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
-              Détails de l&apos;employé
+              {a.detailModal.title}
             </DialogTitle>
           </div>
           <div className="grid max-h-[60vh] grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto scroll-touch px-6 py-5 sm:grid-cols-2">
-            <Field id="emp-nom" label="Nom complet">
+            <Field id="emp-nom" label={f.fullName}>
               <p className="text-sm font-semibold text-foreground">{employe.nomComplet}</p>
             </Field>
             <div className="flex items-end justify-start sm:justify-end">
               <StatutTag actif={employe.statut === "actif"} />
             </div>
-            <Field id="emp-naissance" label="Date de naissance">
+            <Field id="emp-naissance" label={f.birthDate}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.dateNaissance)}</p>
             </Field>
-            <Field id="emp-embauche" label="Date d'embauche">
+            <Field id="emp-embauche" label={f.hireDate}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.dateEmbauche)}</p>
             </Field>
-            <Field id="emp-cin" label="CIN ou passeport">
+            <Field id="emp-cin" label={f.cinPassport}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.cin)}</p>
             </Field>
-            <Field id="emp-contrat" label="Type de contrat">
+            <Field id="emp-contrat" label={f.contractType}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.contrat)}</p>
             </Field>
-            <Field id="emp-email" label="Email professionnel">
+            <Field id="emp-email" label={f.workEmail}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.email)}</p>
             </Field>
-            <Field id="emp-email-perso" label="Email personnel">
+            <Field id="emp-email-perso" label={f.personalEmail}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.emailPerso)}</p>
             </Field>
-            <Field id="emp-tel1" label="Téléphone 1">
+            <Field id="emp-tel1" label={f.phone1}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.tel)}</p>
             </Field>
-            <Field id="emp-tel2" label="Téléphone 2">
+            <Field id="emp-tel2" label={f.phone2}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.tel2)}</p>
             </Field>
-            <Field id="emp-poste" label="Poste">
+            <Field id="emp-poste" label={t.common.position}>
               <p className="text-sm font-semibold text-foreground">{employe.poste}</p>
             </Field>
-            <Field id="emp-dept" label="Département">
+            <Field id="emp-dept" label={t.common.department}>
               <p className="text-sm font-semibold text-foreground">{employe.departement}</p>
             </Field>
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="emp-adresse" className={labelClass}>
-                Adresse
+                {t.common.address}
               </Label>
               <p id="emp-adresse" className="text-sm font-semibold text-foreground">
                 {dash(employe.adresse)}
@@ -272,7 +280,7 @@ function DetailEmployeDialog({
               onClick={() => onOpenChange(false)}
               className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
-              Fermer
+              {t.common.close}
             </button>
           </div>
         </div>
@@ -292,6 +300,9 @@ function EditEmployeDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (next: Employe) => void;
 }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const a = t.affiches;
   const [statut, setStatut] = useState<StatutEmploye>("actif");
 
   useEffect(() => {
@@ -303,12 +314,14 @@ function EditEmployeDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
-        <DialogDescription className="sr-only">Modifier l&apos;employé {employe.nomComplet}</DialogDescription>
+        <DialogDescription className="sr-only">
+          {interpolate(a.editModal.srDesc, { name: employe.nomComplet })}
+        </DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— Équipe</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.editModal.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
-              Modifier l&apos;employé
+              {a.editModal.title}
             </DialogTitle>
           </div>
           <form
@@ -336,53 +349,53 @@ function EditEmployeDialog({
             }}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="ed-nom" label="Nom complet">
+              <Field id="ed-nom" label={f.fullName}>
                 <Input id="ed-nom" name="nomComplet" defaultValue={employe.nomComplet} required className={inputClass} />
               </Field>
-              <Field id="ed-statut" label="Statut">
+              <Field id="ed-statut" label={t.common.status}>
                 <Select value={statut} onValueChange={(v) => setStatut(v as StatutEmploye)}>
                   <SelectTrigger id="ed-statut" className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-none border-border">
-                    <SelectItem value="actif">Actif</SelectItem>
-                    <SelectItem value="inactif">Inactif</SelectItem>
+                    <SelectItem value="actif">{t.status.actif}</SelectItem>
+                    <SelectItem value="inactif">{t.status.inactif}</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
-              <Field id="ed-poste" label="Poste">
+              <Field id="ed-poste" label={t.common.position}>
                 <Input id="ed-poste" name="poste" defaultValue={employe.poste} className={inputClass} />
               </Field>
-              <Field id="ed-dept" label="Département">
+              <Field id="ed-dept" label={t.common.department}>
                 <Input id="ed-dept" name="departement" defaultValue={employe.departement} className={inputClass} />
               </Field>
-              <Field id="ed-email" label="Email professionnel">
+              <Field id="ed-email" label={f.workEmail}>
                 <Input id="ed-email" name="email" type="email" defaultValue={employe.email} className={inputClass} />
               </Field>
-              <Field id="ed-email-perso" label="Email personnel">
+              <Field id="ed-email-perso" label={f.personalEmail}>
                 <Input id="ed-email-perso" name="emailPerso" type="email" defaultValue={employe.emailPerso} className={inputClass} />
               </Field>
-              <Field id="ed-tel" label="Téléphone 1">
+              <Field id="ed-tel" label={f.phone1}>
                 <Input id="ed-tel" name="tel" type="tel" defaultValue={employe.tel} className={inputClass} />
               </Field>
-              <Field id="ed-tel2" label="Téléphone 2">
+              <Field id="ed-tel2" label={f.phone2}>
                 <Input id="ed-tel2" name="tel2" type="tel" defaultValue={employe.tel2} className={inputClass} />
               </Field>
-              <Field id="ed-naissance" label="Date de naissance">
+              <Field id="ed-naissance" label={f.birthDate}>
                 <Input id="ed-naissance" name="dateNaissance" defaultValue={employe.dateNaissance} className={inputClass} />
               </Field>
-              <Field id="ed-embauche" label="Date d'embauche">
+              <Field id="ed-embauche" label={f.hireDate}>
                 <Input id="ed-embauche" name="dateEmbauche" defaultValue={employe.dateEmbauche} className={inputClass} />
               </Field>
-              <Field id="ed-cin" label="CIN ou passeport">
+              <Field id="ed-cin" label={f.cinPassport}>
                 <Input id="ed-cin" name="cin" defaultValue={employe.cin} className={inputClass} />
               </Field>
-              <Field id="ed-contrat" label="Type de contrat">
+              <Field id="ed-contrat" label={f.contractType}>
                 <Input id="ed-contrat" name="contrat" defaultValue={employe.contrat} className={inputClass} />
               </Field>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="ed-adresse" className={labelClass}>
-                  Adresse
+                  {t.common.address}
                 </Label>
                 <Input id="ed-adresse" name="adresse" defaultValue={employe.adresse} className={inputClass} />
               </div>
@@ -393,13 +406,13 @@ function EditEmployeDialog({
                 onClick={() => onOpenChange(false)}
                 className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Annuler
+                {t.common.cancel}
               </button>
               <button
                 type="submit"
                 className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Enregistrer les modifications
+                {t.common.saveChanges}
               </button>
             </div>
           </form>
@@ -410,6 +423,8 @@ function EditEmployeDialog({
 }
 
 function AffichesPage() {
+  const { t } = useDashboardI18n();
+  const a = t.affiches;
   const [employes, setEmployes] = useState<Employe[]>(initialEmployes);
   const [search, setSearch] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -443,15 +458,13 @@ function AffichesPage() {
       />
 
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">Équipe — CRM</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{a.eyebrow}</p>
         <div>
           <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
-            <span className="font-semibold">Affiches</span>{" "}
-            <span className="font-normal italic text-muted-foreground">et personnel</span>
+            <span className="font-semibold">{a.titleBold}</span>{" "}
+            <span className="font-normal italic text-muted-foreground">{a.titleItalic}</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Liste des employés et leur statut (données de démonstration).
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{a.subtitle}</p>
         </div>
       </header>
 
@@ -462,31 +475,33 @@ function AffichesPage() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un employé…"
+              placeholder={a.searchPlaceholder}
               className={cn(inputClass, "pl-9")}
-              aria-label="Rechercher"
+              aria-label={a.searchAria}
             />
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          {filtered.length} employé{filtered.length !== 1 ? "s" : ""}
+          {filtered.length === 1
+            ? a.employeesCountOne
+            : interpolate(a.employeesCountMany, { count: filtered.length })}
         </p>
       </section>
 
       <section className="border border-border bg-card">
         <div className="border-b border-border px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Liste des employés</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{a.employeeList}</p>
         </div>
         <div className="overflow-x-auto scroll-touch">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">Nom</th>
-                <th className="px-4 py-3">Poste</th>
-                <th className="px-4 py-3">Département</th>
-                <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Statut</th>
-                <th className="px-4 py-3 w-28">Actions</th>
+                <th className="px-4 py-3">{a.table.name}</th>
+                <th className="px-4 py-3">{a.table.position}</th>
+                <th className="px-4 py-3">{a.table.department}</th>
+                <th className="px-4 py-3">{a.table.contact}</th>
+                <th className="px-4 py-3">{a.table.status}</th>
+                <th className="px-4 py-3 w-28">{a.table.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -501,7 +516,7 @@ function AffichesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={e.statut === "actif" ? "dark" : "neutral"}>
-                      {e.statut === "actif" ? "Actif" : "Inactif"}
+                      {e.statut === "actif" ? t.status.actif : t.status.inactif}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
@@ -513,7 +528,7 @@ function AffichesPage() {
                           setEditId(null);
                         }}
                         className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
-                        aria-label={`Voir ${e.nomComplet}`}
+                        aria-label={interpolate(a.viewAria, { name: e.nomComplet })}
                       >
                         <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>
@@ -524,7 +539,7 @@ function AffichesPage() {
                           setDetailId(null);
                         }}
                         className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
-                        aria-label={`Modifier ${e.nomComplet}`}
+                        aria-label={interpolate(a.editAria, { name: e.nomComplet })}
                       >
                         <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>

@@ -10,16 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 
-const chartData = [
-  { m: "Sept", v: 4 },
-  { m: "Oct", v: 7 },
-  { m: "Nov", v: 6 },
-  { m: "Déc", v: 3 },
-  { m: "Jan", v: 9 },
-  { m: "Fév", v: 12 },
-  { m: "Mar", v: 11 },
-];
+const CHART_VALUES = [4, 7, 6, 3, 9, 12, 11];
 
 type DemoFamily = {
   id: string;
@@ -223,6 +216,8 @@ function ListeFamillesModal({
   eyebrow: string;
   rows: DemoFamily[];
 }) {
+  const { t } = useDashboardI18n();
+  const r = t.rapports;
   const searchFieldId = useId();
   const [query, setQuery] = useState("");
 
@@ -242,9 +237,7 @@ function ListeFamillesModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={listeDialogContent}>
-        <DialogDescription className="sr-only min-w-0">
-          Liste des familles pour le statut de paiement sélectionné.
-        </DialogDescription>
+        <DialogDescription className="sr-only min-w-0">{r.modalSrDesc}</DialogDescription>
         <div className="min-w-0 max-w-full border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</p>
@@ -254,18 +247,22 @@ function ListeFamillesModal({
             <p className="mt-1 text-xs text-muted-foreground">
               {query.trim() ? (
                 <>
-                  {filtered.length} résultat{filtered.length !== 1 ? "s" : ""} sur {rows.length} — démo
+                  {filtered.length === 1
+                    ? interpolate(r.resultsOnTotal, { filtered: filtered.length, total: rows.length })
+                    : interpolate(r.resultsOnTotalPlural, { filtered: filtered.length, total: rows.length })}
                 </>
               ) : (
                 <>
-                  {rows.length} famille{rows.length > 1 ? "s" : ""} — démo
+                  {rows.length === 1
+                    ? r.familiesDemoOne
+                    : interpolate(r.familiesDemoMany, { count: rows.length })}
                 </>
               )}
             </p>
           </div>
           <div className="border-b border-border px-6 py-3">
             <label htmlFor={searchFieldId} className="sr-only">
-              Rechercher dans la liste
+              {r.searchInList}
             </label>
             <div className="relative min-w-0">
               <Search
@@ -277,7 +274,7 @@ function ListeFamillesModal({
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Rechercher (parent, enfant, e-mail, téléphone…)"
+                placeholder={r.searchPlaceholder}
                 className={cn(listeSearchInputClass, "pl-10")}
                 autoComplete="off"
               />
@@ -287,17 +284,17 @@ function ListeFamillesModal({
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-3">Parent</th>
-                  <th className="px-4 py-3">Enfant</th>
-                  <th className="px-4 py-3">Contact</th>
-                  <th className="px-4 py-3">Situation</th>
+                  <th className="px-4 py-3">{t.common.parent}</th>
+                  <th className="px-4 py-3">{t.common.child}</th>
+                  <th className="px-4 py-3">{t.common.contact}</th>
+                  <th className="px-4 py-3">{t.common.situation}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                      Aucune famille ne correspond à votre recherche.
+                      {r.noSearchMatch}
                     </td>
                   </tr>
                 ) : (
@@ -323,35 +320,40 @@ function ListeFamillesModal({
 }
 
 function RapportsPage() {
+  const { t } = useDashboardI18n();
+  const r = t.rapports;
   const [modal, setModal] = useState<null | "paye" | "impaye">(null);
+
+  const chartData = useMemo(
+    () => r.months.map((m, i) => ({ m, v: CHART_VALUES[i] ?? 0 })),
+    [r.months],
+  );
 
   return (
     <div className="space-y-8">
       <ListeFamillesModal
         open={modal === "paye"}
         onOpenChange={(o) => !o && setModal(null)}
-        eyebrow="— Rapports / Paiements"
-        title="Familles à jour (payé)"
+        eyebrow={r.modalEyebrow}
+        title={r.modalPaidTitle}
         rows={FAMILLES_PAYEES}
       />
       <ListeFamillesModal
         open={modal === "impaye"}
         onOpenChange={(o) => !o && setModal(null)}
-        eyebrow="— Rapports / Paiements"
-        title="Familles impayées"
+        eyebrow={r.modalEyebrow}
+        title={r.modalUnpaidTitle}
         rows={FAMILLES_IMPAYEES}
       />
 
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">Analyse — CRM</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{r.eyebrow}</p>
         <div>
           <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
-            <span className="font-semibold">Rapports</span>{" "}
-            <span className="font-normal italic text-muted-foreground">et indicateurs</span>
+            <span className="font-semibold">{r.titleBold}</span>{" "}
+            <span className="font-normal italic text-muted-foreground">{r.titleItalic}</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Synthèse des inscriptions et de l&apos;activité commerciale (données de démonstration).
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{r.subtitle}</p>
         </div>
       </header>
 
@@ -363,23 +365,23 @@ function RapportsPage() {
             "cursor-default hover:border-border hover:bg-card",
           )}
         >
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">03 — Synthèse</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.summary}</p>
           <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Payé</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{r.paid}</p>
               <p className="font-display text-2xl font-semibold tracking-tight text-foreground tabular-nums">{TOTAL_PAYE}</p>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Impayé</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{r.unpaid}</p>
               <p className="font-display text-2xl font-semibold tracking-tight text-foreground tabular-nums">{TOTAL_IMPAYE}</p>
             </div>
             <div className="min-w-[6rem] border-l border-border pl-6">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total familles</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{r.totalFamilies}</p>
               <p className="font-display text-3xl font-semibold tracking-tight text-foreground tabular-nums">{TOTAL_FAMILLES_RAPPORTS}</p>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
-            <p className="text-xs text-muted-foreground">Somme des familles suivies dans ces deux statuts (démo).</p>
+            <p className="text-xs text-muted-foreground">{r.summaryNote}</p>
             <span className="grid h-10 w-10 shrink-0 place-items-center border border-border bg-muted text-foreground/90" aria-hidden>
               <Users className="h-5 w-5" />
             </span>
@@ -387,36 +389,36 @@ function RapportsPage() {
         </div>
 
         <button type="button" onClick={() => setModal("paye")} className={cn(cardClass, "border-t-chart-4")}>
-          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">01 — Payé</p>
+          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.paidCard}</p>
           <div className="mt-3 flex items-start justify-between gap-3">
             <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_PAYE}</p>
             <span className="grid h-10 w-10 shrink-0 place-items-center border border-border bg-muted text-foreground/90">
               <CheckCircle2 className="h-5 w-5" aria-hidden />
             </span>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Familles avec paiement à jour (mois en cours)</p>
+          <p className="mt-1 text-xs text-muted-foreground">{r.paidDesc}</p>
         </button>
 
         <button type="button" onClick={() => setModal("impaye")} className={cn(cardClass, "border-t-chart-3")}>
-          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">02 — Impayé</p>
+          <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.unpaidCard}</p>
           <div className="mt-3 flex items-start justify-between gap-3">
             <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_IMPAYE}</p>
             <span className="grid h-10 w-10 shrink-0 place-items-center border border-input bg-muted text-foreground">
               <XCircle className="h-5 w-5" aria-hidden />
             </span>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Sans règlement ou avec dette ouverte</p>
+          <p className="mt-1 text-xs text-muted-foreground">{r.unpaidDesc}</p>
         </button>
 
         
       </div>
 
       <div className="border border-border bg-card p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Graphique</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.common.chart}</p>
         <h2 className="mt-1 font-display text-xl text-foreground">
-          Inscriptions <span className="font-normal italic text-muted-foreground">par mois</span>
+          {r.chartTitleBold} <span className="font-normal italic text-muted-foreground">{r.chartTitleItalic}</span>
         </h2>
-        <p className="mt-1 text-xs text-muted-foreground">Volume mensuel sur la période affichée (démo).</p>
+        <p className="mt-1 text-xs text-muted-foreground">{r.chartSubtitle}</p>
         <div className="mt-4 h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>

@@ -10,9 +10,9 @@ import {
   parseISO,
   startOfWeek,
 } from "date-fns";
-import { fr } from "date-fns/locale";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDateFnsLocale, useDashboardI18n } from "@/lib/landing-i18n";
 import {
   mirrorPlanificationEntries,
   type MirrorPlanTone,
@@ -76,6 +76,8 @@ export const Route = createFileRoute("/dashboard/planifications")({
 });
 
 function PlanificationsPage() {
+  const { t, locale } = useDashboardI18n();
+  const dateFnsLocale = getDateFnsLocale(locale);
   const [weekStart, setWeekStart] = useState(() => earliestPlanMonday());
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
@@ -89,10 +91,10 @@ function PlanificationsPage() {
     const b = weekDays[6];
     if (!a || !b) return "";
     if (a.getMonth() === b.getMonth()) {
-      return `${format(a, "d", { locale: fr })} – ${format(b, "d MMMM yyyy", { locale: fr })}`;
+      return `${format(a, "d", { locale: dateFnsLocale })} – ${format(b, "d MMMM yyyy", { locale: dateFnsLocale })}`;
     }
-    return `${format(a, "d MMM", { locale: fr })} – ${format(b, "d MMM yyyy", { locale: fr })}`;
-  }, [weekDays]);
+    return `${format(a, "d MMM", { locale: dateFnsLocale })} – ${format(b, "d MMM yyyy", { locale: dateFnsLocale })}`;
+  }, [weekDays, dateFnsLocale]);
 
   const plansInWeek = useMemo(
     () =>
@@ -121,16 +123,13 @@ function PlanificationsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">Organisation — CRM</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{t.planifications.eyebrow}</p>
         <div>
           <h1 className="font-display text-3xl leading-tight tracking-tight text-foreground md:text-[2.35rem]">
-            <span className="font-semibold">Planifications</span>{" "}
-            <span className="font-normal italic text-muted-foreground">par créneaux</span>
+            <span className="font-semibold">{t.planifications.titleBold}</span>{" "}
+            <span className="font-normal italic text-muted-foreground">{t.planifications.titleItalic}</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Semaine type : les rendez-vous et réunions apparaissent directement dans la grille horaire (données de
-            démonstration).
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{t.planifications.subtitle}</p>
         </div>
       </header>
 
@@ -142,7 +141,7 @@ function PlanificationsPage() {
                 <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
               </span>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Vue semaine</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t.planifications.weekView}</p>
                 <p className="text-sm font-medium capitalize text-foreground">{weekLabel}</p>
               </div>
             </div>
@@ -151,7 +150,7 @@ function PlanificationsPage() {
                 type="button"
                 onClick={() => setWeekStart((w) => addWeeks(w, -1))}
                 className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:bg-muted"
-                aria-label="Semaine précédente"
+                aria-label={t.planifications.prevWeekAria}
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -160,13 +159,13 @@ function PlanificationsPage() {
                 onClick={() => setWeekStart(earliestPlanMonday())}
                 className="border border-border bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/85"
               >
-                Semaine démo
+                {t.planifications.demoWeek}
               </button>
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addWeeks(w, 1))}
                 className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:bg-muted"
-                aria-label="Semaine suivante"
+                aria-label={t.planifications.nextWeekAria}
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -193,10 +192,10 @@ function PlanificationsPage() {
                       )}
                     >
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {format(day, "EEE", { locale: fr })}
+                        {format(day, "EEE", { locale: dateFnsLocale })}
                       </p>
                       <p className={cn("mt-0.5 font-display text-sm font-semibold tabular-nums", isToday && "text-foreground")}>
-                        {format(day, "d MMM", { locale: fr })}
+                        {format(day, "d MMM", { locale: dateFnsLocale })}
                       </p>
                     </div>
                   );
@@ -272,29 +271,29 @@ function PlanificationsPage() {
 
         <aside className="flex flex-col gap-5">
           <div className="border border-border/80 bg-card p-5 shadow-sm sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Créneau sélectionné</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.planifications.selectedSlot}</p>
             {selectedPlan ? (
               <>
                 <h2 className="mt-1 font-display text-lg text-foreground">{selectedPlan.title}</h2>
                 <p className="mt-2 flex items-center gap-1.5 text-xs font-medium tabular-nums text-muted-foreground">
                   <Clock className="h-3.5 w-3.5" aria-hidden />
-                  {format(parseISO(selectedPlan.date), "EEEE d MMMM yyyy", { locale: fr })} · {selectedPlan.time}
+                  {format(parseISO(selectedPlan.date), "EEEE d MMMM yyyy", { locale: dateFnsLocale })} · {selectedPlan.time}
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{selectedPlan.detail}</p>
               </>
             ) : (
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Cliquez sur un bloc dans la grille pour afficher le détail du créneau.
+                {t.planifications.selectSlotHint}
               </p>
             )}
           </div>
 
           <div className="border border-border/60 bg-muted/50 p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Cette semaine</p>
-            <h3 className="mt-1 font-display text-lg text-foreground">Tous les créneaux</h3>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.planifications.thisWeek}</p>
+            <h3 className="mt-1 font-display text-lg text-foreground">{t.planifications.allSlots}</h3>
             <ul className="mt-4 max-h-[min(20rem,45vh)] space-y-2 overflow-y-auto pr-1">
               {plansInWeek.length === 0 ? (
-                <li className="text-xs text-muted-foreground">Aucun créneau sur cette semaine.</li>
+                <li className="text-xs text-muted-foreground">{t.planifications.noSlotsWeek}</li>
               ) : (
                 plansInWeek.map((p) => (
                   <li key={p.id}>
@@ -316,7 +315,7 @@ function PlanificationsPage() {
                       <div className="shrink-0 text-right">
                         <p className="font-medium tabular-nums text-foreground/90">{p.time}</p>
                         <p className="text-[10px] capitalize text-muted-foreground">
-                          {format(parseISO(p.date), "EEE d MMM", { locale: fr })}
+                          {format(parseISO(p.date), "EEE d MMM", { locale: dateFnsLocale })}
                         </p>
                       </div>
                     </button>
@@ -327,7 +326,7 @@ function PlanificationsPage() {
           </div>
 
           <div className="border border-border/60 bg-card p-5 sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Vue du mois</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.planifications.monthView}</p>
             <ul className="mt-3 space-y-2 text-xs">
               {monthPlans.map((p) => (
                 <li
@@ -336,7 +335,7 @@ function PlanificationsPage() {
                 >
                   <span className="font-medium text-foreground/90">{p.title}</span>
                   <span className="shrink-0 tabular-nums text-muted-foreground">
-                    {format(parseISO(p.date), "d/MM", { locale: fr })} {p.time}
+                    {format(parseISO(p.date), "d/MM", { locale: dateFnsLocale })} {p.time}
                   </span>
                 </li>
               ))}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -12,7 +13,9 @@ import {
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { BackToTop } from "@/components/back-to-top";
+import { LanguageToggleFloating } from "@/components/language-toggle";
 import { BrandLoader } from "@/components/brand-loader";
+import { LandingI18nProvider } from "@/lib/landing-i18n";
 
 function NotFoundComponent() {
   return (
@@ -131,19 +134,27 @@ function RootComponent() {
   const navBusy = useRouterState({
     select: (s) => s.isLoading || s.status === "pending" || s.isTransitioning,
   });
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <LandingI18nProvider>
         <div className="relative">
           <Outlet />
-          {navBusy ? (
+          {hydrated && navBusy ? (
             <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-zinc-950/92 backdrop-blur-sm">
               <BrandLoader compact className="bg-transparent" />
             </div>
           ) : null}
         </div>
-        <BackToTop />
+          <LanguageToggleFloating />
+          <BackToTop />
+        </LandingI18nProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

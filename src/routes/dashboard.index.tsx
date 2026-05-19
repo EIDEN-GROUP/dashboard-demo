@@ -28,56 +28,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({ meta: [{ title: "CRM   Plateforme" }] }),
   component: CrmDash,
 });
 
-const filterTags = ["CLIENTS", "PAIEMENTS", "DETTE", "COLLECTE"] as const;
-
-const metrics = [
-  {
-    k: "01",
-    label: "TOTAL CLIENTS",
-    value: "4",
-    sub: "1 actif",
-    badge: "Actif",
-    borderClass: "border-t-primary",
-    icon: Users,
-    to: "/dashboard/familles",
-  },
-  {
-    k: "02",
-    label: "PAYÉS CE MOIS",
-    value: "2",
-    sub: "1 en attente",
-    badge: "Actif",
-    borderClass: "border-t-chart-4",
-    icon: CreditCard,
-    to: "/dashboard/familles",
-  },
-  {
-    k: "03",
-    label: "DETTE TOTALE",
-    value: "0 MAD",
-    sub: "Calculé dynamiquement",
-    badge: "Actif",
-    borderClass: "border-t-chart-2",
-    icon: AlertCircle,
-    to: "/dashboard/rapports",
-  },
-  {
-    k: "04",
-    label: "REVENU TOTAL",
-    value: "12 600 MAD",
-    sub: "Rapports & paiements (démo)",
-    badge: "Actif",
-    borderClass: "border-t-muted-foreground",
-    icon: Banknote,
-    to: "/dashboard/rapports",
-  },
-] as const;
 
 const inputClass =
   "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
@@ -89,35 +46,6 @@ type QuickAction =
   | { kind: "link"; to: string; title: string; desc: string; icon: typeof Users }
   | { kind: "add-client"; title: string; desc: string; icon: typeof Plus };
 
-const quickActions: QuickAction[] = [
-  {
-    kind: "link",
-    to: "/dashboard/familles",
-    title: "Gérer les clients",
-    desc: "Voir et modifier les informations des clients.",
-    icon: Users,
-  },
-  {
-    kind: "link",
-    to: "/dashboard/familles",
-    title: "Enregistrer un paiement",
-    desc: "Sélectionner un parent et enregistrer.",
-    icon: CreditCard,
-  },
-  {
-    kind: "link",
-    to: "/dashboard/paiements",
-    title: "Clients en retard",
-    desc: "Voir les clients avec des paiements en retard.",
-    icon: Clock,
-  },
-  {
-    kind: "add-client",
-    title: "Ajouter un client",
-    desc: "Créer un nouveau client depuis le dashboard.",
-    icon: Plus,
-  },
-];
 
 const tagClass =
   "inline-flex items-center border border-border bg-muted px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground/90";
@@ -146,6 +74,10 @@ function Field({ id, label, children }: { id: string; label: string; children: R
 }
 
 function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const m = t.home.addClientModal;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -155,14 +87,12 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
           "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0",
         )}
       >
-        <DialogDescription className="sr-only">
-          Formulaire pour créer un nouveau client dans le CRM.
-        </DialogDescription>
+        <DialogDescription className="sr-only">{m.srDesc}</DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— Ajouter un client</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{m.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
-              Nouveau client CRM
+              {m.title}
             </DialogTitle>
           </div>
           <form
@@ -173,15 +103,15 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
             }}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="crm-eleve" label="Nom d'élève">
+              <Field id="crm-eleve" label={f.studentName}>
                 <Input id="crm-eleve" name="eleve" autoComplete="name" className={inputClass} />
               </Field>
-              <Field id="crm-dob" label="Date de naissance">
+              <Field id="crm-dob" label={f.birthDate}>
                 <div className="relative">
                   <Input
                     id="crm-dob"
                     name="naissance"
-                    placeholder="jj/mm/aaaa"
+                    placeholder={f.birthDatePlaceholder}
                     className={cn(inputClass, "pr-10")}
                   />
                   <Calendar
@@ -190,42 +120,42 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
                   />
                 </div>
               </Field>
-              <Field id="crm-pere" label="Nom du père">
+              <Field id="crm-pere" label={f.fatherName}>
                 <Input id="crm-pere" name="pere" autoComplete="additional-name" className={inputClass} />
               </Field>
-              <Field id="crm-mere" label="Nom de mère">
+              <Field id="crm-mere" label={f.motherName}>
                 <Input id="crm-mere" name="mere" autoComplete="additional-name" className={inputClass} />
               </Field>
-              <Field id="crm-cin" label="CIN ou passeport">
+              <Field id="crm-cin" label={f.cinPassport}>
                 <Input id="crm-cin" name="cin" className={inputClass} />
               </Field>
-              <Field id="crm-niveau" label="Niveau">
+              <Field id="crm-niveau" label={f.level}>
                 <Select name="niveau">
                   <SelectTrigger id="crm-niveau" className={selectTriggerClass}>
-                    <SelectValue placeholder="Sélectionner un niveau" />
+                    <SelectValue placeholder={t.common.selectLevel} />
                   </SelectTrigger>
                   <SelectContent className="rounded-none border-border">
-                    <SelectItem value="ps">Petite section</SelectItem>
-                    <SelectItem value="ms">Moyenne section</SelectItem>
-                    <SelectItem value="gs">Grande section</SelectItem>
-                    <SelectItem value="cp">CP</SelectItem>
-                    <SelectItem value="ce1">CE1</SelectItem>
-                    <SelectItem value="ce2">CE2</SelectItem>
-                    <SelectItem value="cm1">CM1</SelectItem>
-                    <SelectItem value="cm2">CM2</SelectItem>
+                    <SelectItem value="ps">{f.levels.ps}</SelectItem>
+                    <SelectItem value="ms">{f.levels.ms}</SelectItem>
+                    <SelectItem value="gs">{f.levels.gs}</SelectItem>
+                    <SelectItem value="cp">{f.levels.cp}</SelectItem>
+                    <SelectItem value="ce1">{f.levels.ce1}</SelectItem>
+                    <SelectItem value="ce2">{f.levels.ce2}</SelectItem>
+                    <SelectItem value="cm1">{f.levels.cm1}</SelectItem>
+                    <SelectItem value="cm2">{f.levels.cm2}</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
-              <Field id="crm-email1" label="Email 1">
+              <Field id="crm-email1" label={f.email1}>
                 <Input id="crm-email1" name="email1" type="email" autoComplete="email" className={inputClass} />
               </Field>
-              <Field id="crm-email2" label="Email 2">
+              <Field id="crm-email2" label={f.email2}>
                 <Input id="crm-email2" name="email2" type="email" className={inputClass} />
               </Field>
-              <Field id="crm-tel1" label="Téléphone 1">
+              <Field id="crm-tel1" label={f.phone1}>
                 <Input id="crm-tel1" name="tel1" type="tel" autoComplete="tel" className={inputClass} />
               </Field>
-              <Field id="crm-tel2" label="Téléphone 2">
+              <Field id="crm-tel2" label={f.phone2}>
                 <Input id="crm-tel2" name="tel2" type="tel" className={inputClass} />
               </Field>
             </div>
@@ -235,13 +165,13 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
                 onClick={() => onOpenChange(false)}
                 className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Annuler
+                {t.common.cancel}
               </button>
               <button
                 type="submit"
                 className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Ajouter le client
+                {m.submit}
               </button>
             </div>
           </form>
@@ -252,7 +182,83 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
 }
 
 function CrmDash() {
+  const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
+
+  const filterTags = [t.home.tags.clients, t.home.tags.payments, t.home.tags.debt, t.home.tags.collection];
+
+  const metrics = [
+    {
+      k: "01",
+      label: t.home.metrics.totalClients,
+      value: "4",
+      sub: t.home.metrics.oneActive,
+      badge: t.common.active,
+      borderClass: "border-t-primary",
+      icon: Users,
+      to: "/dashboard/familles",
+    },
+    {
+      k: "02",
+      label: t.home.metrics.paidThisMonth,
+      value: "2",
+      sub: t.home.metrics.onePending,
+      badge: t.common.active,
+      borderClass: "border-t-chart-4",
+      icon: CreditCard,
+      to: "/dashboard/familles",
+    },
+    {
+      k: "03",
+      label: t.home.metrics.totalDebt,
+      value: `0 ${t.common.mad}`,
+      sub: t.home.metrics.calculatedDynamic,
+      badge: t.common.active,
+      borderClass: "border-t-chart-2",
+      icon: AlertCircle,
+      to: "/dashboard/rapports",
+    },
+    {
+      k: "04",
+      label: t.home.metrics.totalRevenue,
+      value: `12 600 ${t.common.mad}`,
+      sub: t.home.metrics.reportsDemo,
+      badge: t.common.active,
+      borderClass: "border-t-muted-foreground",
+      icon: Banknote,
+      to: "/dashboard/rapports",
+    },
+  ] as const;
+
+  const quickActions: QuickAction[] = [
+    {
+      kind: "link",
+      to: "/dashboard/familles",
+      title: t.home.quickActions.manageClients.title,
+      desc: t.home.quickActions.manageClients.desc,
+      icon: Users,
+    },
+    {
+      kind: "link",
+      to: "/dashboard/familles",
+      title: t.home.quickActions.recordPayment.title,
+      desc: t.home.quickActions.recordPayment.desc,
+      icon: CreditCard,
+    },
+    {
+      kind: "link",
+      to: "/dashboard/paiements",
+      title: t.home.quickActions.lateClients.title,
+      desc: t.home.quickActions.lateClients.desc,
+      icon: Clock,
+    },
+    {
+      kind: "add-client",
+      title: t.home.quickActions.addClient.title,
+      desc: t.home.quickActions.addClient.desc,
+      icon: Plus,
+    },
+  ];
 
   const quickRowClass =
     "group flex w-full items-start gap-3 border border-transparent p-3 text-left transition hover:border-border hover:bg-muted";
@@ -262,17 +268,13 @@ function CrmDash() {
       <NouveauClientModal open={addClientOpen} onOpenChange={setAddClientOpen} />
 
       <header className="space-y-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-          Vue d&apos;ensemble — CRM
-        </p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{t.home.eyebrow}</p>
         <div>
           <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
-            <span className="font-semibold">Tableau</span>{" "}
-            <span className="font-normal italic text-muted-foreground">de bord</span>
+            <span className="font-semibold">{t.home.titleBold}</span>{" "}
+            <span className="font-normal italic text-muted-foreground">{t.home.titleItalic}</span>
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Vue d&apos;ensemble de votre gestion de la relation client
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{t.home.subtitle}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {filterTags.map((label) => (
@@ -288,7 +290,7 @@ function CrmDash() {
           <Link
             key={card.k}
             to={card.to}
-            aria-label={`${card.label}: ${card.value}. Ouvrir`}
+            aria-label={interpolate(t.home.cardOpenAria, { label: card.label, value: card.value })}
             className={
               "relative block overflow-hidden border border-border bg-card p-5 text-left text-inherit no-underline outline-none transition-colors hover:border-border hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 " +
               card.borderClass +
@@ -312,11 +314,11 @@ function CrmDash() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
         <div className="flex min-h-0 w-full flex-col border border-border bg-card p-6 lg:min-w-0 lg:flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Graphique</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.common.chart}</p>
           <h2 className="mt-1 font-display text-xl text-foreground">
-            Inscriptions <span className="font-normal italic text-muted-foreground">par mois</span>
+            {t.home.chartTitleBold} <span className="font-normal italic text-muted-foreground">{t.home.chartTitleItalic}</span>
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">Volume mensuel (données de démonstration, alignées sur les rapports).</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t.home.chartSubtitle}</p>
           <div className="mt-4 h-72 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={[...mirrorRapportsChart]}>
@@ -332,16 +334,16 @@ function CrmDash() {
             to="/dashboard/rapports"
             className="mt-4 inline-flex w-fit shrink-0 items-center gap-1.5 border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
           >
-            Voir les rapports
+            {t.home.viewReports}
             <ArrowUpRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
 
         <div className="flex shrink-0 flex-col gap-4 lg:w-[min(100%,22rem)] lg:max-w-sm">
           <div className="flex flex-col border border-border bg-card p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Actions rapides</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.home.quickActionsEyebrow}</p>
             <h2 className="mt-1 font-display text-xl text-foreground">
-              Navigation <span className="font-normal italic text-muted-foreground">rapide</span>
+              {t.home.quickNavBold} <span className="font-normal italic text-muted-foreground">{t.home.quickNavItalic}</span>
             </h2>
             <ul className="mt-5 space-y-2">
               {quickActions.map((a) => {

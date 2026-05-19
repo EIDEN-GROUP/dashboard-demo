@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 
 export const Route = createFileRoute("/dashboard/familles")({
   head: () => ({ meta: [{ title: "Parents   CRM" }] }),
@@ -176,6 +177,7 @@ function dash(v: string) {
 }
 
 function CrmParentsPage() {
+  const { t } = useDashboardI18n();
   const [clients, setClients] = useState<Client[]>(initialClients);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("tous");
@@ -208,13 +210,12 @@ function CrmParentsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">CRM — Gestion</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.familles.eyebrow}</p>
           <h1 className="mt-1 font-display text-3xl tracking-tight text-foreground md:text-4xl">
-            Mes <span className="italic text-muted-foreground">clients</span>
+            {t.familles.titleBold}{" "}
+            {t.familles.titleItalic ? <span className="italic text-muted-foreground">{t.familles.titleItalic}</span> : null}
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Gérez vos clients et leur progression dans le pipeline de vente
-          </p>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">{t.familles.subtitle}</p>
         </div>
         <button
           type="button"
@@ -222,34 +223,34 @@ function CrmParentsPage() {
           className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
-          Ajouter un client
+          {t.familles.addClient}
         </button>
       </header>
 
       <section className="border border-border bg-card p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Filtres & recherche</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— {t.common.filtersSearch}</p>
         <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-end">
           <div className="relative min-w-0">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par nom, email, téléphone…"
+              placeholder={t.familles.searchPlaceholder}
               className={cn(inputClass, "pl-10")}
-              aria-label="Recherche clients"
+              aria-label={t.familles.searchAria}
             />
           </div>
           <div className="w-full min-w-[11rem] lg:w-52">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className={selectTriggerClass} aria-label="Filtrer par statut">
-                <SelectValue placeholder="Tous les statuts" />
+              <SelectTrigger className={selectTriggerClass} aria-label={t.familles.filterStatusAria}>
+                <SelectValue placeholder={t.common.allStatuses} />
               </SelectTrigger>
               <SelectContent className="rounded-none border-border">
-                <SelectItem value="tous">Tous les statuts</SelectItem>
-                <SelectItem value="nouveau">Stade : Nouveau</SelectItem>
-                <SelectItem value="converti">Stade : Converti</SelectItem>
-                <SelectItem value="impaye">Paiement : Impayé</SelectItem>
-                <SelectItem value="paye">Paiement : Payé</SelectItem>
+                <SelectItem value="tous">{t.common.allStatuses}</SelectItem>
+                <SelectItem value="nouveau">{t.status.stageNouveau}</SelectItem>
+                <SelectItem value="converti">{t.status.stageConverti}</SelectItem>
+                <SelectItem value="impaye">{t.status.paymentImpaye}</SelectItem>
+                <SelectItem value="paye">{t.status.paymentPaye}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -261,31 +262,33 @@ function CrmParentsPage() {
             />
             <span className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 shrink-0 bg-primary" aria-hidden />
-              En retard
+              {t.status.overdue}
             </span>
           </label>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          {filtered.length} client{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
+          {filtered.length === 1
+            ? t.familles.clientsFoundOne
+            : interpolate(t.familles.clientsFoundMany, { count: filtered.length })}
         </p>
       </section>
 
       <section className="border border-border bg-card">
         <div className="border-b border-border px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— Liste des clients</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.familles.clientList}</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[840px] text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">Parent</th>
-                <th className="px-4 py-3">Enfant</th>
-                <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Stade CRM</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Mensuel</th>
-                <th className="px-4 py-3">Dette</th>
-                <th className="px-4 py-3 w-24">Actions</th>
+                <th className="px-4 py-3">{t.familles.table.parent}</th>
+                <th className="px-4 py-3">{t.familles.table.child}</th>
+                <th className="px-4 py-3">{t.familles.table.contact}</th>
+                <th className="px-4 py-3">{t.familles.table.crmStage}</th>
+                <th className="px-4 py-3">{t.familles.table.status}</th>
+                <th className="px-4 py-3">{t.familles.table.monthly}</th>
+                <th className="px-4 py-3">{t.familles.table.debt}</th>
+                <th className="px-4 py-3 w-24">{t.familles.table.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -304,23 +307,27 @@ function CrmParentsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={c.stade === "converti" ? "dark" : "neutral"}>
-                      {c.stade === "nouveau" ? "Nouveau" : "Converti"}
+                      {c.stade === "nouveau" ? t.status.nouveau : t.status.converti}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={c.payment === "paye" ? "dark" : "neutral"}>
-                      {c.payment === "impaye" ? "Impayé" : "Payé"}
+                      {c.payment === "impaye" ? t.status.impaye : t.status.paye}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-foreground/90">{c.mensuel} MAD</td>
-                  <td className="px-4 py-3 tabular-nums text-foreground/90">{c.dette} MAD</td>
+                  <td className="px-4 py-3 tabular-nums text-foreground/90">
+                    {c.mensuel} {t.common.mad}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-foreground/90">
+                    {c.dette} {t.common.mad}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
                       <button
                         type="button"
                         onClick={() => setDetailId(c.id)}
                         className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
-                        aria-label={`Voir ${c.child}`}
+                        aria-label={interpolate(t.familles.viewAria, { name: c.child })}
                       >
                         <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>
@@ -328,7 +335,7 @@ function CrmParentsPage() {
                         type="button"
                         onClick={() => setEditId(c.id)}
                         className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
-                        aria-label={`Modifier ${c.child}`}
+                        aria-label={interpolate(t.familles.editAria, { name: c.child })}
                       >
                         <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>
@@ -340,7 +347,7 @@ function CrmParentsPage() {
           </table>
         </div>
         {filtered.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun client ne correspond aux filtres.</p>
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">{t.familles.noMatch}</p>
         ) : null}
       </section>
 
@@ -393,16 +400,18 @@ function AddClientDialog({
   onOpenChange: (v: boolean) => void;
   onCreated: (row: Client) => void;
 }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const a = t.familles.addModal;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[640px]")}>
-        <DialogDescription className="sr-only">Créer un nouveau client</DialogDescription>
+        <DialogDescription className="sr-only">{a.srDesc}</DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— Ajouter un client</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
-              Nouveau client CRM
-            </DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.eyebrow}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{a.title}</DialogTitle>
           </div>
           <form
             className="max-h-[calc(90vh-10rem)] overflow-y-auto px-6 py-5"
@@ -435,20 +444,20 @@ function AddClientDialog({
             }}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="nc-parent" label="Parent (nom affiché)">
-                <Input id="nc-parent" name="parent" required className={inputClass} placeholder="Nom / Nom" />
+              <Field id="nc-parent" label={f.parentDisplayName}>
+                <Input id="nc-parent" name="parent" required className={inputClass} placeholder={f.parentDisplayPlaceholder} />
               </Field>
-              <Field id="nc-child" label="Nom d'élève">
+              <Field id="nc-child" label={f.studentName}>
                 <Input id="nc-child" name="child" required className={inputClass} />
               </Field>
-              <Field id="nc-email" label="Email 1">
+              <Field id="nc-email" label={f.email1}>
                 <Input id="nc-email" name="email1" type="email" className={inputClass} />
               </Field>
-              <Field id="nc-tel" label="Téléphone 1">
+              <Field id="nc-tel" label={f.phone1}>
                 <Input id="nc-tel" name="tel1" type="tel" className={inputClass} />
               </Field>
-              <Field id="nc-niveau" label="Niveau">
-                <Input id="nc-niveau" name="niveau" className={inputClass} placeholder="ex. CM2" />
+              <Field id="nc-niveau" label={f.level}>
+                <Input id="nc-niveau" name="niveau" className={inputClass} placeholder={f.levelExample} />
               </Field>
             </div>
             <div className="mt-6 flex justify-end gap-3 border-t border-border pt-5">
@@ -457,13 +466,13 @@ function AddClientDialog({
                 onClick={() => onOpenChange(false)}
                 className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Annuler
+                {t.common.cancel}
               </button>
               <button
                 type="submit"
                 className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Ajouter le client
+                {a.submit}
               </button>
             </div>
           </form>
@@ -484,50 +493,54 @@ function DetailClientDialog({
   onOpenChange: (open: boolean) => void;
   onPayment: () => void;
 }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const d = t.familles.detailModal;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={dialogSurface}>
-        <DialogDescription className="sr-only">Détails du client {client.child}</DialogDescription>
+        <DialogDescription className="sr-only">{interpolate(d.srDesc, { name: client.child })}</DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">CRM</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
-              Détails du client
-            </DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.common.crm}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{d.title}</DialogTitle>
           </div>
           <div className="grid max-h-[60vh] grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto px-6 py-5 sm:grid-cols-2">
-            <Field id="d-eleve" label="Nom d'élève">
+            <Field id="d-eleve" label={f.studentName}>
               <p className="text-sm font-semibold text-foreground">{client.child}</p>
             </Field>
-            <Field id="d-dob" label="Date de naissance">
+            <Field id="d-dob" label={f.birthDate}>
               <p className="text-sm font-semibold text-foreground">{dash(client.dob)}</p>
             </Field>
-            <Field id="d-pere" label="Nom du père">
+            <Field id="d-pere" label={f.fatherName}>
               <p className="text-sm font-semibold text-foreground">{dash(client.pere)}</p>
             </Field>
-            <Field id="d-mere" label="Nom de mère">
+            <Field id="d-mere" label={f.motherName}>
               <p className="text-sm font-semibold text-foreground">{dash(client.mere)}</p>
             </Field>
-            <Field id="d-cin" label="CIN ou passeport">
+            <Field id="d-cin" label={f.cinPassport}>
               <p className="text-sm font-semibold text-foreground">{dash(client.cin)}</p>
             </Field>
-            <Field id="d-email1" label="Email 1">
+            <Field id="d-email1" label={f.email1}>
               <p className="text-sm font-semibold text-foreground">{dash(client.email)}</p>
             </Field>
-            <Field id="d-email2" label="Email 2">
+            <Field id="d-email2" label={f.email2}>
               <p className="text-sm font-semibold text-foreground">{dash(client.email2)}</p>
             </Field>
-            <Field id="d-tel1" label="Téléphone 1">
+            <Field id="d-tel1" label={f.phone1}>
               <p className="text-sm font-semibold text-foreground">{dash(client.phone)}</p>
             </Field>
-            <Field id="d-tel2" label="Téléphone 2">
+            <Field id="d-tel2" label={f.phone2}>
               <p className="text-sm font-semibold text-foreground">{dash(client.tel2)}</p>
             </Field>
-            <Field id="d-niveau" label="Niveau">
+            <Field id="d-niveau" label={f.level}>
               <p className="text-sm font-semibold text-foreground">{dash(client.niveau)}</p>
             </Field>
-            <Field id="d-frais" label="Frais mensuels">
-              <p className="text-sm font-semibold text-foreground">{client.mensuel} MAD</p>
+            <Field id="d-frais" label={f.monthlyFees}>
+              <p className="text-sm font-semibold text-foreground">
+                {client.mensuel} {t.common.mad}
+              </p>
             </Field>
           </div>
           <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4">
@@ -540,14 +553,14 @@ function DetailClientDialog({
               className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
-              Enregistrer un paiement
+              {d.recordPayment}
             </button>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
               className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
-              Fermer
+              {t.common.close}
             </button>
           </div>
         </div>
@@ -565,16 +578,18 @@ function PaymentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const p = t.familles.paymentModal;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[480px]")}>
-        <DialogDescription className="sr-only">Enregistrer un paiement pour {clientLabel}</DialogDescription>
+        <DialogDescription className="sr-only">{interpolate(p.srDesc, { name: clientLabel })}</DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— CRM</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
-              Enregistrer un paiement
-            </DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{p.eyebrow}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{p.title}</DialogTitle>
           </div>
           <form
             className="space-y-4 px-6 py-5"
@@ -583,22 +598,22 @@ function PaymentDialog({
               onOpenChange(false);
             }}
           >
-            <Field id="pay-montant" label="Montant (MAD)">
+            <Field id="pay-montant" label={f.amountMad}>
               <Input id="pay-montant" name="montant" type="number" defaultValue={0} min={0} className={inputClass} />
             </Field>
-            <Field id="pay-date" label="Date de paiement">
+            <Field id="pay-date" label={f.paymentDate}>
               <Input id="pay-date" name="date" type="date" className={inputClass} defaultValue="2026-05-12" />
             </Field>
-            <Field id="pay-mode" label="Mode de paiement">
+            <Field id="pay-mode" label={f.paymentMode}>
               <Select name="mode" defaultValue="especes">
                 <SelectTrigger id="pay-mode" className={selectTriggerClass}>
-                  <SelectValue placeholder="Mode" />
+                  <SelectValue placeholder={t.common.mode} />
                 </SelectTrigger>
                 <SelectContent className="rounded-none border-border">
-                  <SelectItem value="especes">Espèces</SelectItem>
-                  <SelectItem value="virement">Virement</SelectItem>
-                  <SelectItem value="carte">Carte</SelectItem>
-                  <SelectItem value="cheque">Chèque</SelectItem>
+                  <SelectItem value="especes">{f.paymentModes.cash}</SelectItem>
+                  <SelectItem value="virement">{f.paymentModes.transfer}</SelectItem>
+                  <SelectItem value="carte">{f.paymentModes.card}</SelectItem>
+                  <SelectItem value="cheque">{f.paymentModes.check}</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -608,13 +623,13 @@ function PaymentDialog({
                 onClick={() => onOpenChange(false)}
                 className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Annuler
+                {t.common.cancel}
               </button>
               <button
                 type="submit"
                 className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Confirmer le paiement
+                {p.confirm}
               </button>
             </div>
           </form>
@@ -641,16 +656,18 @@ function EditClientDialog({
     setStade(client.stade);
   }, [client.id, client.stade]);
 
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const e = t.familles.editModal;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
-        <DialogDescription className="sr-only">Modifier le client {client.child}</DialogDescription>
+        <DialogDescription className="sr-only">{interpolate(e.srDesc, { name: client.child })}</DialogDescription>
         <div className="border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">— CRM</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
-              Modifier le client
-            </DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{e.eyebrow}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{e.title}</DialogTitle>
           </div>
           <form
             className="max-h-[65vh] space-y-4 overflow-y-auto px-6 py-5"
@@ -669,30 +686,30 @@ function EditClientDialog({
             }}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="e-parent" label="Parent">
+              <Field id="e-parent" label={t.common.parent}>
                 <Input id="e-parent" name="parent" defaultValue={client.parent} className={inputClass} />
               </Field>
-              <Field id="e-child" label="Enfant">
+              <Field id="e-child" label={t.common.child}>
                 <Input id="e-child" name="child" defaultValue={client.child} className={inputClass} />
               </Field>
-              <Field id="e-email" label="Email">
+              <Field id="e-email" label={t.common.email}>
                 <Input id="e-email" name="email" type="email" defaultValue={client.email} className={inputClass} />
               </Field>
-              <Field id="e-phone" label="Téléphone">
+              <Field id="e-phone" label={t.common.phone}>
                 <Input id="e-phone" name="phone" type="tel" defaultValue={client.phone} className={inputClass} />
               </Field>
-              <Field id="e-stade" label="Stade CRM">
+              <Field id="e-stade" label={f.crmStage}>
                 <Select value={stade} onValueChange={(v) => setStade(v as StadeCrm)}>
                   <SelectTrigger id="e-stade" className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-none border-border">
-                    <SelectItem value="nouveau">Nouveau</SelectItem>
-                    <SelectItem value="converti">Converti</SelectItem>
+                    <SelectItem value="nouveau">{t.status.nouveau}</SelectItem>
+                    <SelectItem value="converti">{t.status.converti}</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
-              <Field id="e-mensuel" label="Frais mensuels (MAD)">
+              <Field id="e-mensuel" label={f.monthlyFeesMad}>
                 <Input
                   id="e-mensuel"
                   name="mensuel"
@@ -702,7 +719,7 @@ function EditClientDialog({
                   className={inputClass}
                 />
               </Field>
-              <Field id="e-jour" label="Jour de paiement (1-31)">
+              <Field id="e-jour" label={f.paymentDay}>
                 <Input
                   id="e-jour"
                   name="jour"
@@ -720,13 +737,13 @@ function EditClientDialog({
                 onClick={() => onOpenChange(false)}
                 className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                Annuler
+                {t.common.cancel}
               </button>
               <button
                 type="submit"
                 className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Enregistrer les modifications
+                {t.common.saveChanges}
               </button>
             </div>
           </form>

@@ -1,29 +1,25 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { DashShell, type NavItem } from "@/components/dash-shell";
-import { LayoutDashboard, Users, CreditCard, Calendar, Images, BarChart3 } from "lucide-react";
+import { DashShell } from "@/components/dash-shell";
+import { useDashboardI18n, useDashboardNav } from "@/lib/landing-i18n";
 
-const topNav: NavItem[] = [
-  { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/rendez-vous", label: "Rendez-vous", icon: Calendar },
-  { to: "/dashboard/familles", label: "Dossiers", icon: Users },
-  { to: "/dashboard/paiements", label: "Paiements", icon: CreditCard },
-];
+function DashboardLayout() {
+  const { dir } = useDashboardI18n();
+  const { topNav, secondaryNav, brand } = useDashboardNav();
 
-const secondaryNav: NavItem[] = [
-  { to: "/dashboard/affiches", label: "Affiches", icon: Images },
-  { to: "/dashboard/rapports", label: "Rapports", icon: BarChart3 },
-];
-
-export const Route = createFileRoute("/dashboard")({
-  component: () => (
+  return (
     <DashShell
-      brand="Tableau de bord"
+      brand={brand}
       brandColor="primary"
       variant="topnav"
       topNav={topNav}
       secondaryNav={secondaryNav}
+      dir={dir}
     >
       <Outlet />
     </DashShell>
-  ),
+  );
+}
+
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardLayout,
 });

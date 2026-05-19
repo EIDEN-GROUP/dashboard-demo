@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
+import { useDashboardI18n } from "@/lib/landing-i18n";
 import { cn } from "@/lib/utils";
 import { LogOut, ArrowLeftRight } from "lucide-react";
 
@@ -26,15 +27,17 @@ function topNavItemActive(pathname: string, to: string) {
 function MobileBottomNav({
   topNav,
   pathname,
+  mainNavAria,
 }: {
   topNav: NavItem[];
   pathname: string;
+  mainNavAria: string;
 }) {
   const compact = topNav.length >= 4;
   const labelClass = compact ? "text-[9px] leading-tight" : "text-[10px] leading-tight";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-6px_24px_color-mix(in_oklab,var(--foreground)_6%,transparent)] lg:hidden" aria-label="Navigation principale">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-6px_24px_color-mix(in_oklab,var(--foreground)_6%,transparent)] lg:hidden" aria-label={mainNavAria}>
       <div className="grid min-h-[4.25rem] w-full auto-cols-fr" style={{ gridTemplateColumns: `repeat(${topNav.length}, minmax(0, 1fr))` }}>
         {topNav.map((n) => {
           const active = topNavItemActive(pathname, n.to);
@@ -72,6 +75,7 @@ export function DashShell({
   variant = "sidebar",
   switchTo,
   switchLabel,
+  dir,
   children,
 }: {
   brand: string;
@@ -83,11 +87,14 @@ export function DashShell({
   /** Second workspace link (e.g. admin). Omit to hide the switch control. */
   switchTo?: string;
   switchLabel?: string;
+  dir?: "ltr" | "rtl";
   children: ReactNode;
 }) {
   const { user, logout } = useAuth();
+  const { t } = useDashboardI18n();
   const navigate = useNavigate();
   const loc = useLocation();
+  const shellDir = dir ?? "ltr";
 
   useEffect(() => {
     if (!user && typeof window !== "undefined") {
@@ -103,13 +110,13 @@ export function DashShell({
     };
 
     return (
-      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-muted">
+      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-muted" dir={shellDir}>
         <header className="z-30 shrink-0 border-b border-border bg-card">
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 flex-col">
-                <span className="font-display text-xl leading-none tracking-tight text-foreground">Plateforme</span>
+                <span className="font-display text-xl leading-none tracking-tight text-foreground">{t.shell.platform}</span>
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
               </Link>
               {switchTo && switchLabel ? (
@@ -123,7 +130,7 @@ export function DashShell({
               <div className="h-9 w-9 border border-border bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
                 {(user?.name || "A").slice(0, 1).toUpperCase()}
               </div>
-              <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center border border-border text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground" aria-label="Sortir">
+              <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center border border-border text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground" aria-label={t.shell.logoutAria}>
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </div>
@@ -133,7 +140,7 @@ export function DashShell({
           <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex flex-col">
-                <span className="font-display text-4xl leading-none text-foreground">Plateforme</span>
+                <span className="font-display text-4xl leading-none text-foreground">{t.shell.platform}</span>
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
               </Link>
               {switchTo && switchLabel ? (
@@ -175,9 +182,9 @@ export function DashShell({
                   {(user?.name || "A").slice(0, 1).toUpperCase()}
                 </div>
               </div>
-              <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-muted-foreground hover:bg-muted/70" aria-label="Sortir">
+              <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-muted-foreground hover:bg-muted/70" aria-label={t.shell.logoutAria}>
                 <LogOut className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden lg:inline">Sortir</span>
+                <span className="hidden lg:inline">{t.shell.logout}</span>
               </button>
             </div>
           </div>
@@ -206,11 +213,11 @@ export function DashShell({
           ) : null}
         </header>
 
-        <main data-dashboard-main className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-24 lg:p-8 lg:pb-8">
+        <main data-dashboard-main dir={shellDir} className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-24 lg:p-8 lg:pb-8">
           {children}
         </main>
 
-        <MobileBottomNav topNav={topNav} pathname={loc.pathname} />
+        <MobileBottomNav topNav={topNav} pathname={loc.pathname} mainNavAria={t.shell.mainNavAria} />
       </div>
     );
   }
@@ -258,7 +265,7 @@ export function DashShell({
             }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-muted/80"
           >
-            <LogOut className="h-4 w-4" /> Déconnexion
+            <LogOut className="h-4 w-4" /> {t.shell.disconnect}
           </button>
         </div>
       </aside>

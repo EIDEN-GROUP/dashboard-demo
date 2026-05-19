@@ -83,6 +83,7 @@
 
   --background: var(--eiden-canvas);
   --foreground: var(--eiden-forest);
+  --hover-menu-foreground: var(--eiden-forest);
 
   --card: var(--eiden-white);
   --card-foreground: var(--eiden-forest);
@@ -469,4 +470,12 @@
     opacity: 0.72;
     transform: scale(0.94);
   }
+}
+
+html[dir="rtl"] .landing-page {
+  direction: rtl;
+}
+
+html[dir="rtl"] [data-dashboard-main] {
+  direction: rtl;
 }

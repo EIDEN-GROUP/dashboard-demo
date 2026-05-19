@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useDashboardI18n } from "@/lib/landing-i18n";
 
 export const Route = createFileRoute("/dashboard/paiements")({
   head: () => ({ meta: [{ title: "Paiements   CRM" }] }),
@@ -61,33 +62,8 @@ const rowsSeed: PaymentRow[] = [
   },
 ];
 
-function exportCsv(lines: PaymentRow[]) {
-  const header = ["Parent", "Enfant", "Montant (MAD)", "Date", "Mode", "Période", "Reçu", "Facture"];
-  const body = lines.map((r) =>
-    [
-      r.parent,
-      r.enfant,
-      String(r.montant),
-      r.date,
-      r.mode,
-      r.periode,
-      r.recu,
-      r.facture === "non_envoye" ? "Non envoyé" : "Envoyé",
-    ]
-      .map((c) => `"${String(c).replace(/"/g, '""')}"`)
-      .join(","),
-  );
-  const csv = [header.join(","), ...body].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "paiements-export.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 function CrmPaiementsPage() {
+  const { t } = useDashboardI18n();
   const [rows] = useState<PaymentRow[]>(rowsSeed);
   const [search, setSearch] = useState("");
   const [modeFilter, setModeFilter] = useState("tous");
@@ -105,15 +81,50 @@ function CrmPaiementsPage() {
     });
   }, [rows, search, modeFilter, factureFilter]);
 
+  function exportCsv(lines: PaymentRow[]) {
+    const header = [
+      t.paiements.table.parent,
+      t.paiements.table.child,
+      `${t.paiements.table.amount} (${t.common.mad})`,
+      t.paiements.table.date,
+      t.paiements.table.mode,
+      t.paiements.table.period,
+      t.paiements.table.receipt,
+      t.paiements.table.invoice,
+    ];
+    const body = lines.map((r) =>
+      [
+        r.parent,
+        r.enfant,
+        String(r.montant),
+        r.date,
+        r.mode,
+        r.periode,
+        r.recu,
+        r.facture === "non_envoye" ? t.status.notSent : t.status.sent,
+      ]
+        .map((c) => `"${String(c).replace(/"/g, '""')}"`)
+        .join(","),
+    );
+    const csv = [header.join(","), ...body].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = t.paiements.csvFilename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">CRM — Paiements</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.paiements.eyebrow}</p>
           <h1 className="mt-1 font-display text-3xl tracking-tight text-foreground md:text-4xl">
-            Historique des <span className="italic text-muted-foreground">paiements</span>
+            {t.paiements.titleBold} <span className="italic text-muted-foreground">{t.paiements.titleItalic}</span>
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground">Historique et gestion des paiements parents</p>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">{t.paiements.subtitle}</p>
         </div>
         <button
           type="button"
@@ -121,44 +132,44 @@ function CrmPaiementsPage() {
           className="inline-flex items-center gap-2 border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
         >
           <Download className="h-4 w-4" />
-          Exporter
+          {t.common.export}
         </button>
       </header>
 
       <section className="border border-border bg-card p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres et recherche</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.common.filtersAndSearch}</p>
         <div className="mt-4 space-y-4">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par parent, reçu…"
+              placeholder={t.paiements.searchPlaceholder}
               className={cn(inputClass, "pl-10")}
-              aria-label="Recherche paiements"
+              aria-label={t.paiements.searchAria}
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Select value={modeFilter} onValueChange={setModeFilter}>
-              <SelectTrigger className={selectTriggerClass} aria-label="Mode de paiement">
-                <SelectValue placeholder="Tous les modes" />
+              <SelectTrigger className={selectTriggerClass} aria-label={t.paiements.paymentModeAria}>
+                <SelectValue placeholder={t.common.allModes} />
               </SelectTrigger>
               <SelectContent className="rounded-none border-border">
-                <SelectItem value="tous">Tous les modes</SelectItem>
-                <SelectItem value="espèces">Espèces</SelectItem>
-                <SelectItem value="virement">Virement</SelectItem>
-                <SelectItem value="carte">Carte</SelectItem>
-                <SelectItem value="chèque">Chèque</SelectItem>
+                <SelectItem value="tous">{t.common.allModes}</SelectItem>
+                <SelectItem value="espèces">{t.form.paymentModes.cash}</SelectItem>
+                <SelectItem value="virement">{t.form.paymentModes.transfer}</SelectItem>
+                <SelectItem value="carte">{t.form.paymentModes.card}</SelectItem>
+                <SelectItem value="chèque">{t.form.paymentModes.check}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={factureFilter} onValueChange={setFactureFilter}>
-              <SelectTrigger className={selectTriggerClass} aria-label="Facture">
-                <SelectValue placeholder="Tous les factures" />
+              <SelectTrigger className={selectTriggerClass} aria-label={t.paiements.invoiceAria}>
+                <SelectValue placeholder={t.common.allInvoices} />
               </SelectTrigger>
               <SelectContent className="rounded-none border-border">
-                <SelectItem value="tous">Tous les factures</SelectItem>
-                <SelectItem value="non_envoye">Non envoyé</SelectItem>
-                <SelectItem value="envoye">Envoyé</SelectItem>
+                <SelectItem value="tous">{t.common.allInvoices}</SelectItem>
+                <SelectItem value="non_envoye">{t.status.notSent}</SelectItem>
+                <SelectItem value="envoye">{t.status.sent}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -170,14 +181,14 @@ function CrmPaiementsPage() {
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">Parent</th>
-                <th className="px-4 py-3">Enfant</th>
-                <th className="px-4 py-3">Montant</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Mode</th>
-                <th className="px-4 py-3">Période</th>
-                <th className="px-4 py-3">Reçu</th>
-                <th className="px-4 py-3">Facture</th>
+                <th className="px-4 py-3">{t.paiements.table.parent}</th>
+                <th className="px-4 py-3">{t.paiements.table.child}</th>
+                <th className="px-4 py-3">{t.paiements.table.amount}</th>
+                <th className="px-4 py-3">{t.paiements.table.date}</th>
+                <th className="px-4 py-3">{t.paiements.table.mode}</th>
+                <th className="px-4 py-3">{t.paiements.table.period}</th>
+                <th className="px-4 py-3">{t.paiements.table.receipt}</th>
+                <th className="px-4 py-3">{t.paiements.table.invoice}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -185,7 +196,9 @@ function CrmPaiementsPage() {
                 <tr key={r.id} className="hover:bg-muted/80">
                   <td className="px-4 py-3 font-medium text-foreground">{r.parent}</td>
                   <td className="px-4 py-3 text-foreground/90">{r.enfant}</td>
-                  <td className="px-4 py-3 font-semibold tabular-nums text-foreground">{r.montant} MAD</td>
+                  <td className="px-4 py-3 font-semibold tabular-nums text-foreground">
+                    {r.montant} {t.common.mad}
+                  </td>
                   <td className="px-4 py-3 tabular-nums text-foreground/90">{r.date}</td>
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center gap-1 border border-primary bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
@@ -205,7 +218,7 @@ function CrmPaiementsPage() {
                       )}
                     >
                       <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
-                      {r.facture === "non_envoye" ? "Non envoyé" : "Envoyé"}
+                      {r.facture === "non_envoye" ? t.status.notSent : t.status.sent}
                     </span>
                   </td>
                 </tr>
@@ -214,7 +227,7 @@ function CrmPaiementsPage() {
           </table>
         </div>
         {filtered.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-muted-foreground">Aucun paiement ne correspond aux filtres.</p>
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">{t.paiements.noMatch}</p>
         ) : null}
       </section>
     </div>

@@ -8,8 +8,50 @@ import { HeroPreviewPageBody } from "@/components/hero-preview-page-body";
 import type { DashboardMiniaturePageId } from "@/lib/dashboard-mirror-data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
+import {
+  useLandingI18n,
+  DEMO_STEP_PAGES,
+  PREVIEW_TOP_NAV_IDS,
+  PREVIEW_SECONDARY_NAV_IDS,
+} from "@/lib/landing-i18n";
 
 const MotionLink = motion.create(Link);
+
+const PREVIEW_NAV_ICONS = {
+  dashboard: LayoutDashboard,
+  "rendez-vous": Calendar,
+  familles: Users,
+  paiements: CreditCard,
+  affiches: Images,
+  rapports: BarChart3,
+} as const;
+
+const PAIN_ACCENT = [
+  { accent: "border-t-[#0c5752]", bg: "bg-[color-mix(in_srgb,#0c5752_7%,#f8f3e8)]" },
+  { accent: "border-t-[#b8a876]", bg: "bg-[color-mix(in_srgb,#cfc292_22%,#fefdfb)]" },
+  { accent: "border-t-[#122620]", bg: "bg-[color-mix(in_srgb,#122620_6%,#f4ebd0)]" },
+] as const;
+
+const PAIN_ICONS = [FileSpreadsheet, CreditCard, UserPlus] as const;
+
+const MODULE_ICONS = [LayoutDashboard, CreditCard, Layers, Calendar, UsersRound, ClipboardList] as const;
+
+const TESTIMONIAL_AVATARS = [
+  { initials: "FB", avatarColor: "#1a4f8a", stars: 5 },
+  { initials: "KM", avatarColor: "#0c5752", stars: 5 },
+  { initials: "SR", avatarColor: "#7c3aed", stars: 5 },
+  { initials: "YF", avatarColor: "#b45309", stars: 5 },
+  { initials: "HA", avatarColor: "#be185d", stars: 5 },
+  { initials: "AC", avatarColor: "#0f766e", stars: 5 },
+  { initials: "NB", avatarColor: "#6d28d9", stars: 5 },
+  { initials: "OT", avatarColor: "#b91c1c", stars: 4 },
+] as const;
+
+const PRICING_AMOUNTS = {
+  essentiel: { monthly: 1000, yearly: 8000, popular: false },
+  pro: { monthly: 2000, yearly: 16000, popular: true },
+  reseau: { monthly: null, yearly: null, popular: false },
+} as const;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,22 +88,45 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
 };
 
-const previewTopNav: { id: DashboardMiniaturePageId; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: "dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { id: "rendez-vous", label: "Rendez-vous", icon: Calendar },
-  { id: "familles", label: "Dossiers", icon: Users },
-  { id: "paiements", label: "Paiements", icon: CreditCard },
-];
+function usePreviewTopNav() {
+  const { t } = useLandingI18n();
+  const labels = [
+    t.previewNav.dashboard,
+    t.previewNav.appointments,
+    t.previewNav.records,
+    t.previewNav.payments,
+  ];
+  return PREVIEW_TOP_NAV_IDS.map((id, i) => ({
+    id,
+    label: labels[i],
+    icon: PREVIEW_NAV_ICONS[id],
+  }));
+}
 
-const previewSecondaryNav: { id: DashboardMiniaturePageId; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: "affiches", label: "Affiches", icon: Images },
-  { id: "rapports", label: "Rapports", icon: BarChart3 },
-];
+function usePreviewSecondaryNav() {
+  const { t } = useLandingI18n();
+  return PREVIEW_SECONDARY_NAV_IDS.map((id) => ({
+    id,
+    label: id === "affiches" ? t.previewNav.posters : t.previewNav.reports,
+    icon: PREVIEW_NAV_ICONS[id],
+  }));
+}
+
+function useTourSteps() {
+  const { t } = useLandingI18n();
+  const icons = [LayoutDashboard, Calendar, Users, CreditCard, BarChart3];
+  return t.demo.steps.map((step, i) => ({
+    page: DEMO_STEP_PAGES[i],
+    icon: icons[i],
+    ...step,
+  }));
+}
 
 // ─────────────────────────────────────────────
 // Header
 // ─────────────────────────────────────────────
 function Header() {
+  const { t } = useLandingI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -97,7 +162,7 @@ function Header() {
           <Link
             to="/"
             className={cn(
-              "flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors",
+              "flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors hover:text-[#10b981]",
               isScrolled ? "text-foreground" : "text-[#f8f3e8]",
             )}
           >
@@ -118,28 +183,28 @@ function Header() {
               onClick={() => scrollToId("demo")}
               className={cn(
                 "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-foreground" : "text-white/65 hover:text-white",
+                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
               )}
             >
-              Démo
+              {t.nav.demo}
             </button>
             <button
               onClick={() => scrollToId("modules")}
               className={cn(
                 "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-foreground" : "text-white/65 hover:text-white",
+                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
               )}
             >
-              Modules
+              {t.nav.modules}
             </button>
             <button
               onClick={() => scrollToId("tarifs")}
               className={cn(
                 "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-foreground" : "text-white/65 hover:text-white",
+                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
               )}
             >
-              Tarifs
+              {t.nav.pricing}
             </button>
           </nav>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -153,7 +218,7 @@ function Header() {
               )}
               aria-expanded={menuOpen}
               aria-controls="landing-nav-sheet"
-              aria-label="Ouvrir le menu"
+              aria-label={t.a11y.openMenu}
               onClick={() => setMenuOpen(true)}
             >
               <Menu className="h-5 w-5" strokeWidth={2} />
@@ -164,7 +229,7 @@ function Header() {
               onClick={() => scrollToId("contact")}
               className="landing-cta-primary inline-flex max-w-[11rem] items-center justify-center gap-1.5 rounded-none px-3 py-2.5 text-xs font-semibold transition sm:max-w-none sm:gap-2 sm:px-5 sm:text-sm"
             >
-              <span className="truncate sm:whitespace-normal">Réserver une démo</span>
+              <span className="truncate sm:whitespace-normal">{t.nav.bookDemo}</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
             </motion.button>
           </div>
@@ -175,21 +240,21 @@ function Header() {
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="right" id="landing-nav-sheet" className="flex w-[min(100%,20rem)] flex-col sm:max-w-sm">
           <SheetHeader className="text-left">
-            <SheetTitle>Navigation</SheetTitle>
+            <SheetTitle>{t.nav.navigation}</SheetTitle>
           </SheetHeader>
           <nav className="mt-6 flex flex-col gap-1 border-t border-border pt-4" aria-label="Menu mobile">
             {[
-              { label: "Démo interactive", id: "demo" },
-              { label: "Modules", id: "modules" },
-              { label: "Tarifs", id: "tarifs" },
-              { label: "FAQ", id: "faq" },
-              { label: "Contact", id: "contact" },
+              { label: t.nav.demoInteractive, id: "demo" },
+              { label: t.nav.modules, id: "modules" },
+              { label: t.nav.pricing, id: "tarifs" },
+              { label: t.nav.faq, id: "faq" },
+              { label: t.nav.contact, id: "contact" },
             ].map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => navScroll(item.id)}
-                className="rounded-md px-3 py-3 text-left text-base font-medium text-foreground transition hover:bg-muted"
+                className="rounded-md px-3 py-3 text-left text-base font-medium text-foreground transition hover:bg-muted hover:text-[#10b981]"
               >
                 {item.label}
               </button>
@@ -201,7 +266,7 @@ function Header() {
               onClick={() => { scrollToId("contact"); setMenuOpen(false); }}
               className="landing-cta-primary flex w-full items-center justify-center gap-2 rounded-none px-4 py-3.5 text-sm font-black transition"
             >
-              Réserver ma démo 20 min
+              {t.nav.bookDemo20}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -215,6 +280,8 @@ function Header() {
 // Hero miniature dashboard
 // ─────────────────────────────────────────────
 function HeroDashboardPreview() {
+  const { t } = useLandingI18n();
+  const previewTopNav = usePreviewTopNav();
   const reduceMotion = useReducedMotion();
   const [page, setPage] = useState<DashboardMiniaturePageId>("dashboard");
   const [notice, setNotice] = useState<string | null>(null);
@@ -245,11 +312,11 @@ function HeroDashboardPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
           <span className="ml-2 flex-1 truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-[9px] text-muted-foreground">
-            gestio.ma · aperçu démo
+            {t.hero.previewUrl}
           </span>
           <span className="flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Live
+            {t.hero.live}
           </span>
         </div>
 
@@ -258,14 +325,14 @@ function HeroDashboardPreview() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold tracking-tight text-foreground sm:text-xs">Gestio</p>
-                <p className="text-[8px] uppercase tracking-widest text-muted-foreground sm:text-[9px]">Centre spécialisé</p>
+                <p className="text-[8px] uppercase tracking-widest text-muted-foreground sm:text-[9px]">{t.hero.specializedCenter}</p>
               </div>
               <div className="flex items-center gap-1">
                 <div className="grid h-5 w-5 place-items-center bg-primary text-[8px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[9px]">A</div>
                 <button
                   type="button"
                   className="grid h-5 w-5 place-items-center rounded border border-border text-muted-foreground transition hover:bg-muted sm:h-6 sm:w-6"
-                  onClick={() => showLocked("Connectez-vous pour accéder à votre espace.")}
+                  onClick={() => showLocked(t.hero.loginToAccess)}
                 >
                   <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 </button>
@@ -323,7 +390,13 @@ function HeroDashboardPreview() {
 // S1 Hero - REDESIGNED DARK
 // ─────────────────────────────────────────────
 function Hero() {
+  const { t } = useLandingI18n();
   const reduceMotion = useReducedMotion();
+  const trustItems = [
+    { icon: Lock, text: t.hero.trustServers },
+    { icon: BadgeDollarSign, text: t.hero.trust48h },
+    { icon: Check, text: t.hero.trustNoCommit },
+  ];
   return (
     <section className="relative overflow-hidden bg-[#0a0f0c] py-12 lg:py-20">
       {/* Dynamic Background */}
@@ -355,17 +428,17 @@ function Hero() {
           >
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-              Plateforme Tout-en-un · Maroc
+              {t.hero.badge}
             </motion.div>
 
             <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#f8f3e8] sm:text-6xl lg:text-7xl">
-              Gérez votre centre <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">sans Excel</span>, <br />
-              sans chaos.
+              {t.hero.titleLine1} <br />
+              <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
+              {t.hero.titleLine2}
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-white/60 sm:text-xl">
-              Gestio est le CRM pensé pour les centres spécialisés au Maroc. Dossiers, paiements, planning tout au même endroit, accessible en 2 clics.
+            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-white sm:text-xl">
+              {t.hero.subtitle}
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
@@ -380,7 +453,7 @@ function Hero() {
                   <div className="flex items-center gap-0.5 text-amber-500">
                     {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                   </div>
-                  <p className="mt-1 text-white/40">10+ centres actifs · <span className="text-white font-bold">4.9/5 satisfaction</span></p>
+                  <p className="mt-1 text-white">{t.hero.socialProof}</p>
                </div>
             </motion.div>
 
@@ -391,7 +464,7 @@ function Hero() {
                 onClick={() => scrollToId("contact")}
                 className="group inline-flex items-center justify-center gap-2 bg-emerald-500 px-8 py-4 text-md font-black text-white transition-all hover:bg-emerald-400"
               >
-                Réserver ma démo gratuite
+                {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </motion.button>
               
@@ -401,18 +474,14 @@ function Hero() {
                 onClick={() => scrollToId("demo")}
                 className="inline-flex items-center justify-center gap-2 border border-white/20 bg-white px-8 py-4 text-sm font-bold text-[#0a0f0c] shadow-sm transition-colors hover:bg-neutral-100"
               >
-                Voir une démo live
+                {t.hero.ctaSecondary}
                 <MousePointerClick className="h-4 w-4" />
               </motion.button>
             </motion.div>
 
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
-              {[
-                { icon: Lock, text: "Serveurs au Maroc" },
-                { icon: BadgeDollarSign, text: "En ligne en 48h" },
-                { icon: Check, text: "Sans engagement" },
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 text-xs font-medium text-white/40">
+              {trustItems.map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-2 text-xs font-medium text-white">
                    <Icon className="h-3.5 w-3.5 text-emerald-500/70" />
                    {text}
                 </div>
@@ -437,8 +506,8 @@ function Hero() {
               className="absolute -bottom-6 -right-6 flex flex-col items-center justify-center rounded-2xl border-2 border-amber-500/30 bg-black/80 p-4 text-center shadow-2xl backdrop-blur-md"
             >
               <Gift className="h-6 w-6 text-amber-500 mb-1" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#d6ad60]">Promo</p>
-              <p className="text-xs font-bold text-white">-20% sur l'annuel</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#d6ad60]">{t.hero.promoLabel}</p>
+              <p className="text-xs font-bold text-white">{t.hero.promoText}</p>
             </motion.div>
           </motion.div>
         </div>
@@ -450,57 +519,11 @@ function Hero() {
 // ─────────────────────────────────────────────
 // S2 Animated Feature Tour + Interactive Demo
 // ─────────────────────────────────────────────
-const tourSteps: {
-  page: DashboardMiniaturePageId;
-  icon: typeof LayoutDashboard;
-  label: string;
-  headline: string;
-  description: string;
-  tag: string;
-}[] = [
-  {
-    page: "dashboard",
-    icon: LayoutDashboard,
-    label: "Tableau de bord",
-    headline: "Vos KPIs en temps réel",
-    description: "Recettes du mois, dettes en cours, nouveaux inscrits tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
-    tag: "Vue d'ensemble",
-  },
-  {
-    page: "rendez-vous",
-    icon: Calendar,
-    label: "Rendez-vous",
-    headline: "Planning centralisé",
-    description: "Toutes les demandes entrantes et le planning de votre équipe au même endroit. Confirmations automatiques, zéro double booking.",
-    tag: "Planning",
-  },
-  {
-    page: "familles",
-    icon: Users,
-    label: "Dossiers",
-    headline: "Dossiers complets en 2 clics",
-    description: "Chaque dossier, chaque document, l'historique des séances et le statut de paiement accessibles immédiatement, depuis n'importe quel appareil.",
-    tag: "Gestion dossiers",
-  },
-  {
-    page: "paiements",
-    icon: CreditCard,
-    label: "Paiements",
-    headline: "Zéro impayé oublié",
-    description: "Reçus numérotés automatiquement, suivi mensuel par dossier et relances automatiques. Plus besoin de courir après les paiements.",
-    tag: "Paiements & relances",
-  },
-  {
-    page: "rapports",
-    icon: BarChart3,
-    label: "Rapports",
-    headline: "Indicateurs & exports",
-    description: "Tableaux de bord analytiques et exports CSV prêts pour votre comptabilité. Prenez les bonnes décisions avec les bonnes données.",
-    tag: "Analyse",
-  },
-];
-
 function DemoSection() {
+  const { t } = useLandingI18n();
+  const tourSteps = useTourSteps();
+  const previewTopNav = usePreviewTopNav();
+  const previewSecondaryNav = usePreviewSecondaryNav();
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
   const [page, setPage] = useState<DashboardMiniaturePageId>("dashboard");
@@ -567,8 +590,8 @@ function DemoSection() {
           </span>
           <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary sm:px-2 sm:text-[11px]">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            <span className="hidden sm:inline">Démo live</span>
-            <span className="sm:hidden">Live</span>
+            <span className="hidden sm:inline">{t.demo.liveDemo}</span>
+            <span className="sm:hidden">{t.hero.live}</span>
           </span>
         </div>
         {/* App shell */}
@@ -578,16 +601,16 @@ function DemoSection() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold tracking-tight text-foreground sm:text-base">Gestio</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-[11px]">Centre spécialisé</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-[11px]">{t.hero.specializedCenter}</p>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="hidden items-center gap-1.5 text-[11px] text-muted-foreground sm:flex sm:text-xs">
                   <span className="flex h-5 w-5 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[11px]">A</span>
-                  Admin · Directeur
+                  {t.demo.adminRole}
                 </div>
                 <button
                   className="rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted sm:px-2 sm:py-1 sm:text-xs"
-                  onClick={() => showLocked("Connectez-vous pour accéder à votre espace réel.")}
+                  onClick={() => showLocked(t.hero.loginToAccessReal)}
                 >
                   <LogOut className="inline h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 </button>
@@ -677,13 +700,13 @@ function DemoSection() {
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary sm:px-5 sm:text-base">
             <MousePointerClick className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
-            Démo interactive sans compte requis
+            {t.demo.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Explorez Gestio maintenant.
+            {t.demo.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground sm:text-xl">
-            Cliquez sur chaque module pour voir comment il fonctionne comme si c'était votre vrai tableau de bord.
+            {t.demo.subtitle}
           </motion.p>
         </motion.div>
 
@@ -748,7 +771,7 @@ function DemoSection() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-xs text-background/50 uppercase tracking-widest">
-                        Module {step + 1} / {tourSteps.length}
+                        {t.demo.moduleOf} {step + 1} / {tourSteps.length}
                       </span>
                       <span className="rounded-full border border-background/20 bg-background/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-background/70">
                         {currentStep.tag}
@@ -764,13 +787,13 @@ function DemoSection() {
                     {tourSteps.map((_, i) => (
                       <button key={i} onClick={() => goToStep(i)}
                         className={cn("h-1.5 rounded-full transition-all", i === step ? "w-6 bg-background" : "w-1.5 bg-background/30 hover:bg-background/60")}
-                        aria-label={`Module ${i + 1}`}
+                        aria-label={`${t.a11y.module} ${i + 1}`}
                       />
                     ))}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={prevStep} aria-label="Précédent" className="flex h-8 w-8 items-center justify-center border border-background/30 text-background/70 transition hover:border-background hover:text-background">←</button>
-                    <button onClick={nextStep} aria-label="Suivant" className="flex h-8 w-8 items-center justify-center border border-background/30 bg-background/10 text-background/70 transition hover:border-background hover:bg-background/20 hover:text-background">→</button>
+                    <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-8 w-8 items-center justify-center border border-background/30 text-background/70 transition hover:border-background hover:text-background">←</button>
+                    <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-8 w-8 items-center justify-center border border-background/30 bg-background/10 text-background/70 transition hover:border-background hover:bg-background/20 hover:text-background">→</button>
                   </div>
                 </div>
                 <div className="absolute -bottom-[10px] left-10 h-0 w-0 border-l-[10px] border-r-[10px] border-t-[10px] border-l-transparent border-r-transparent border-t-foreground" />
@@ -844,8 +867,8 @@ function DemoSection() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={prevStep} aria-label="Précédent" className="flex h-7 w-7 items-center justify-center border border-background/30 text-background/70 text-sm transition hover:border-background hover:text-background">←</button>
-                  <button onClick={nextStep} aria-label="Suivant" className="flex h-7 w-7 items-center justify-center border border-background/30 bg-background/10 text-background/70 text-sm transition hover:border-background hover:bg-background/20 hover:text-background">→</button>
+                  <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-7 w-7 items-center justify-center border border-background/30 text-background/70 text-sm transition hover:border-background hover:text-background">←</button>
+                  <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-7 w-7 items-center justify-center border border-background/30 bg-background/10 text-background/70 text-sm transition hover:border-background hover:bg-background/20 hover:text-background">→</button>
                 </div>
               </div>
             </motion.div>
@@ -864,7 +887,7 @@ function DemoSection() {
           className="mt-8 flex flex-col items-center gap-3 text-center"
         >
           <p className="text-sm text-muted-foreground">
-            Cette démo vous a convaincu ? Réservez votre créneau avec vos propres données.
+            {t.demo.ctaText}
           </p>
           <motion.button
             whileHover={{ scale: 1.04, y: -2 }}
@@ -872,7 +895,7 @@ function DemoSection() {
             onClick={() => scrollToId("contact")}
             className="landing-cta-primary inline-flex items-center gap-2 rounded-none px-8 py-4 text-md font-black transition"
           >
-            Réserver ma démo 20 min, sans engagement
+            {t.demo.ctaButton}
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -885,34 +908,14 @@ function DemoSection() {
 // ─────────────────────────────────────────────
 // S3 Pain Points
 // ─────────────────────────────────────────────
-const painPoints = [
-  {
-    icon: FileSpreadsheet,
-    title: "Le chaos des classeurs",
-    quote: "« Dans quel Excel est le dossier Benali ? »",
-    text: "Chaque fichier est sur un ordinateur différent, dans des versions différentes. Retrouver une information prend 10 minutes.",
-    accent: "border-t-[#0c5752]",
-    bg: "bg-[color-mix(in_srgb,#0c5752_7%,#f8f3e8)]",
-  },
-  {
-    icon: CreditCard,
-    title: "Les impayés invisibles",
-    quote: "« 3 dossiers n'ont pas réglé leur mensualité depuis 2 mois. »",
-    text: "Vous le découvrez en fin de mois, trop tard pour agir sans créer de tension. Le manque à gagner s'accumule silencieusement.",
-    accent: "border-t-[#b8a876]",
-    bg: "bg-[color-mix(in_srgb,#cfc292_22%,#fefdfb)]",
-  },
-  {
-    icon: UserPlus,
-    title: "Les nouvelles demandes qui s'évaporent",
-    quote: "« J'avais noté ça quelque part… »",
-    text: "Un nouveau contact vous appelle, vous griffonnez un post-it. Trois jours après, la note a disparu. Cette inscription est perdue pour toujours.",
-    accent: "border-t-[#122620]",
-    bg: "bg-[color-mix(in_srgb,#122620_6%,#f4ebd0)]",
-  },
-];
-
 function PainPointsSection() {
+  const { t } = useLandingI18n();
+  const painPoints = t.pain.items.map((item, i) => ({
+    ...item,
+    icon: PAIN_ICONS[i],
+    ...PAIN_ACCENT[i],
+  }));
+
   return (
     <section className="relative py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -924,13 +927,13 @@ function PainPointsSection() {
           className="mx-auto max-w-2xl text-center"
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-[#0c5752]/25 bg-[color-mix(in_srgb,#0c5752_6%,#f4ebd0)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#0c5752]">
-            La réalité du terrain
+            {t.pain.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Vous vous reconnaissez dans ces situations ?
+            {t.pain.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Les directeurs de centres spécialisés nous racontent tous la même chose. Ce n'est pas un manque de compétence c'est un manque d'outil adapté.
+            {t.pain.subtitle}
           </motion.p>
         </motion.div>
 
@@ -970,7 +973,7 @@ function PainPointsSection() {
           className="mt-8 text-center"
         >
           <p className="text-base font-semibold text-foreground/60">
-            Il existe une solution conçue exactement pour votre réalité.
+            {t.pain.solutionHint}
           </p>
           <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }} className="mt-3 text-foreground/30 text-xl">
             ↓
@@ -985,11 +988,7 @@ function PainPointsSection() {
 // S4 Solution bridge (dark bg)
 // ─────────────────────────────────────────────
 function SolutionSection() {
-  const benefits = [
-    "Tous les dossiers en un seul endroit, accessibles en 2 clics",
-    "Suivi des nouvelles demandes pour ne plus jamais perdre une inscription",
-    "Suivi des paiements automatisé avec alertes d'impayés en temps réel",
-  ];
+  const { t } = useLandingI18n();
 
   return (
     <section className="relative overflow-hidden border-y border-border bg-foreground py-14 text-background sm:py-20">
@@ -1004,22 +1003,22 @@ function SolutionSection() {
           variants={{ show: { transition: { staggerChildren: 0.1 } } }}
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-background/20 bg-background/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
-            La solution
+            {t.solution.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            Gestio centralise tout.{" "}
-            <span className="opacity-60">Un seul tableau de bord.</span>
+            {t.solution.title}{" "}
+            <span style={{ color: "#34d399"}}>{t.solution.titleMuted}</span>
           </motion.h2>
-          <motion.p variants={fadeUp} className="mt-6 text-lg text-background/70">
-            Fini les outils éparpillés. Gestio a été conçu de A à Z pour les centres spécialisés avec les contraintes réelles des directeurs en tête.
+          <motion.p variants={fadeUp} className="mt-6 text-lg text-background">
+            {t.solution.subtitle}
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
-            {benefits.map((b) => (
+            {t.solution.benefits.map((b) => (
               <li key={b} className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center bg-background text-foreground">
                   <Check className="h-3.5 w-3.5" strokeWidth={3} />
                 </span>
-                <span className="text-sm leading-relaxed text-background/85">{b}</span>
+                <span className="text-sm leading-relaxed text-background">{b}</span>
               </li>
             ))}
           </motion.ul>
@@ -1030,7 +1029,7 @@ function SolutionSection() {
             onClick={() => scrollToId("contact")}
             className="landing-cta-primary mt-10 inline-flex items-center gap-2 rounded-none px-7 py-4 text-md font-black transition"
           >
-            Réserver ma démo 20 min, sans engagement
+            {t.solution.cta}
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1042,12 +1041,7 @@ function SolutionSection() {
           transition={{ duration: 0.7, ease }}
           className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4"
         >
-          {[
-            { value: "10+", label: "centres actifs", sub: "au Maroc" },
-            { value: "6", label: "modules intégrés", sub: "tout-en-un" },
-            { value: "< 48h", label: "mise en service", sub: "accompagnée" },
-            { value: "100%", label: "adapté au Maroc", sub: "marché local" },
-          ].map((stat) => (
+          {t.solution.stats.map((stat) => (
             <div key={stat.label} className="min-w-0 border border-background/20 bg-background/[0.06] p-4 backdrop-blur-sm sm:p-6">
               <p className="text-2xl font-black tracking-tight tabular-nums sm:text-3xl md:text-4xl">{stat.value}</p>
               <p className="mt-1 text-xs font-semibold text-background/80 sm:text-sm">{stat.label}</p>
@@ -1063,46 +1057,13 @@ function SolutionSection() {
 // ─────────────────────────────────────────────
 // S5 Modules
 // ─────────────────────────────────────────────
-const modules = [
-  {
-    icon: LayoutDashboard,
-    title: "Tableau de bord",
-    benefit: "Tout votre centre en un regard",
-    text: "Dès que vous ouvrez Gestio, vous voyez ce qui se passe : combien de dossiers actifs, combien d'impayés, quels rendez-vous sont prévus aujourd'hui. Aucun rapport à générer.",
-  },
-  {
-    icon: UsersRound,
-    title: "Dossiers",
-    benefit: "Fini les dossiers éparpillés",
-    text: "Chaque dossier est complet : enfant, contrat, historique des séances et documents. Vous trouvez tout en moins de 10 secondes, depuis n'importe quel appareil.",
-  },
-  {
-    icon: ClipboardList,
-    title: "Planifications",
-    benefit: "Tous vos événements centralisés",
-    text: "Conseils pédagogiques, ateliers parents, sorties, formations internes planifiez et retrouvez chaque événement en un coup d'œil, sans risque d'oubli.",
-  },
-  {
-    icon: Calendar,
-    title: "Rendez-vous",
-    benefit: "Un planning sans conflits ni oublis",
-    text: "Gérez les demandes de rendez-vous et le planning de toute votre équipe depuis un seul écran. Les confirmations partent automatiquement, vous n'avez rien à faire manuellement.",
-  },
-  {
-    icon: CreditCard,
-    title: "Paiements",
-    benefit: "Zéro impayé qui passe entre les mailles",
-    text: "Gestio génère les reçus, suit ce que chaque dossier doit régler chaque mois et envoie des relances automatiques. Vous n'avez plus à courir après les paiements en retard.",
-  },
-  {
-    icon: Layers,
-    title: "Équipe",
-    benefit: "Vos collaborateurs organisés simplement",
-    text: "Contrats, rôles et départements de votre équipe centralisés en un endroit. Chaque membre accède uniquement à ce qui le concerne, sans réglages compliqués.",
-  },
-];
-
 function ModulesSection() {
+  const { t } = useLandingI18n();
+  const modules = t.modules.items.map((item, i) => ({
+    ...item,
+    icon: MODULE_ICONS[i],
+  }));
+
   return (
     <section id="modules" className="relative py-14 sm:py-20">
       <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-40" />
@@ -1115,13 +1076,13 @@ function ModulesSection() {
           className="mx-auto max-w-2xl text-center"
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest">
-            Modules
+            {t.modules.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Tout ce dont votre centre a besoin.
+            {t.modules.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            6 modules intégrés conçus pour les réalités d'un centre spécialisé. En ligne en 48h. Formé avec vous. Aucun développeur requis.
+            {t.modules.subtitle}
           </motion.p>
         </motion.div>
 
@@ -1148,8 +1109,8 @@ function ModulesSection() {
               <h3 className="mt-5 text-lg font-black">{mod.title}</h3>
               <p className="mt-1 text-xs font-bold uppercase tracking-wider text-primary">{mod.benefit}</p>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{mod.text}</p>
-              <p className="mt-5 text-[11px] font-semibold uppercase tracking-wider text-foreground/40 opacity-0 transition group-hover:opacity-100">
-                Voir dans la démo →
+              <p className="mt-5 text-[11px] font-semibold uppercase tracking-wider text-foreground/80 opacity-0 transition group-hover:opacity-100">
+                {t.modules.seeInDemo}
               </p>
             </motion.div>
           ))}
@@ -1168,7 +1129,7 @@ function ModulesSection() {
             onClick={() => scrollToId("demo")}
             className="landing-cta-secondary-light inline-flex items-center gap-2 rounded-none border-2 px-8 py-4 text-sm font-black transition"
           >
-            Explorer tous les modules en démo
+            {t.modules.exploreAll}
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1180,140 +1141,54 @@ function ModulesSection() {
 // ─────────────────────────────────────────────
 // S6 Social Proof
 // ─────────────────────────────────────────────
-const testimonials = [
-  {
-    initials: "FB",
-    avatarColor: "#1a4f8a",
-    name: "Fatima Benali",
-    role: "Directrice",
-    center: "Centre Lumière",
-    city: "Casablanca",
-    stars: 5,
-    date: "Il y a 2 semaines",
-    highlight: "Zéro Excel depuis 3 mois",
-    quote: "Avant Gestio, je passais mes lundis matin à réconcilier trois fichiers Excel différents. Maintenant tout est là, en temps réel. Je me concentre sur les enfants, pas sur l'administratif.",
-  },
-  {
-    initials: "KM",
-    avatarColor: "#0c5752",
-    name: "Karim Mounir",
-    role: "Administrateur",
-    center: "Centre Avenir",
-    city: "Rabat",
-    stars: 5,
-    date: "Il y a 1 mois",
-    highlight: "−40 % d'impayés en 2 mois",
-    quote: "Le module paiements a tout changé. On a réduit les impayés de 40 % grâce aux relances automatiques. L'export CSV nous fait gagner une demi-journée chaque mois.",
-  },
-  {
-    initials: "SR",
-    avatarColor: "#7c3aed",
-    name: "Samira Raji",
-    role: "Directrice",
-    center: "Institut Espoir",
-    city: "Marrakech",
-    stars: 5,
-    date: "Il y a 3 semaines",
-    highlight: "En ligne en moins de 48h",
-    quote: "Ce qui m'a convaincue c'est la simplicité. Mon équipe n'est pas technique mais tout le monde était à l'aise dès le premier jour. La mise en place a pris moins de 48 heures.",
-  },
-  {
-    initials: "YF",
-    avatarColor: "#b45309",
-    name: "Youssef El Fassi",
-    role: "Co-fondateur",
-    center: "Centre Nour",
-    city: "Fès",
-    stars: 5,
-    date: "Il y a 5 jours",
-    highlight: "Zéro inscription perdue depuis l'adoption",
-    quote: "On ne perd plus aucune demande depuis qu'on utilise Gestio. Avant, un post-it tombait et le contact disparaissait. Maintenant chaque dossier est suivi jusqu'à l'inscription.",
-  },
-  {
-    initials: "HA",
-    avatarColor: "#be185d",
-    name: "Houda Alaoui",
-    role: "Responsable administrative",
-    center: "Centre Rayane",
-    city: "Agadir",
-    stars: 5,
-    date: "Il y a 2 mois",
-    highlight: "Support réactif et formation incluse",
-    quote: "L'équipe Gestio nous a accompagnés pas à pas. La formation était incluse, le paramétrage fait avec nous. Je recommande à tous les centres qui veulent se moderniser sans prise de tête.",
-  },
-  {
-    initials: "AC",
-    avatarColor: "#0f766e",
-    name: "Anas Chraibi",
-    role: "Directeur",
-    center: "Institut Al Amal",
-    city: "Tanger",
-    stars: 5,
-    date: "Il y a 3 mois",
-    highlight: "Accessible depuis n'importe quel appareil",
-    quote: "Je gère mon centre depuis mon téléphone quand je suis en déplacement. Le tableau de bord s'affiche parfaitement sur mobile. C'est devenu indispensable.",
-  },
-  {
-    initials: "NB",
-    avatarColor: "#6d28d9",
-    name: "Nadia Berrada",
-    role: "Directrice pédagogique",
-    center: "Centre Soleil",
-    city: "Meknès",
-    stars: 5,
-    date: "Il y a 6 semaines",
-    highlight: "Dossiers ultra-clairs et accessibles",
-    quote: "Chaque dossier est complet : enfant, historique, documents. En une recherche je trouve tout. Mes thérapeutes n'ont plus à me demander des informations basiques.",
-  },
-  {
-    initials: "OT",
-    avatarColor: "#b91c1c",
-    name: "Omar Tahir",
-    role: "Fondateur",
-    center: "Centre Wafa",
-    city: "Casablanca",
-    stars: 4,
-    date: "Il y a 1 mois",
-    highlight: "Excellent rapport qualité/prix",
-    quote: "Pour le prix, on a un outil qui rivalise avec ce qu'on trouve à l'étranger. Et tout est pensé pour le Maroc : les montants, le contexte, le support en français et en arabe.",
-  },
-];
+type TestimonialItem = {
+  initials: string;
+  avatarColor: string;
+  stars: number;
+  name: string;
+  role: string;
+  center: string;
+  city: string;
+  date: string;
+  highlight: string;
+  quote: string;
+};
 
-function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
+function TestimonialCard({ item }: { item: TestimonialItem }) {
   return (
     <div className="flex h-full min-w-0 flex-col gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:p-6">
       {/* Stars + date */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-0.5 text-amber-400">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className={cn("h-3.5 w-3.5", i < t.stars ? "fill-current" : "fill-none opacity-30")} />
+            <Star key={i} className={cn("h-3.5 w-3.5", i < item.stars ? "fill-current" : "fill-none opacity-30")} />
           ))}
         </div>
-        <span className="text-[10px] text-muted-foreground">{t.date}</span>
+        <span className="text-[10px] text-muted-foreground">{item.date}</span>
       </div>
       {/* Highlight badge */}
       <span className="inline-flex w-fit items-center border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-        {t.highlight}
+        {item.highlight}
       </span>
       {/* Quote */}
       <blockquote className="flex-1 text-balance text-sm leading-relaxed text-foreground/75">
-        &ldquo;{t.quote}&rdquo;
+        &ldquo;{item.quote}&rdquo;
       </blockquote>
       {/* Author */}
       <div className="flex items-center gap-3 border-t border-foreground/8 pt-4">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black text-white ring-2 ring-foreground/10"
-          style={{ backgroundColor: t.avatarColor }}
-          aria-label={t.name}
+          style={{ backgroundColor: item.avatarColor }}
+          aria-label={item.name}
         >
-          {t.initials}
+          {item.initials}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold">{t.name}</p>
-          <p className="truncate text-[11px] text-muted-foreground">{t.role} · {t.center}</p>
+          <p className="truncate text-sm font-bold">{item.name}</p>
+          <p className="truncate text-[11px] text-muted-foreground">{item.role} · {item.center}</p>
           <p className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
             <MapPin className="h-2.5 w-2.5 shrink-0" />
-            {t.city}
+            {item.city}
           </p>
         </div>
       </div>
@@ -1324,6 +1199,11 @@ function TestimonialCard({ t }: { t: typeof testimonials[0] }) {
 const TESTIMONIAL_GAP_PX = 20;
 
 function SocialProofSection() {
+  const { t } = useLandingI18n();
+  const testimonials = t.testimonials.items.map((entry, i) => ({
+    ...entry,
+    ...TESTIMONIAL_AVATARS[i],
+  }));
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [visibleCount, setVisibleCount] = useState(3);
@@ -1409,13 +1289,13 @@ function SocialProofSection() {
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
             <Star className="h-3.5 w-3.5 fill-current" />
-            Avis vérifiés
+            {t.testimonials.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Ce que disent nos directeurs.
+            {t.testimonials.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Des centres à travers tout le Maroc qui utilisent Gestio au quotidien.
+            {t.testimonials.subtitle}
           </motion.p>
         </motion.div>
 
@@ -1427,12 +1307,7 @@ function SocialProofSection() {
           transition={{ duration: 0.6, ease }}
           className="mt-10 grid grid-cols-2 divide-x-2 divide-foreground/10 border-2 border-foreground/10 bg-card sm:grid-cols-4"
         >
-          {[
-            { value: "10+", label: "centres actifs" },
-            { value: "4.9 / 5", label: "note moyenne" },
-            { value: "< 48h", label: "mise en service" },
-            { value: "100%", label: "recommandent Gestio" },
-          ].map((s) => (
+          {t.testimonials.stats.map((s) => (
             <div key={s.label} className="py-6 text-center">
               <p className="text-2xl font-black tracking-tight sm:text-3xl">{s.value}</p>
               <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">{s.label}</p>
@@ -1454,13 +1329,13 @@ function SocialProofSection() {
               animate={{ x: stepPx > 0 ? -current * stepPx : 0 }}
               transition={{ type: "spring", stiffness: 280, damping: 34 }}
             >
-              {testimonials.map((t) => (
+              {testimonials.map((entry) => (
                 <div
-                  key={t.name}
+                  key={entry.name}
                   className="shrink-0"
                   style={{ width: cardWidthPx > 0 ? `${cardWidthPx}px` : "min(100%, 22rem)" }}
                 >
-                  <TestimonialCard t={t} />
+                  <TestimonialCard item={entry} />
                 </div>
               ))}
             </motion.div>
@@ -1474,7 +1349,7 @@ function SocialProofSection() {
                 <button
                   key={i}
                   onClick={() => { setCurrent(i); setIsPaused(true); }}
-                  aria-label={`Avis ${i + 1}`}
+                  aria-label={`${t.a11y.review} ${i + 1}`}
                   className={cn(
                     "h-2 rounded-full transition-all duration-300",
                     i === current ? "w-7 bg-foreground" : "w-2 bg-foreground/20 hover:bg-foreground/40",
@@ -1489,7 +1364,7 @@ function SocialProofSection() {
                 whileTap={{ scale: 0.95 }}
                 onClick={prev}
                 disabled={current === 0}
-                aria-label="Précédent"
+                aria-label={t.a11y.previous}
                 className="flex h-10 w-10 items-center justify-center border-2 border-foreground/15 bg-card text-foreground/60 transition hover:border-foreground hover:text-foreground disabled:opacity-30"
               >
                 ←
@@ -1499,7 +1374,7 @@ function SocialProofSection() {
                 whileTap={{ scale: 0.95 }}
                 onClick={next}
                 disabled={current >= maxIndex}
-                aria-label="Suivant"
+                aria-label={t.a11y.next}
                 className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-foreground text-background transition hover:bg-foreground/80 disabled:opacity-30"
               >
                 →
@@ -1516,14 +1391,14 @@ function SocialProofSection() {
           transition={{ duration: 0.5, ease, delay: 0.2 }}
           className="mt-8 flex flex-col items-center gap-3 text-center"
         >
-          <p className="text-sm text-muted-foreground">Votre centre pourrait être le prochain. 5 créneaux disponibles cette semaine.</p>
+          <p className="text-sm text-muted-foreground">{t.testimonials.ctaText}</p>
           <motion.button
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
             className="landing-cta-primary inline-flex items-center gap-2 rounded-none px-8 py-4 text-md font-black transition"
           >
-            Réserver ma démo 20 min, sans engagement
+            {t.testimonials.ctaButton}
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
@@ -1546,38 +1421,21 @@ type Plan = {
   popular?: boolean;
 };
 
-const pricingPlans: Plan[] = [
-  {
-    id: "essentiel",
-    name: "Essentiel",
-    blurb: "Jusqu'à ~50 dossiers actifs. Un seul administrateur.",
-    monthly: 890,
-    yearly: 8500,
-    features: ["CRM dossiers & élèves", "Planning & rendez-vous", "Rapports de base", "Support par email"],
-    cta: "Démarrer avec Essentiel →",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    blurb: "Centres actifs : équipe multi-rôles et pilotage renforcé.",
-    monthly: 1590,
-    yearly: 15200,
-    features: ["Tout Essentiel", "Paiements & relances auto", "Suivi des nouvelles demandes", "Exports & tableaux avancés", "Support prioritaire", "✓ Onboarding + Formation + Support inclus"],
-    cta: "Démarrer avec Pro le plus populaire →",
-    popular: true,
-  },
-  {
-    id: "reseau",
-    name: "Réseau",
-    blurb: "Multi-sites, groupes et besoins sur mesure.",
-    monthly: null,
-    yearly: null,
-    features: ["SLA dédié", "Intégrations & API", "Formation des équipes", "Accompagnement au déploiement"],
-    cta: "Parler à un expert",
-  },
-];
+function buildPricingPlans(t: ReturnType<typeof useLandingI18n>["t"]): Plan[] {
+  return t.pricing.plans.map((plan) => {
+    const amounts = PRICING_AMOUNTS[plan.id as keyof typeof PRICING_AMOUNTS];
+    return {
+      ...plan,
+      monthly: amounts.monthly,
+      yearly: amounts.yearly,
+      popular: amounts.popular,
+    };
+  });
+}
 
 function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: boolean }) {
+  const { t, numberLocale } = useLandingI18n();
+
   return (
     <motion.div
       variants={fadeUp}
@@ -1599,7 +1457,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.35, ease, delay: 0.15 }}
             className="absolute right-0 top-0 z-20 border-b-2 border-l-2 border-foreground bg-background px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-foreground sm:px-4 sm:text-[10px] rounded-none"
           >
-            <Star className="inline h-3 w-3 fill-current" /> Populaire
+            <Star className="inline h-3 w-3 fill-current" /> {t.pricing.popular}
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -1608,7 +1466,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.35, ease, delay: 0.25 }}
             className="mt-2 inline-flex items-center gap-1.5 border border-amber-400/40 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-300"
           >
-            <Gift className="h-3.5 w-3.5 shrink-0" /> Onboarding offert jusqu'au 30 juin
+            <Gift className="h-3.5 w-3.5 shrink-0" /> {t.pricing.onboardingOffer}
           </motion.div>
         </>
       )}
@@ -1629,17 +1487,17 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.3, ease }}
           >
             {plan.monthly == null ? (
-              <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">Sur mesure</div>
+              <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">{t.pricing.custom}</div>
             ) : (
               <>
                 <div className="flex min-w-0 flex-wrap items-baseline gap-1">
-                  <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-5xl sm:text-6xl lg:text-7xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString("fr-MA") : plan.monthly?.toLocaleString("fr-MA")}</span>
-                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-background/60" : "text-muted-foreground")}>{yearly ? "/ an HT" : "/ mois HT"}</span>
+                  <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-4xl sm:text-5xl lg:text-6xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString(numberLocale) : plan.monthly?.toLocaleString(numberLocale)}</span>
+                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-background/60" : "text-muted-foreground")}>{yearly ? t.pricing.perYear : t.pricing.perMonth}</span>
                 </div>
                 {yearly && (
                   <p className={cn("mt-2 text-xs", plan.popular ? "text-background/60" : "text-muted-foreground")}>
-                    Soit environ{" "}
-                    <span className={cn("font-semibold", plan.popular ? "text-background" : "text-foreground")}>{Math.round(plan.yearly! / 12)} / mois</span> ramené sur 12 mois
+                    {t.pricing.yearlyEquiv}{" "}
+                    <span className={cn("font-semibold", plan.popular ? "text-background" : "text-foreground")}>{Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}{t.pricing.perMonthShort}</span> {t.pricing.yearlyEquivSuffix}
                   </p>
                 )}
               </>
@@ -1670,6 +1528,8 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
 }
 
 function PricingSection() {
+  const { t } = useLandingI18n();
+  const pricingPlans = buildPricingPlans(t);
   const [yearly, setYearly] = useState(true);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -1704,13 +1564,13 @@ function PricingSection() {
           className="mx-auto max-w-2xl text-center"
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-none">
-            Tarifs
+            {t.pricing.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Des formules claires et transparentes.
+            {t.pricing.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Prix de départ transparents adaptés si votre centre a des besoins spécifiques après un appel de 20 min.
+            {t.pricing.subtitle}
           </motion.p>
         </motion.div>
 
@@ -1730,7 +1590,7 @@ function PricingSection() {
                 !yearly ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-muted/50",
               )}
             >
-              Mensuel
+              {t.pricing.monthly}
             </button>
             <button
               type="button"
@@ -1740,20 +1600,20 @@ function PricingSection() {
                 yearly ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-muted/50",
               )}
             >
-              <span>Annuel</span>
+              <span>{t.pricing.yearly}</span>
               <span
                 className={cn(
                   "border px-1.5 py-0.5 text-[8px] font-black leading-none sm:text-[9px] rounded-none",
                   yearly ? "border-background/50 text-background" : "border-foreground/40 text-foreground",
                 )}
               >
-                −2 MOIS
+                {t.pricing.yearlyDiscount}
               </span>
             </button>
           </div>
           <AnimatePresence mode="wait">
             <motion.p key={yearly ? "y" : "m"} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {yearly ? "Facturation annuelle · 2 mois offerts" : "Facturation mensuelle · sans engagement"}
+              {yearly ? t.pricing.billingYearly : t.pricing.billingMonthly}
             </motion.p>
           </AnimatePresence>
         </motion.div>
@@ -1768,14 +1628,14 @@ function PricingSection() {
               ))}
             </CarouselContent>
           </Carousel>
-          <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label="Choisir une formule">
+          <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label={t.a11y.choosePlan}>
             {pricingPlans.map((plan, i) => (
               <button
                 key={plan.id}
                 type="button"
                 role="tab"
                 aria-selected={carouselIndex === i}
-                aria-label={`${plan.name}, formule ${i + 1} sur ${pricingPlans.length}`}
+                aria-label={`${plan.name}, ${t.pricing.planLabel} ${i + 1} ${t.pricing.of} ${pricingPlans.length}`}
                 onClick={() => carouselApi?.scrollTo(i)}
                 className={cn(
                   "h-2 rounded-full transition-all duration-300",
@@ -1806,11 +1666,7 @@ function PricingSection() {
           transition={{ duration: 0.5, ease, delay: 0.2 }}
           className="mt-8 grid gap-4 border-2 border-foreground/10 bg-card p-6 sm:grid-cols-3 sm:gap-6 sm:p-8"
         >
-          {[
-            { q: "Puis-je payer mensuellement ?", a: "Oui, les deux options sont disponibles. L'annuel vous offre 2 mois offerts." },
-            { q: "Y a-t-il des frais cachés ?", a: "Non. Le prix affiché inclut l'onboarding, la formation et le support. Aucune surprise." },
-            { q: "Que se passe-t-il si mon centre grandit ?", a: "Passez de Essentiel à Pro en un clic, sans perdre vos données. Notre équipe vous accompagne." },
-          ].map(({ q, a }) => (
+          {t.pricing.miniFaq.map(({ q, a }) => (
             <div key={q}>
               <p className="text-sm font-bold text-foreground">{q}</p>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{a}</p>
@@ -1825,16 +1681,9 @@ function PricingSection() {
 // ─────────────────────────────────────────────
 // S8 FAQ
 // ─────────────────────────────────────────────
-const faqItems = [
-  { q: "Ma secrétaire peut-elle utiliser Gestio sans formation ?", a: "Oui. Gestio a été conçu pour les équipes non-techniques. L'interface est en français, intuitive, et nous assurons une formation incluse à la mise en service. La plupart des secrétaires sont autonomes en moins d'une heure." },
-  { q: "Puis-je exporter mes données si je quitte Gestio ?", a: "Absolument. Toutes vos données (dossiers, paiements, historique) sont exportables en CSV à tout moment. Vous n'êtes jamais pris en otage. Votre centre reste propriétaire de ses données." },
-  { q: "Combien de dossiers le logiciel peut-il gérer ?", a: "Essentiel supporte jusqu'à ~50 dossiers actifs. Pro est sans limite pratique. Réseau est conçu pour les groupes multi-sites. Contactez-nous pour un diagnostic personnalisé." },
-  { q: "Y a-t-il une application mobile ?", a: "Gestio est entièrement responsive il fonctionne parfaitement sur mobile et tablette depuis votre navigateur, sans installation. Vous gérez votre centre depuis n'importe quel appareil." },
-  { q: "Gestio fonctionne-t-il en arabe ?", a: "L'interface est actuellement en français, langue de travail de la majorité de nos centres clients. Le support est disponible en français et en arabe. Une interface arabe est en cours de développement." },
-  { q: "Comment sont protégées mes données (RGPD / Maroc) ?", a: "Toutes les données sont chiffrées et hébergées sur des serveurs sécurisés. Nous appliquons les bonnes pratiques RGPD adaptées au contexte marocain (loi 09-08). Aucune donnée n'est partagée avec des tiers." },
-];
-
 function FaqSection() {
+  const { t } = useLandingI18n();
+
   return (
     <section id="faq" className="relative bg-secondary/30 py-14 sm:py-20">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -1846,13 +1695,13 @@ function FaqSection() {
           className="text-center"
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-            FAQ
+            {t.faq.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            Questions fréquentes
+            {t.faq.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Ce qu'il faut savoir avant de nous contacter.
+            {t.faq.subtitle}
           </motion.p>
         </motion.div>
         <motion.div
@@ -1863,7 +1712,7 @@ function FaqSection() {
           className="mt-8 border-2 border-foreground/10 bg-card p-2 shadow-[var(--shadow-soft)]"
         >
           <Accordion type="multiple" className="w-full">
-            {faqItems.map((item, i) => (
+            {t.faq.items.map((item, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="border-b border-border last:border-b-0">
                 <AccordionTrigger className="px-3 py-4 text-left text-sm font-bold hover:no-underline sm:px-4 sm:py-5 sm:text-base">{item.q}</AccordionTrigger>
                 <AccordionContent className="px-3 pb-4 text-sm leading-relaxed text-muted-foreground sm:px-4 sm:pb-5">{item.a}</AccordionContent>
@@ -1880,6 +1729,7 @@ function FaqSection() {
 // WhatsApp demo form (2-field)
 // ─────────────────────────────────────────────
 function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
+  const { t } = useLandingI18n();
   const [sent, setSent] = useState(false);
   const centerRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
@@ -1889,7 +1739,7 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
     const centerName = centerRef.current?.value ?? "";
     track("form_submit");
     track("whatsapp_open", centerName || "unknown");
-    const waText = encodeURIComponent(`Bonjour, je veux une démo Gestio pour ${centerName || "mon centre"}`);
+    const waText = encodeURIComponent(`${t.contact.form.waMessage} ${centerName || "mon centre"}`);
     window.open(`https://wa.me/212777777428?text=${waText}`, "_blank", "noopener,noreferrer");
     setSent(true);
   };
@@ -1909,21 +1759,21 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
             <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center" style={{ color: "#122620"}}>
               <Check className="h-8 w-8" />
             </motion.div>
-            <h3 className="mt-6 text-2xl font-black">WhatsApp ouvert !</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Envoyez le message pré-rempli nous répondons sous 2h.</p>
+            <h3 className="mt-6 text-2xl font-black">{t.contact.form.successTitle}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{t.contact.form.successText}</p>
             <button onClick={() => setSent(false)} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
-              Recommencer
+              {t.contact.form.retry}
             </button>
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-5">
             <div>
-              <label htmlFor="wa-center" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Nom du centre *</label>
-              <input ref={centerRef} id="wa-center" type="text" placeholder="Centre Lumière" required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
+              <label htmlFor="wa-center" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.contact.form.centerLabel}</label>
+              <input ref={centerRef} id="wa-center" type="text" placeholder={t.contact.form.centerPlaceholder} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
             </div>
             <div>
-              <label htmlFor="wa-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">WhatsApp *</label>
-              <input ref={phoneRef} id="wa-phone" type="tel" placeholder="06 12 34 56 78" required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
+              <label htmlFor="wa-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.contact.form.phoneLabel}</label>
+              <input ref={phoneRef} id="wa-phone" type="tel" placeholder={t.contact.form.phonePlaceholder} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
             </div>
             <motion.button
               whileHover={{ scale: 1.04, y: -2 }}
@@ -1934,12 +1784,12 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
               {!reduceMotion && (
                 <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
               )}
-              <span className="relative z-[1]">Réserver ma démo sur WhatsApp →</span>
+              <span className="relative z-[1]">{t.contact.form.submit}</span>
               <Send className="relative z-[1] h-4 w-4 transition group-hover:translate-x-0.5" />
             </motion.button>
             <p className="flex shrink-0 items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
               <Lock className="h-3.5 w-3.5 shrink-0" />
-              <Lock className="h-3.5 w-3.5 shrink-0" /> Données sécurisées · Réponse garantie sous 2h · Sans engagement
+              <Lock className="h-3.5 w-3.5 shrink-0" /> {t.contact.form.privacy}
             </p>
           </motion.div>
         )}
@@ -1952,6 +1802,7 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
 // S9 Contact CTA
 // ─────────────────────────────────────────────
 function ContactSection() {
+  const { t } = useLandingI18n();
   const reduceMotion = useReducedMotion();
   return (
     <section id="contact" className="relative overflow-hidden py-14 pb-[max(4rem,calc(4rem+env(safe-area-inset-bottom)))] sm:py-20 sm:pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))]">
@@ -1968,23 +1819,23 @@ function ContactSection() {
           className="min-w-0"
         >
           <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
-            Démo gratuite
+            {t.contact.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
-            20 minutes. Votre centre dans Gestio. En direct.
+            {t.contact.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
-            Réservez un créneau WhatsApp on vous montre Gestio avec vos cas concrets, sans engagement.
+            {t.contact.subtitle}
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {(
               [
-                { Icon: Phone, text: "07 77 77 74 28 Maroc", href: "tel:+212777777428" },
-                { Icon: Globe, text: "+1 613 706 9011 États-Unis / Canada", href: "tel:+16137069011" },
-                { Icon: Mail, text: "contact@eiden-group.com", href: "mailto:contact@eiden-group.com" },
+                { Icon: Phone, text: t.contact.phoneMorocco, href: "tel:+212777777428" },
+                { Icon: Globe, text: t.contact.phoneUs, href: "tel:+16137069011" },
+                { Icon: Mail, text: t.contact.email, href: "mailto:contact@eiden-group.com" },
                 {
                   Icon: MapPin,
-                  text: "Agadir Bay, Technopole 1 Bloc B, Agadir 80000",
+                  text: t.contact.address,
                   href: "https://maps.app.goo.gl/e1PTQQJUb3kh7J48A",
                 },
               ] as const
@@ -2004,7 +1855,7 @@ function ContactSection() {
             ))}
           </motion.ul>
           <motion.div variants={fadeUp} className="mt-8 space-y-3">
-            {["Présentation personnalisée selon votre type de centre", "Réponse garantie sous 2h sur WhatsApp", "Aucun engagement requis", "Les créneaux partent vite réservez le vôtre"].map((item) => (
+            {t.contact.bullets.map((item) => (
               <div key={item} className="flex items-center gap-2 text-sm text-foreground/70">
                 <Check className="h-4 w-4 shrink-0 text-primary" strokeWidth={3} />
                 {item}
@@ -2023,6 +1874,8 @@ function ContactSection() {
 // Footer
 // ─────────────────────────────────────────────
 function Footer() {
+  const { t } = useLandingI18n();
+
   return (
     <footer className="border-t border-border/60 bg-foreground text-background">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -2034,31 +1887,37 @@ function Footer() {
               </div>
               <span className="text-lg font-black tracking-tight">Gestio</span>
             </div>
-            <p className="mt-3 text-sm text-background/60 leading-relaxed">
-              La plateforme de gestion tout-en-un pour centres spécialisés. Dossiers · Paiements · Planning.
+            <p className="mt-3 text-sm text-background leading-relaxed">
+              {t.footer.tagline}
             </p>
           </div>
           <div>
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background/40">Navigation</p>
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">{t.footer.navigation}</p>
             <ul className="space-y-2 text-sm">
-              {[{ label: "Démo interactive", id: "demo" }, { label: "Modules", id: "modules" }, { label: "Tarifs", id: "tarifs" }, { label: "FAQ", id: "faq" }, { label: "Contact", id: "contact" }].map((item) => (
+              {[
+                { label: t.nav.demoInteractive, id: "demo" },
+                { label: t.nav.modules, id: "modules" },
+                { label: t.nav.pricing, id: "tarifs" },
+                { label: t.nav.faq, id: "faq" },
+                { label: t.nav.contact, id: "contact" },
+              ].map((item) => (
                 <li key={item.id}>
-                  <button onClick={() => scrollToId(item.id)} className="text-background/70 transition hover:text-background">{item.label}</button>
+                  <button onClick={() => scrollToId(item.id)} className="text-background transition hover:text-background">{item.label}</button>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background/40">Contact</p>
-            <ul className="space-y-2 text-sm text-background/70">
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">{t.footer.contact}</p>
+            <ul className="space-y-2 text-sm text-background">
               <li>
-                <a href="mailto:contact@eiden-group.com" className="transition hover:text-background">
-                  contact@eiden-group.com
+                <a href={`mailto:${t.contact.email}`} className="transition hover:text-background">
+                  {t.contact.email}
                 </a>
               </li>
-              <li className="text-balance">Agadir Bay, Technopole 1 Bloc B, Agadir 80000</li>
-              <li><a href="tel:+212777777428" className="transition hover:text-background">07 77 77 74 28 (Maroc)</a></li>
-              <li><a href="tel:+16137069011" className="transition hover:text-background">+1 613 706 9011 (US / Canada)</a></li>
+              <li className="text-balance">{t.contact.address}</li>
+              <li><a href="tel:+212777777428" className="transition hover:text-background">{t.footer.phoneMorocco}</a></li>
+              <li><a href="tel:+16137069011" className="transition hover:text-background">{t.footer.phoneUs}</a></li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -2066,16 +1925,16 @@ function Footer() {
               onClick={() => scrollToId("contact")}
               className="landing-cta-primary mt-6 inline-flex items-center gap-2 rounded-none px-4 py-2 text-xs font-bold uppercase tracking-wider transition"
             >
-              Réserver une démo
+              {t.footer.bookDemo}
               <ArrowRight className="h-3 w-3" />
             </motion.button>
           </div>
         </div>
         <div className="mt-8 flex flex-col-reverse gap-4 border-t border-background/10 pt-6 text-xs text-background/40 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-center sm:text-left">© 2026 Gestio · Tous droits réservés</span>
-          <MotionLink to="/login" className="text-center text-background/30 transition hover:text-background/60 sm:text-right">
+          <span className="text-center sm:text-left">{t.footer.copyright}</span>
+          {/* <MotionLink to="/login" className="text-center text-background/30 transition hover:text-background/60 sm:text-right">
             Espace client
-          </MotionLink>
+          </MotionLink> */}
         </div>
       </div>
     </footer>
@@ -2086,8 +1945,16 @@ function Footer() {
 // Page root
 // ─────────────────────────────────────────────
 function LandingPage() {
+  const { t, dir } = useLandingI18n();
+
+  useEffect(() => {
+    document.title = t.meta.title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", t.meta.description);
+  }, [t.meta.title, t.meta.description]);
+
   return (
-    <div className="min-h-screen min-w-0 overflow-x-clip bg-background text-foreground">
+    <div dir={dir} className="landing-page min-h-screen min-w-0 overflow-x-clip bg-background text-foreground">
       <Header />
       <Hero />
       <PainPointsSection />
