@@ -1154,9 +1154,9 @@ type TestimonialItem = {
   quote: string;
 };
 
-function TestimonialCard({ item }: { item: TestimonialItem }) {
+function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "rtl" }) {
   return (
-    <div className="flex h-full min-w-0 flex-col gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:p-6">
+    <div dir={dir} className="flex h-full min-w-0 flex-col gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:p-6">
       {/* Stars + date */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-0.5 text-amber-400">
@@ -1199,7 +1199,7 @@ function TestimonialCard({ item }: { item: TestimonialItem }) {
 const TESTIMONIAL_GAP_PX = 20;
 
 function SocialProofSection() {
-  const { t } = useLandingI18n();
+  const { t, dir } = useLandingI18n();
   const testimonials = t.testimonials.items.map((entry, i) => ({
     ...entry,
     ...TESTIMONIAL_AVATARS[i],
@@ -1322,7 +1322,7 @@ function SocialProofSection() {
           onMouseLeave={() => setIsPaused(false)}
         >
           {/* Track translate by one card + gap per index (sliding window) */}
-          <div ref={viewportRef} className="min-w-0 overflow-hidden">
+          <div ref={viewportRef} className="min-w-0 overflow-hidden" dir="ltr">
             <motion.div
               className="flex"
               style={{ gap: TESTIMONIAL_GAP_PX }}
@@ -1335,7 +1335,7 @@ function SocialProofSection() {
                   className="shrink-0"
                   style={{ width: cardWidthPx > 0 ? `${cardWidthPx}px` : "min(100%, 22rem)" }}
                 >
-                  <TestimonialCard item={entry} />
+                  <TestimonialCard item={entry} dir={dir} />
                 </div>
               ))}
             </motion.div>
