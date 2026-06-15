@@ -47,8 +47,9 @@ export const submitDemoRequest = createServerFn({ method: "POST" })
       await deliver(data, visitor, admin);
       return { ok: true };
     } catch (error) {
-      console.error("[demo-request] delivery failed:", error);
-      return { ok: false, error: "Envoi impossible pour le moment. Merci de réessayer." };
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error("[demo-request] delivery failed:", msg);
+      return { ok: false, error: msg };
     }
   });
 
