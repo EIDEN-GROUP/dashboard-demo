@@ -5,9 +5,9 @@ import {
   renderAdminNotificationEmail,
   type DemoRequest,
 } from "@/lib/email-templates";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 const ADMIN_EMAIL = "contact@eiden-group.com";
-const FROM_EMAIL = "Gestio <no-reply@eiden-group.com>";
 
 export type DemoRequestResult = { ok: true } | { ok: false; error: string };
 
@@ -37,15 +37,6 @@ function validate(input: unknown): DemoRequest {
   };
 }
 
-/**
- * Handles a demo request: builds the visitor confirmation + admin
- * notification emails and sends them.
- *
- * ⚠️ EMAIL SENDING IS STUBBED (per "build UI now, wire later").
- * The emails are fully rendered and logged server-side. To go live, set
- * RESEND_API_KEY in the environment and uncomment the `deliver()` block
- * below (or swap in your provider of choice).
- */
 export const submitDemoRequest = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => validate(input))
   .handler(async ({ data }): Promise<DemoRequestResult> => {
@@ -64,44 +55,28 @@ export const submitDemoRequest = createServerFn({ method: "POST" })
 type Rendered = { subject: string; html: string; text: string };
 
 async function deliver(data: DemoRequest, visitor: Rendered, admin: Rendered): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
+  const { error: insertError } = await supabaseAdmin.from("demo_requests").insert({
+    center: data.center,
+    email: data.email,
+    phone: data.phone,
+    preferred_date: data.preferredDate,
+    message: data.message ?? null,
+  });
 
-  // ── STUB: no provider configured yet ──────────────────────────────
-  if (!apiKey) {
-    console.info("[demo-request] (stub — no RESEND_API_KEY) new request:", {
-      center: data.center,
-      email: data.email,
-      phone: data.phone,
-      preferredDate: data.preferredDate,
-      hasMessage: Boolean(data.message),
-    });
-    console.info(`[demo-request] would send to visitor <${data.email}>: ${visitor.subject}`);
-    console.info(`[demo-request] would send to admin <${ADMIN_EMAIL}>: ${admin.subject}`);
-    return;
+  if (insertError) {
+    console.error("[demo-request] supabase insert failed:", insertError);
+    throw new Error(insertError.message);
   }
 
-  // ── LIVE: Resend HTTP API (no SDK needed). Verify eiden-group.com first. ──
-  const send = (to: string, email: Rendered, replyTo?: string) =>
-    fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to,
-        subject: email.subject,
-        html: email.html,
-        text: email.text,
-        ...(replyTo ? { reply_to: replyTo } : {}),
-      }),
-    }).then(async (res) => {
-      if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
-    });
+  const { error: fnError } = await supabaseAdmin.functions.invoke("send-demo-emails", {
+    body: {
+      visitor: { to: data.email, subject: visitor.subject, html: visitor.html, text: visitor.text },
+      admin: { to: ADMIN_EMAIL, subject: admin.subject, html: admin.html, text: admin.text, replyTo: data.email },
+    },
+  });
 
-  await Promise.all([
-    send(data.email, visitor),
-    send(ADMIN_EMAIL, admin, data.email),
-  ]);
+  if (fnError) {
+    console.error("[demo-request] edge function invocation failed:", fnError);
+    throw new Error(fnError.message);
+  }
 }
