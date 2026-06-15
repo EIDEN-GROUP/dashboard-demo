@@ -11,7 +11,8 @@
     "next": "Suivant",
     "module": "Module",
     "review": "Avis",
-    "choosePlan": "Choisir une formule"
+    "choosePlan": "Choisir une formule",
+    "pickDate": "Choisir une date"
   },
   "nav": {
     "demo": "Démo",
@@ -366,28 +367,43 @@
   "contact": {
     "badge": "Démo gratuite",
     "title": "20 minutes. Votre centre dans Gestio. En direct.",
-    "subtitle": "Réservez un créneau WhatsApp on vous montre Gestio avec vos cas concrets, sans engagement.",
+    "subtitle": "Choisissez une date et laissez-nous vos coordonnées on vous montre Gestio avec vos cas concrets, sans engagement.",
     "phoneMorocco": "07 77 77 74 28 Maroc",
-    "phoneUs": "+1 613 706 9011 États-Unis / Canada",
+    "website": "eiden-group.com",
     "email": "contact@eiden-group.com",
     "address": "Agadir Bay, Technopole 1 Bloc B, Agadir 80000",
     "bullets": [
       "Présentation personnalisée selon votre type de centre",
-      "Réponse garantie sous 2h sur WhatsApp",
+      "Réponse garantie sous 2h ouvrées",
       "Aucun engagement requis",
       "Les créneaux partent vite réservez le vôtre"
     ],
+    "qr": {
+      "title": "Appel direct",
+      "subtitle": "Scannez pour nous appeler",
+      "callNow": "Appeler maintenant"
+    },
     "form": {
+      "heading": "Réservez votre démo",
       "centerLabel": "Nom du centre *",
       "centerPlaceholder": "Centre Lumière",
-      "phoneLabel": "WhatsApp *",
+      "emailLabel": "Email *",
+      "emailPlaceholder": "vous@votre-centre.ma",
+      "phoneLabel": "Téléphone *",
       "phonePlaceholder": "06 12 34 56 78",
-      "submit": "Réserver ma démo sur WhatsApp →",
-      "privacy": "Données sécurisées · Réponse garantie sous 2h · Sans engagement",
-      "successTitle": "WhatsApp ouvert !",
-      "successText": "Envoyez le message pré-rempli nous répondons sous 2h.",
-      "retry": "Recommencer",
-      "waMessage": "Bonjour, je veux une démo Gestio pour"
+      "dateLabel": "Date souhaitée *",
+      "datePlaceholder": "Choisir une date",
+      "messageLabel": "Message (optionnel)",
+      "messagePlaceholder": "Parlez-nous de votre centre, du nombre de dossiers, de vos besoins…",
+      "submit": "Réserver ma démo →",
+      "submitting": "Envoi en cours…",
+      "privacy": "Données sécurisées · Réponse sous 2h · Sans engagement",
+      "successTitle": "Demande envoyée !",
+      "successText": "Merci ! Un email de confirmation vous a été envoyé. Notre équipe vous recontacte sous 2h ouvrées.",
+      "retry": "Nouvelle demande",
+      "errorRequired": "Merci de remplir tous les champs obligatoires.",
+      "errorEmail": "Merci de saisir une adresse email valide.",
+      "errorGeneric": "Une erreur est survenue. Merci de réessayer ou de nous appeler."
     }
   },
   "footer": {
@@ -397,6 +413,6 @@
     "bookDemo": "Réserver une démo",
     "copyright": "© 2026 Gestio · Tous droits réservés",
     "phoneMorocco": "07 77 77 74 28 (Maroc)",
-    "phoneUs": "+1 613 706 9011 (US / Canada)"
+    "website": "eiden-group.com"
   }
 }
