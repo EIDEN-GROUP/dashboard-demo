@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { ArrowRight, BarChart3, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, LogOut, Mail, MapPin, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
+import { ArrowRight, BarChart3, Building2, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin, MessageSquare, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { format } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { HeroPreviewPageBody } from "@/components/hero-preview-page-body";
 import type { DashboardMiniaturePageId } from "@/lib/dashboard-mirror-data";
@@ -10,10 +13,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import {
   useLandingI18n,
+  getDateFnsLocale,
   DEMO_STEP_PAGES,
   PREVIEW_TOP_NAV_IDS,
   PREVIEW_SECONDARY_NAV_IDS,
 } from "@/lib/landing-i18n";
+import { submitDemoRequest } from "@/lib/contact-demo";
 
 const MotionLink = motion.create(Link);
 
@@ -1726,22 +1731,107 @@ function FaqSection() {
 }
 
 // ─────────────────────────────────────────────
-// WhatsApp demo form (2-field)
+// Scan-to-call QR card
 // ─────────────────────────────────────────────
-function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
+function CallQrCard() {
   const { t } = useLandingI18n();
-  const [sent, setSent] = useState(false);
-  const centerRef = useRef<HTMLInputElement>(null);
-  const phoneRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex min-w-0 items-center gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:gap-5 sm:p-5">
+      <a
+        href="tel:+212777777428"
+        aria-label={t.contact.qr.callNow}
+        className="grid shrink-0 place-items-center border-2 border-foreground bg-white p-2 shadow-[4px_4px_0_0_var(--foreground)] transition hover:shadow-[2px_2px_0_0_var(--foreground)]"
+      >
+        <img src="/call-qr.svg" alt={t.contact.qr.subtitle} width={84} height={84} className="h-20 w-20" />
+      </a>
+      <div className="min-w-0">
+        <p className="text-[10px] font-black uppercase tracking-widest text-primary">{t.contact.qr.title}</p>
+        <p className="mt-1 text-sm font-semibold text-foreground">{t.contact.qr.subtitle}</p>
+        <a
+          href="tel:+212777777428"
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:text-primary hover:decoration-primary"
+        >
+          <Phone className="h-3.5 w-3.5 shrink-0" />
+          {t.contact.phoneMorocco}
+        </a>
+      </div>
+    </div>
+  );
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
+// ─────────────────────────────────────────────
+// Demo request form (calendar + email + center + phone + message)
+// ─────────────────────────────────────────────
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
+  const { t, locale, dir } = useLandingI18n();
+  const [status, setStatus] = useState<"idle" | "submitting" | "sent" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [date, setDate] = useState<Date | undefined>();
+  const [dateOpen, setDateOpen] = useState(false);
+
+  const centerRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const fieldBase =
+    "w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary";
+  const labelBase = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground";
+
+  const reset = () => {
+    setStatus("idle");
+    setErrorMsg(null);
+    setDate(undefined);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const centerName = centerRef.current?.value ?? "";
+    if (status === "submitting") return;
+
+    const center = centerRef.current?.value.trim() ?? "";
+    const email = emailRef.current?.value.trim() ?? "";
+    const phone = phoneRef.current?.value.trim() ?? "";
+    const message = messageRef.current?.value.trim() ?? "";
+
+    if (!center || !email || !phone || !date) {
+      setErrorMsg(t.contact.form.errorRequired);
+      return;
+    }
+    if (!EMAIL_RE.test(email)) {
+      setErrorMsg(t.contact.form.errorEmail);
+      return;
+    }
+
+    setErrorMsg(null);
+    setStatus("submitting");
     track("form_submit");
-    track("whatsapp_open", centerName || "unknown");
-    const waText = encodeURIComponent(`${t.contact.form.waMessage} ${centerName || "mon centre"}`);
-    window.open(`https://wa.me/212777777428?text=${waText}`, "_blank", "noopener,noreferrer");
-    setSent(true);
+
+    try {
+      const res = await submitDemoRequest({
+        data: {
+          center,
+          email,
+          phone,
+          preferredDate: format(date, "yyyy-MM-dd"),
+          message: message || undefined,
+        },
+      });
+      if (res.ok) {
+        track("demo_request_sent", center);
+        setStatus("sent");
+      } else {
+        setErrorMsg(res.error || t.contact.form.errorGeneric);
+        setStatus("error");
+      }
+    } catch {
+      setErrorMsg(t.contact.form.errorGeneric);
+      setStatus("error");
+    }
   };
 
   return (
@@ -1751,44 +1841,128 @@ function WhatsAppDemoForm({ reduceMotion }: { reduceMotion: boolean | null }) {
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.7, ease }}
       onSubmit={handleSubmit}
-      className="relative z-10 flex min-w-0 flex-col overflow-visible border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-10"
+      noValidate
+      className="relative z-10 flex min-w-0 flex-col overflow-visible border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-9"
     >
       <AnimatePresence mode="wait">
-        {sent ? (
+        {status === "sent" ? (
           <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
-            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="flex h-16 w-16 items-center justify-center" style={{ color: "#122620"}}>
-              <Check className="h-8 w-8" />
+            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="grid h-16 w-16 place-items-center border-2 border-foreground bg-foreground text-background">
+              <Check className="h-8 w-8" strokeWidth={2.5} />
             </motion.div>
             <h3 className="mt-6 text-2xl font-black">{t.contact.form.successTitle}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{t.contact.form.successText}</p>
-            <button onClick={() => setSent(false)} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t.contact.form.successText}</p>
+            <button type="button" onClick={reset} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
               {t.contact.form.retry}
             </button>
           </motion.div>
         ) : (
-          <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-5">
+          <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-4">
+            <p className="text-lg font-black tracking-tight text-foreground">{t.contact.form.heading}</p>
+
             <div>
-              <label htmlFor="wa-center" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.contact.form.centerLabel}</label>
-              <input ref={centerRef} id="wa-center" type="text" placeholder={t.contact.form.centerPlaceholder} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
+              <label htmlFor="dr-center" className={labelBase}>{t.contact.form.centerLabel}</label>
+              <div className="relative">
+                <Building2 className="pointer-events-none absolute top-1/2 ltr:left-3 rtl:right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input ref={centerRef} id="dr-center" type="text" placeholder={t.contact.form.centerPlaceholder} required aria-required="true" autoComplete="organization" className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")} />
+              </div>
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="min-w-0">
+                <label htmlFor="dr-email" className={labelBase}>{t.contact.form.emailLabel}</label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute top-1/2 ltr:left-3 rtl:right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input ref={emailRef} id="dr-email" type="email" inputMode="email" placeholder={t.contact.form.emailPlaceholder} required aria-required="true" autoComplete="email" className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")} />
+                </div>
+              </div>
+              <div className="min-w-0">
+                <label htmlFor="dr-phone" className={labelBase}>{t.contact.form.phoneLabel}</label>
+                <div className="relative">
+                  <Phone className="pointer-events-none absolute top-1/2 ltr:left-3 rtl:right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input ref={phoneRef} id="dr-phone" type="tel" inputMode="tel" placeholder={t.contact.form.phonePlaceholder} required aria-required="true" autoComplete="tel" className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")} />
+                </div>
+              </div>
+            </div>
+
             <div>
-              <label htmlFor="wa-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.contact.form.phoneLabel}</label>
-              <input ref={phoneRef} id="wa-phone" type="tel" placeholder={t.contact.form.phonePlaceholder} required aria-required="true" className="w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary" />
+              <label htmlFor="dr-date" className={labelBase}>{t.contact.form.dateLabel}</label>
+              <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    id="dr-date"
+                    aria-label={t.a11y.pickDate}
+                    className={cn(fieldBase, "flex items-center gap-2.5 text-left rtl:text-right", !date && "text-muted-foreground")}
+                  >
+                    <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 truncate">
+                      {date ? format(date, "PPP", { locale: getDateFnsLocale(locale) }) : t.contact.form.datePlaceholder}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-0" dir={dir}>
+                  <CalendarPicker
+                    mode="single"
+                    selected={date}
+                    onSelect={(d) => { setDate(d); setDateOpen(false); }}
+                    disabled={{ before: today }}
+                    defaultMonth={date ?? today}
+                    locale={getDateFnsLocale(locale)}
+                    autoFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
+
+            <div>
+              <label htmlFor="dr-message" className={labelBase}>{t.contact.form.messageLabel}</label>
+              <div className="relative">
+                <MessageSquare className="pointer-events-none absolute top-3 ltr:left-3 rtl:right-3 h-4 w-4 text-muted-foreground" />
+                <textarea ref={messageRef} id="dr-message" rows={3} placeholder={t.contact.form.messagePlaceholder} className={cn(fieldBase, "resize-none ltr:pl-10 rtl:pr-10")} />
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {errorMsg && (
+                <motion.p
+                  key="err"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  role="alert"
+                  className="flex items-center gap-2 border-2 border-destructive/30 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {errorMsg}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
             <motion.button
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={status === "submitting" ? undefined : { scale: 1.03, y: -2 }}
+              whileTap={status === "submitting" ? undefined : { scale: 0.97 }}
               type="submit"
-              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden rounded-none px-6 py-3.5 text-sm font-bold shadow-[var(--shadow-elegant)] transition sm:py-4 landing-cta-primary"
+              disabled={status === "submitting"}
+              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden rounded-none px-6 py-3.5 text-sm font-bold shadow-[var(--shadow-elegant)] transition disabled:cursor-not-allowed disabled:opacity-80 sm:py-4 landing-cta-primary"
             >
-              {!reduceMotion && (
+              {!reduceMotion && status !== "submitting" && (
                 <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
               )}
-              <span className="relative z-[1]">{t.contact.form.submit}</span>
-              <Send className="relative z-[1] h-4 w-4 transition group-hover:translate-x-0.5" />
+              {status === "submitting" ? (
+                <>
+                  <Loader2 className="relative z-[1] h-4 w-4 animate-spin" />
+                  <span className="relative z-[1]">{t.contact.form.submitting}</span>
+                </>
+              ) : (
+                <>
+                  <span className="relative z-[1]">{t.contact.form.submit}</span>
+                  <Send className="relative z-[1] h-4 w-4 transition group-hover:translate-x-0.5" />
+                </>
+              )}
             </motion.button>
+
             <p className="flex shrink-0 items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-              <Lock className="h-3.5 w-3.5 shrink-0" />
               <Lock className="h-3.5 w-3.5 shrink-0" /> {t.contact.form.privacy}
             </p>
           </motion.div>
@@ -1831,7 +2005,7 @@ function ContactSection() {
             {(
               [
                 { Icon: Phone, text: t.contact.phoneMorocco, href: "tel:+212777777428" },
-                { Icon: Globe, text: t.contact.phoneUs, href: "tel:+16137069011" },
+                { Icon: Globe, text: t.contact.website, href: "https://eiden-group.com" },
                 { Icon: Mail, text: t.contact.email, href: "mailto:contact@eiden-group.com" },
                 {
                   Icon: MapPin,
@@ -1854,6 +2028,11 @@ function ContactSection() {
               </li>
             ))}
           </motion.ul>
+
+          <motion.div variants={fadeUp} className="mt-8">
+            <CallQrCard />
+          </motion.div>
+
           <motion.div variants={fadeUp} className="mt-8 space-y-3">
             {t.contact.bullets.map((item) => (
               <div key={item} className="flex items-center gap-2 text-sm text-foreground/70">
@@ -1864,7 +2043,7 @@ function ContactSection() {
           </motion.div>
         </motion.div>
 
-        <WhatsAppDemoForm reduceMotion={reduceMotion} />
+        <DemoRequestForm reduceMotion={reduceMotion} />
       </div>
     </section>
   );
@@ -1917,7 +2096,7 @@ function Footer() {
               </li>
               <li className="text-balance">{t.contact.address}</li>
               <li><a href="tel:+212777777428" className="transition hover:text-background">{t.footer.phoneMorocco}</a></li>
-              <li><a href="tel:+16137069011" className="transition hover:text-background">{t.footer.phoneUs}</a></li>
+              <li><a href="https://eiden-group.com" target="_blank" rel="noopener noreferrer" className="transition hover:text-background">{t.footer.website}</a></li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
