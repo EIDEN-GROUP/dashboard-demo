@@ -9,6 +9,9 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 const ADMIN_EMAIL = "contact@eiden-group.com";
 
+const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
+const SUPABASE_ANON = process.env.SUPABASE_ANON ?? "";
+
 export type DemoRequestResult = { ok: true } | { ok: false; error: string };
 
 function clean(value: unknown): string {
@@ -69,15 +72,23 @@ async function deliver(data: DemoRequest, visitor: Rendered, admin: Rendered): P
     throw new Error(insertError.message);
   }
 
-  const { error: fnError } = await supabaseAdmin.functions.invoke("send-demo-emails", {
-    body: {
-      visitor: { to: data.email, subject: visitor.subject, html: visitor.html, text: visitor.text },
-      admin: { to: ADMIN_EMAIL, subject: admin.subject, html: admin.html, text: admin.text, replyTo: data.email },
+  const body = {
+    visitor: { to: data.email, subject: visitor.subject, html: visitor.html, text: visitor.text },
+    admin: { to: ADMIN_EMAIL, subject: admin.subject, html: admin.html, text: admin.text, replyTo: data.email },
+  };
+
+  const fnRes = await fetch(`${SUPABASE_URL}/functions/v1/send-demo-emails`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SUPABASE_ANON}`,
     },
+    body: JSON.stringify(body),
   });
 
-  if (fnError) {
-    console.error("[demo-request] edge function invocation failed:", fnError);
-    throw new Error(fnError.message);
+  if (!fnRes.ok) {
+    const text = await fnRes.text();
+    console.error("[demo-request] edge function returned", fnRes.status, text);
+    throw new Error(`Edge Function returned ${fnRes.status}: ${text}`);
   }
 }
