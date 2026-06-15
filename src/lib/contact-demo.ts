@@ -69,14 +69,11 @@ async function deliver(data: DemoRequest, visitor: Rendered, admin: Rendered): P
     throw new Error(insertError.message);
   }
 
-  const sendEmailSecret = process.env.SEND_EMAIL_SECRET ?? "";
-
   const { error: fnError } = await supabaseAdmin.functions.invoke("send-demo-emails", {
     body: {
       visitor: { to: data.email, subject: visitor.subject, html: visitor.html, text: visitor.text },
       admin: { to: ADMIN_EMAIL, subject: admin.subject, html: admin.html, text: admin.text, replyTo: data.email },
     },
-    headers: sendEmailSecret ? { "x-send-email-secret": sendEmailSecret } : undefined,
   });
 
   if (fnError) {

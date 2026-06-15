@@ -13,7 +13,6 @@ interface FunctionPayload {
   admin: EmailPayload;
 }
 
-const AUTH_SECRET = Deno.env.get("SEND_EMAIL_SECRET") ?? "";
 const SMTP_HOST = Deno.env.get("SMTP_HOST") ?? "";
 const SMTP_PORT = Number(Deno.env.get("SMTP_PORT") ?? "587");
 const SMTP_USER = Deno.env.get("SMTP_USER") ?? "";
@@ -23,11 +22,6 @@ const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "Gestio <no-reply@eiden-group.c
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
-  }
-
-  const authHeader = req.headers.get("x-send-email-secret");
-  if (AUTH_SECRET && authHeader !== AUTH_SECRET) {
-    return new Response("Unauthorized", { status: 401 });
   }
 
   let payload: FunctionPayload;
