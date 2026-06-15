@@ -1,6 +1,2 @@
-[functions]
-enabled = true
-
 [functions.send-demo-emails]
 verify_jwt = false
-import_map = "./functions/send-demo-emails/import_map.json"
