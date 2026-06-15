@@ -2004,7 +2004,6 @@ function ContactSection() {
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {(
               [
-                { Icon: Phone, text: t.contact.phoneMorocco, href: "tel:+212777777428" },
                 { Icon: Globe, text: t.contact.website, href: "https://eiden-group.com" },
                 { Icon: Mail, text: t.contact.email, href: "mailto:contact@eiden-group.com" },
                 {
