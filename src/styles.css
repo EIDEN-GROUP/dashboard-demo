@@ -56,29 +56,29 @@
 :root {
   --radius: 0.875rem;
 
-  /* Coolors palette — https://coolors.co/f4ebd0-122620-d6ad60-1a372f (accent #10b981) */
-  --eiden-brass: #10b981;
+  /* Cinematic palette — #001427 / #708D81 / #F4D58D / #BF0603 / #8D0801 */
+  --eiden-brass: #BF0603;
   --eiden-canvas: color-mix(in srgb, #fefdfb 62%, #f4ebd0 38%);
   --eiden-beige: #f4ebd0;
-  --eiden-beige-dk: color-mix(in srgb, #e8dcc8 70%, var(--eiden-brass) 30%);
-  --eiden-forest: #122620;
-  --eiden-forest-md: #1a372f;
-  --eiden-deep: #1a372f;
-  --eiden-teal: #1a372f;
-  --eiden-teal-lt: #2a4f45;
-  --eiden-gold: #d6ad60;
-  --eiden-gold-dk: color-mix(in srgb, var(--eiden-brass) 58%, #122620 42%);
-  --eiden-mint: #34d399;
+  --eiden-beige-dk: color-mix(in srgb, #e8dcc8 70%, #708D81 30%);
+  --eiden-forest: #001427;
+  --eiden-forest-md: #001427;
+  --eiden-deep: #001427;
+  --eiden-teal: #708D81;
+  --eiden-teal-lt: #708D81;
+  --eiden-gold: #F4D58D;
+  --eiden-gold-dk: color-mix(in srgb, #BF0603 58%, #001427 42%);
+  --eiden-mint: #708D81;
   --eiden-cream: #f8f3e8;
-  --eiden-ink: #0a0f0c;
+  --eiden-ink: #001427;
   --eiden-white: #ffffff;
-  --eiden-red: #ef4444;
-  --eiden-blue: #60a5fa;
+  --eiden-red: #BF0603;
+  --eiden-blue: #708D81;
 
-  /* Landing — match reference hero (flat dark green + emerald CTAs) */
-  --landing-hero-bg: color-mix(in srgb, var(--eiden-forest) 22%, #060908 78%);
-  --landing-cta-primary: #10b981;
-  --landing-cta-primary-hover: #059669;
+  /* Landing — cinematic hero (deep navy + crimson CTAs) */
+  --landing-hero-bg: #001427;
+  --landing-cta-primary: #BF0603;
+  --landing-cta-primary-hover: #8D0801;
   --landing-cta-on-primary: var(--eiden-white);
 
   --background: var(--eiden-canvas);
@@ -297,11 +297,11 @@
   .text-shimmer-neon {
     background: linear-gradient(
       90deg,
-      #059669 0%,
+      #8D0801 0%,
       var(--landing-cta-primary) 35%,
-      #6ee7b7 52%,
+      #F4D58D 52%,
       var(--landing-cta-primary) 70%,
-      #059669 100%
+      #8D0801 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;

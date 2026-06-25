@@ -32,9 +32,9 @@ const PREVIEW_NAV_ICONS = {
 } as const;
 
 const PAIN_ACCENT = [
-  { accent: "border-t-[#0c5752]", bg: "bg-[color-mix(in_srgb,#0c5752_7%,#f8f3e8)]" },
-  { accent: "border-t-[#b8a876]", bg: "bg-[color-mix(in_srgb,#cfc292_22%,#fefdfb)]" },
-  { accent: "border-t-[#122620]", bg: "bg-[color-mix(in_srgb,#122620_6%,#f4ebd0)]" },
+  { accent: "border-t-[#BF0603]", bg: "bg-[color-mix(in_srgb,#BF0603_7%,#f8f3e8)]" },
+  { accent: "border-t-[#F4D58D]", bg: "bg-[color-mix(in_srgb,#F4D58D_22%,#fefdfb)]" },
+  { accent: "border-t-[#001427]", bg: "bg-[color-mix(in_srgb,#001427_6%,#f4ebd0)]" },
 ] as const;
 
 const PAIN_ICONS = [FileSpreadsheet, CreditCard, UserPlus] as const;
@@ -42,14 +42,14 @@ const PAIN_ICONS = [FileSpreadsheet, CreditCard, UserPlus] as const;
 const MODULE_ICONS = [LayoutDashboard, CreditCard, Layers, Calendar, UsersRound, ClipboardList] as const;
 
 const TESTIMONIAL_AVATARS = [
-  { initials: "FB", avatarColor: "#1a4f8a", stars: 5 },
-  { initials: "KM", avatarColor: "#0c5752", stars: 5 },
-  { initials: "SR", avatarColor: "#7c3aed", stars: 5 },
-  { initials: "YF", avatarColor: "#b45309", stars: 5 },
-  { initials: "HA", avatarColor: "#be185d", stars: 5 },
-  { initials: "AC", avatarColor: "#0f766e", stars: 5 },
-  { initials: "NB", avatarColor: "#6d28d9", stars: 5 },
-  { initials: "OT", avatarColor: "#b91c1c", stars: 4 },
+  { initials: "FB", avatarColor: "#001427", stars: 5 },
+  { initials: "KM", avatarColor: "#708D81", stars: 5 },
+  { initials: "SR", avatarColor: "#BF0603", stars: 5 },
+  { initials: "YF", avatarColor: "#8D0801", stars: 5 },
+  { initials: "HA", avatarColor: "#001427", stars: 5 },
+  { initials: "AC", avatarColor: "#708D81", stars: 5 },
+  { initials: "NB", avatarColor: "#BF0603", stars: 5 },
+  { initials: "OT", avatarColor: "#8D0801", stars: 4 },
 ] as const;
 
 const PRICING_AMOUNTS = {
@@ -160,14 +160,14 @@ function Header() {
             "border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 ease-out",
             isScrolled
               ? "border-border/60 bg-background/90 shadow-sm"
-              : "border-white/10 bg-[#0a0f0c] shadow-[0_1px_0_rgba(255,255,255,0.04)]",
+              : "border-white/10 bg-[#001427] shadow-[0_1px_0_rgba(255,255,255,0.04)]",
           )}
         >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <Link
             to="/"
             className={cn(
-              "flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors hover:text-[#10b981]",
+              "flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors hover:text-[#F4D58D]",
               isScrolled ? "text-foreground" : "text-[#f8f3e8]",
             )}
           >
@@ -176,7 +176,7 @@ function Header() {
               transition={{ type: "spring", stiffness: 300 }}
               className={cn(
                 "flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10",
-                isScrolled ? "text-[#122620]" : "text-emerald-400",
+                isScrolled ? "text-[#001427]" : "text-[#F4D58D]",
               )}
             >
               <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -188,7 +188,7 @@ function Header() {
               onClick={() => scrollToId("demo")}
               className={cn(
                 "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
+                isScrolled ? "text-foreground/70 hover:text-[#BF0603]" : "text-white/90 hover:text-[#BF0603]",
               )}
             >
               {t.nav.demo}
@@ -197,7 +197,7 @@ function Header() {
               onClick={() => scrollToId("modules")}
               className={cn(
                 "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
+                isScrolled ? "text-foreground/70 hover:text-[#BF0603]" : "text-white/90 hover:text-[#BF0603]",
               )}
             >
               {t.nav.modules}
@@ -206,7 +206,7 @@ function Header() {
               onClick={() => scrollToId("tarifs")}
               className={cn(
                 "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
+                isScrolled ? "text-foreground/70 hover:text-[#BF0603]" : "text-white/90 hover:text-[#BF0603]",
               )}
             >
               {t.nav.pricing}
@@ -259,7 +259,7 @@ function Header() {
                 key={item.id}
                 type="button"
                 onClick={() => navScroll(item.id)}
-                className="rounded-md px-3 py-3 text-left text-base font-medium text-foreground transition hover:bg-muted hover:text-[#10b981]"
+                className="rounded-md px-3 py-3 text-left text-base font-medium text-foreground transition hover:bg-muted hover:text-[#BF0603]"
               >
                 {item.label}
               </button>
@@ -304,7 +304,7 @@ function HeroDashboardPreview() {
 
   return (
     <div className="relative w-full">
-      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-transparent to-amber-500/10 blur-2xl" />
+      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-[#BF0603]/20 via-transparent to-[#F4D58D]/10 blur-2xl" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
@@ -403,25 +403,34 @@ function Hero() {
     { icon: Check, text: t.hero.trustNoCommit },
   ];
   return (
-    <section className="relative overflow-hidden bg-[#0a0f0c] py-12 lg:py-20">
+    <section className="relative overflow-hidden bg-[#001427] min-h-[88vh] py-12 lg:py-20">
+      {/* 3px crimson-to-gold gradient line at top */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#BF0603] via-[#F4D58D] to-[#BF0603]" />
       {/* Dynamic Background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(52,211,153,0.15)_0%,_transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,_rgba(214,173,96,0.1)_0%,_transparent_50%)]" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(112,141,129,0.15)_0%,_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,_rgba(244,213,141,0.1)_0%,_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,_rgba(191,6,3,0.08)_0%,_transparent_40%)]" />
         
-        {/* Floating Blobs */}
+        {/* Floating Blobs - sage, gold, crimson */}
         <motion.div 
           animate={!reduceMotion ? { scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] } : {}}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-emerald-500/20 blur-[120px]" 
+          className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-[#708D81]/20 blur-[120px]" 
         />
         <motion.div 
           animate={!reduceMotion ? { scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] } : {}}
           transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-amber-500/10 blur-[120px]" 
+          className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-[#F4D58D]/10 blur-[120px]" 
+        />
+        <motion.div 
+          animate={!reduceMotion ? { scale: [1, 1.15, 1], opacity: [0.15, 0.3, 0.15] } : {}}
+          transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+          className="absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-[#BF0603]/10 blur-[120px]" 
         />
       </div>
+      {/* Vignette fade at bottom */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#001427] to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -431,14 +440,14 @@ function Hero() {
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#BF0603]/30 bg-[#BF0603]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#F4D58D]">
               <Sparkles className="h-3.5 w-3.5 animate-pulse" />
               {t.hero.badge}
             </motion.div>
 
             <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#f8f3e8] sm:text-6xl lg:text-7xl">
               {t.hero.titleLine1} <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
+              <span className="bg-gradient-to-r from-[#F4D58D] to-[#F4D58D]/80 bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
               {t.hero.titleLine2}
             </motion.h1>
 
@@ -449,13 +458,13 @@ function Hero() {
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
                <div className="flex -space-x-3">
                   {[1,2,3,4].map(i => (
-                    <div key={i} className="h-10 w-10 rounded-full border-2 border-[#122620] bg-emerald-900 grid place-items-center text-[10px] font-bold text-emerald-100 shadow-xl">
+                    <div key={i} className="h-10 w-10 rounded-full border-2 border-[#001427] bg-[#001427] grid place-items-center text-[10px] font-bold text-[#F4D58D] shadow-xl">
                        {["FB", "KM", "SR", "AM"][i-1]}
                     </div>
                   ))}
                </div>
                <div className="text-sm">
-                  <div className="flex items-center gap-0.5 text-amber-500">
+                  <div className="flex items-center gap-0.5 text-[#F4D58D]">
                     {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                   </div>
                   <p className="mt-1 text-white">{t.hero.socialProof}</p>
@@ -464,10 +473,10 @@ function Hero() {
 
             <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-4 sm:flex-row">
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(52, 211, 153, 0.3)" }}
+                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(191, 6, 3, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => scrollToId("contact")}
-                className="group inline-flex items-center justify-center gap-2 bg-emerald-500 px-8 py-4 text-md font-black text-white transition-all hover:bg-emerald-400"
+                className="group inline-flex items-center justify-center gap-2 bg-[#BF0603] px-8 py-4 text-md font-black text-white transition-all hover:bg-[#8D0801]"
               >
                 {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -477,7 +486,7 @@ function Hero() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => scrollToId("demo")}
-                className="inline-flex items-center justify-center gap-2 border border-white/20 bg-white px-8 py-4 text-sm font-bold text-[#0a0f0c] shadow-sm transition-colors hover:bg-neutral-100"
+                className="inline-flex items-center justify-center gap-2 border border-white/20 bg-white/[0.08] px-8 py-4 text-sm font-bold text-white shadow-sm backdrop-blur-md transition-colors hover:bg-white/[0.14]"
               >
                 {t.hero.ctaSecondary}
                 <MousePointerClick className="h-4 w-4" />
@@ -487,7 +496,7 @@ function Hero() {
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
               {trustItems.map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-2 text-xs font-medium text-white">
-                   <Icon className="h-3.5 w-3.5 text-emerald-500/70" />
+                   <Icon className="h-3.5 w-3.5 text-[#F4D58D]/70" />
                    {text}
                 </div>
               ))}
@@ -501,17 +510,17 @@ function Hero() {
             transition={{ duration: 1, delay: 0.3 }}
             className="relative lg:ml-12"
           >
-            <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-transparent blur-sm" />
+            <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-[#BF0603]/20 to-transparent blur-sm" />
             <HeroDashboardPreview />
             
             {/* Promotional Badge */}
             <motion.div
               animate={!reduceMotion ? { y: [0, -10, 0] } : {}}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -right-6 flex flex-col items-center justify-center rounded-2xl border-2 border-amber-500/30 bg-black/80 p-4 text-center shadow-2xl backdrop-blur-md"
+              className="absolute -bottom-6 -right-6 flex flex-col items-center justify-center rounded-2xl border-2 border-[#F4D58D]/30 bg-black/80 p-4 text-center shadow-2xl backdrop-blur-md"
             >
-              <Gift className="h-6 w-6 text-amber-500 mb-1" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#d6ad60]">{t.hero.promoLabel}</p>
+              <Gift className="h-6 w-6 text-[#F4D58D] mb-1" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#F4D58D]">{t.hero.promoLabel}</p>
               <p className="text-xs font-bold text-white">{t.hero.promoText}</p>
             </motion.div>
           </motion.div>
@@ -931,7 +940,7 @@ function PainPointsSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-[#0c5752]/25 bg-[color-mix(in_srgb,#0c5752_6%,#f4ebd0)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#0c5752]">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-[#BF0603]/25 bg-[color-mix(in_srgb,#BF0603_6%,#f4ebd0)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#8D0801]">
             {t.pain.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
@@ -1012,7 +1021,7 @@ function SolutionSection() {
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
             {t.solution.title}{" "}
-            <span style={{ color: "#34d399"}}>{t.solution.titleMuted}</span>
+            <span style={{ color: "#F4D58D"}}>{t.solution.titleMuted}</span>
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-6 text-lg text-background">
             {t.solution.subtitle}
@@ -1103,11 +1112,11 @@ function ModulesSection() {
               key={mod.title}
               variants={fadeUp}
               whileHover={{ y: -5, transition: { type: "spring", stiffness: 280 } }}
-              className="group flex min-w-0 flex-col border-2 border-foreground/10 bg-card p-5 transition-all hover:border-foreground hover:shadow-[6px_6px_0_0_var(--foreground)] cursor-pointer sm:p-7"
+              className="group flex min-w-0 flex-col border-2 border-foreground/10 bg-card p-5 transition-all hover:border-[#001427] hover:shadow-[6px_6px_0_0_#001427] cursor-pointer sm:p-7"
               onClick={() => scrollToId("demo")}
             >
               <div className="flex items-start justify-between gap-3">
-                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center border-2 border-foreground/15 bg-foreground/5 transition group-hover:border-foreground group-hover:bg-foreground group-hover:text-background">
+                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center border-2 border-foreground/15 bg-foreground/5 transition group-hover:border-[#001427] group-hover:bg-[#001427] group-hover:text-white">
                   <mod.icon className="h-5 w-5" strokeWidth={1.5} />
                 </span>
               </div>
@@ -1164,7 +1173,7 @@ function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "
     <div dir={dir} className="flex h-full min-w-0 flex-col gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:p-6">
       {/* Stars + date */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-0.5 text-amber-400">
+        <div className="flex items-center gap-0.5 text-[#F4D58D]">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className={cn("h-3.5 w-3.5", i < item.stars ? "fill-current" : "fill-none opacity-30")} />
           ))}
@@ -1469,7 +1478,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.35, ease, delay: 0.25 }}
-            className="mt-2 inline-flex items-center gap-1.5 border border-amber-400/40 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-300"
+            className="mt-2 inline-flex items-center gap-1.5 border border-[#F4D58D]/40 bg-[#F4D58D]/10 px-2.5 py-1 text-[10px] font-bold text-[#F4D58D]"
           >
             <Gift className="h-3.5 w-3.5 shrink-0" /> {t.pricing.onboardingOffer}
           </motion.div>
@@ -1981,8 +1990,8 @@ function ContactSection() {
   return (
     <section id="contact" className="relative overflow-hidden py-14 pb-[max(4rem,calc(4rem+env(safe-area-inset-bottom)))] sm:py-20 sm:pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))]">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-20 right-1/4 h-80 w-80 bg-primary/15 blur-3xl animate-blob" />
-        <div className="absolute bottom-0 left-1/4 h-80 w-80 bg-accent/20 blur-3xl animate-blob" style={{ animationDelay: "-6s" }} />
+        <div className="absolute -top-20 right-1/4 h-80 w-80 bg-[#708D81]/15 blur-3xl animate-blob" />
+        <div className="absolute bottom-0 left-1/4 h-80 w-80 bg-[#F4D58D]/20 blur-3xl animate-blob" style={{ animationDelay: "-6s" }} />
       </div>
       <div className="mx-auto grid min-w-0 max-w-7xl gap-8 px-4 sm:gap-10 sm:px-6 lg:grid-cols-2 lg:items-start lg:gap-12 lg:px-8">
         <motion.div
@@ -2014,7 +2023,7 @@ function ContactSection() {
               ] as const
             ).map(({ Icon, text, href }) => (
               <li key={text} className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center" style={{color: "#122620"}}>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center" style={{color: "#001427"}}>
                   <Icon className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
                 </span>
                 <a
@@ -2055,22 +2064,22 @@ function Footer() {
   const { t } = useLandingI18n();
 
   return (
-    <footer className="border-t border-border/60 bg-foreground text-background">
+    <footer className="border-t border-border/60 bg-[#001427] text-white">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center bg-background/10">
-                <GraduationCap className="h-5 w-5 text-background" />
+              <div className="flex h-10 w-10 items-center justify-center bg-white/10">
+                <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-black tracking-tight">Gestio</span>
             </div>
-            <p className="mt-3 text-sm text-background leading-relaxed">
+            <p className="mt-3 text-sm text-white/70 leading-relaxed">
               {t.footer.tagline}
             </p>
           </div>
           <div>
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">{t.footer.navigation}</p>
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-white">{t.footer.navigation}</p>
             <ul className="space-y-2 text-sm">
               {[
                 { label: t.nav.demoInteractive, id: "demo" },
@@ -2080,22 +2089,22 @@ function Footer() {
                 { label: t.nav.contact, id: "contact" },
               ].map((item) => (
                 <li key={item.id}>
-                  <button onClick={() => scrollToId(item.id)} className="text-background transition hover:text-background">{item.label}</button>
+                  <button onClick={() => scrollToId(item.id)} className="text-white/70 transition hover:text-white">{item.label}</button>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">{t.footer.contact}</p>
-            <ul className="space-y-2 text-sm text-background">
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-white">{t.footer.contact}</p>
+            <ul className="space-y-2 text-sm text-white/70">
               <li>
-                <a href={`mailto:${t.contact.email}`} className="transition hover:text-background">
+                <a href={`mailto:${t.contact.email}`} className="transition hover:text-white">
                   {t.contact.email}
                 </a>
               </li>
               <li className="text-balance">{t.contact.address}</li>
-              <li><a href="tel:+212777777428" className="transition hover:text-background">{t.footer.phoneMorocco}</a></li>
-              <li><a href="https://eiden-group.com" target="_blank" rel="noopener noreferrer" className="transition hover:text-background">{t.footer.website}</a></li>
+              <li><a href="tel:+212777777428" className="transition hover:text-white">{t.footer.phoneMorocco}</a></li>
+              <li><a href="https://eiden-group.com" target="_blank" rel="noopener noreferrer" className="transition hover:text-white">{t.footer.website}</a></li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -2108,7 +2117,7 @@ function Footer() {
             </motion.button>
           </div>
         </div>
-        <div className="mt-8 flex flex-col-reverse gap-4 border-t border-background/10 pt-6 text-xs text-background/40 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col-reverse gap-4 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-center sm:text-left">{t.footer.copyright}</span>
           {/* <MotionLink to="/login" className="text-center text-background/30 transition hover:text-background/60 sm:text-right">
             Espace client
