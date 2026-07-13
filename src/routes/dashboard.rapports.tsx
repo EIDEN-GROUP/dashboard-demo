@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
+import { softCard, dashTooltip } from "@/lib/dash-ui";
 
 const CHART_VALUES = [4, 7, 6, 3, 9, 12, 11];
 
@@ -86,19 +87,19 @@ const EXTRA_IMPAYE_SURNAMES = [
 
 const IMPAYE_REMARQUES = [
   "Aucun règlement enregistré",
-  "Dette 1 200 MAD — en retard",
+  "Dette 1 200 MAD   en retard",
   "Échéance dépassée (15 j.)",
   "Dette 800 MAD",
-  "Paiement partiel — solde ouvert",
-  "Relance envoyée — sans réponse",
+  "Paiement partiel   solde ouvert",
+  "Relance envoyée   sans réponse",
   "Dette 2 400 MAD",
   "Mois en cours non réglé",
   "Dette 450 MAD",
-  "Prélevé en erreur — à régulariser",
-  "Dette 1 600 MAD — en retard",
+  "Prélevé en erreur   à régulariser",
+  "Dette 1 600 MAD   en retard",
   "Aucun mandat actif",
   "Dette 300 MAD",
-  "Contrat suspendu — impayé",
+  "Contrat suspendu   impayé",
   "Dette 950 MAD",
   "Deux mois impayés",
   "Dette 1 100 MAD",
@@ -162,7 +163,7 @@ function buildFamillesImpayees(): DemoFamily[] {
       child: "Sara",
       email: "sara.b@example.com",
       phone: "0611223344",
-      remarque: "Dette 1 200 MAD — en retard",
+      remarque: "Dette 1 200 MAD   en retard",
     },
   ];
   const extra = EXTRA_IMPAYE_SURNAMES.map((name, i) => ({
@@ -183,25 +184,20 @@ const TOTAL_PAYE = FAMILLES_PAYEES.length;
 const TOTAL_IMPAYE = FAMILLES_IMPAYEES.length;
 const TOTAL_FAMILLES_RAPPORTS = TOTAL_PAYE + TOTAL_IMPAYE;
 
-const chartTooltip = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: 0,
-  color: "var(--foreground)",
-} as const;
+const chartTooltip = dashTooltip;
 
-/** Même enveloppe que `NouveauClientModal` (dashboard.index) — min-w-0 pour scroll horizontal des tableaux sur mobile */
+/** Même enveloppe que `NouveauClientModal` (dashboard.index)   min-w-0 pour scroll horizontal des tableaux sur mobile */
 const listeDialogContent = cn(
-  "grid min-w-0 grid-cols-1 gap-0 overflow-hidden border border-border bg-card p-0 shadow-none sm:rounded-none rounded-none",
+  "grid min-w-0 grid-cols-1 gap-0 overflow-hidden rounded-3xl border border-[#28396C]/10 bg-card p-0 shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)] sm:rounded-3xl",
   "max-h-[min(90vh,860px)] w-[min(100vw-1.5rem,640px)] max-w-[min(100vw-1.5rem,640px)] translate-y-[-50%] sm:max-w-[640px]",
-  "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0",
+  "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:border [&>button]:border-[#28396C]/15 [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0",
 );
 
 const cardClass =
-  "relative block w-full overflow-hidden border border-border bg-card p-5 text-left outline-none transition-colors hover:border-border hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border-t-4";
+  "relative block w-full overflow-hidden rounded-3xl border border-[#28396C]/10 bg-card p-5 text-left outline-none shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] transition-shadow hover:shadow-[0_28px_60px_-28px_rgba(40,57,108,0.45)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border-t-4";
 
 const listeSearchInputClass =
-  "h-10 rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
+  "h-10 rounded-xl border-[#28396C]/15 bg-card shadow-none focus-visible:border-[#6BA53A] focus-visible:ring-2 focus-visible:ring-[#B5E18B]/40";
 
 function ListeFamillesModal({
   open,
@@ -382,7 +378,7 @@ function RapportsPage() {
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
             <p className="text-xs text-muted-foreground">{r.summaryNote}</p>
-            <span className="grid h-10 w-10 shrink-0 place-items-center border border-border bg-muted text-foreground/90" aria-hidden>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#28396C]/8 text-[#28396C]" aria-hidden>
               <Users className="h-5 w-5" />
             </span>
           </div>
@@ -392,7 +388,7 @@ function RapportsPage() {
           <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.paidCard}</p>
           <div className="mt-3 flex items-start justify-between gap-3">
             <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_PAYE}</p>
-            <span className="grid h-10 w-10 shrink-0 place-items-center border border-border bg-muted text-foreground/90">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#28396C]/8 text-[#28396C]">
               <CheckCircle2 className="h-5 w-5" aria-hidden />
             </span>
           </div>
@@ -403,7 +399,7 @@ function RapportsPage() {
           <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.unpaidCard}</p>
           <div className="mt-3 flex items-start justify-between gap-3">
             <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_IMPAYE}</p>
-            <span className="grid h-10 w-10 shrink-0 place-items-center border border-input bg-muted text-foreground">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F4E3C0] text-[#8A5A16]">
               <XCircle className="h-5 w-5" aria-hidden />
             </span>
           </div>
@@ -413,7 +409,7 @@ function RapportsPage() {
         
       </div>
 
-      <div className="border border-border bg-card p-6">
+      <div className={cn(softCard, "p-6")}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.common.chart}</p>
         <h2 className="mt-1 font-display text-xl text-foreground">
           {r.chartTitleBold} <span className="font-normal italic text-muted-foreground">{r.chartTitleItalic}</span>
@@ -422,11 +418,11 @@ function RapportsPage() {
         <div className="mt-4 h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="m" stroke="var(--muted-foreground)" fontSize={12} />
-              <YAxis stroke="var(--muted-foreground)" fontSize={12} />
-              <Tooltip contentStyle={chartTooltip} />
-              <Bar dataKey="v" fill="var(--primary)" radius={[0, 0, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
+              <XAxis dataKey="m" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={chartTooltip} cursor={{ fill: "rgba(181,225,139,0.18)" }} />
+              <Bar dataKey="v" fill="#28396C" radius={[8, 8, 0, 0]} maxBarSize={38} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -436,6 +432,6 @@ function RapportsPage() {
 }
 
 export const Route = createFileRoute("/dashboard/rapports")({
-  head: () => ({ meta: [{ title: "Rapports — CRM" }] }),
+  head: () => ({ meta: [{ title: "Rapports   CRM" }] }),
   component: RapportsPage,
 });

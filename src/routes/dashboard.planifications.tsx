@@ -13,6 +13,7 @@ import {
 import { CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDateFnsLocale, useDashboardI18n } from "@/lib/landing-i18n";
+import { softCard, iconButton } from "@/lib/dash-ui";
 import {
   mirrorPlanificationEntries,
   type MirrorPlanTone,
@@ -71,7 +72,7 @@ function slotLabel(slotIndex: number): string {
 }
 
 export const Route = createFileRoute("/dashboard/planifications")({
-  head: () => ({ meta: [{ title: "Planifications — CRM" }] }),
+  head: () => ({ meta: [{ title: "Planifications   CRM" }] }),
   component: PlanificationsPage,
 });
 
@@ -134,10 +135,10 @@ function PlanificationsPage() {
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)] lg:items-start">
-        <div className="border border-border/80 bg-card shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-3 sm:px-4">
+        <div className={cn(softCard, "overflow-hidden")}>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-3 py-3 sm:px-4">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="grid h-9 w-9 place-items-center border border-border bg-muted text-foreground/90">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#28396C]/8 text-[#28396C]">
                 <CalendarDays className="h-4 w-4" strokeWidth={1.75} />
               </span>
               <div>
@@ -149,7 +150,7 @@ function PlanificationsPage() {
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addWeeks(w, -1))}
-                className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:bg-muted"
+                className={iconButton}
                 aria-label={t.planifications.prevWeekAria}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -157,14 +158,14 @@ function PlanificationsPage() {
               <button
                 type="button"
                 onClick={() => setWeekStart(earliestPlanMonday())}
-                className="border border-border bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/85"
+                className="rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-medium text-white transition hover:bg-[#1B2A55]"
               >
                 {t.planifications.demoWeek}
               </button>
               <button
                 type="button"
                 onClick={() => setWeekStart((w) => addWeeks(w, 1))}
-                className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground transition hover:bg-muted"
+                className={iconButton}
                 aria-label={t.planifications.nextWeekAria}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -270,7 +271,7 @@ function PlanificationsPage() {
         </div>
 
         <aside className="flex flex-col gap-5">
-          <div className="border border-border/80 bg-card p-5 shadow-sm sm:p-6">
+          <div className={cn(softCard, "p-5 sm:p-6")}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.planifications.selectedSlot}</p>
             {selectedPlan ? (
               <>
@@ -288,7 +289,7 @@ function PlanificationsPage() {
             )}
           </div>
 
-          <div className="border border-border/60 bg-muted/50 p-5 sm:p-6">
+          <div className="rounded-3xl border border-[#28396C]/10 bg-muted/50 p-5 sm:p-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.planifications.thisWeek}</p>
             <h3 className="mt-1 font-display text-lg text-foreground">{t.planifications.allSlots}</h3>
             <ul className="mt-4 max-h-[min(20rem,45vh)] space-y-2 overflow-y-auto pr-1">
@@ -304,8 +305,8 @@ function PlanificationsPage() {
                         setWeekStart(startOfWeek(parseISO(p.date), { weekStartsOn: 1 }));
                       }}
                       className={cn(
-                        "flex w-full items-start justify-between gap-2 border border-border/80 bg-card px-2.5 py-2 text-left text-xs shadow-sm transition hover:border-border",
-                        selectedPlanId === p.id && "ring-1 ring-primary",
+                        "flex w-full items-start justify-between gap-2 rounded-xl border border-[#28396C]/10 bg-card px-2.5 py-2 text-left text-xs shadow-sm transition hover:border-[#28396C]/20",
+                        selectedPlanId === p.id && "ring-1 ring-[#6BA53A]",
                       )}
                     >
                       <div className="min-w-0">
@@ -325,7 +326,7 @@ function PlanificationsPage() {
             </ul>
           </div>
 
-          <div className="border border-border/60 bg-card p-5 sm:p-6">
+          <div className={cn(softCard, "p-5 sm:p-6")}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t.planifications.monthView}</p>
             <ul className="mt-3 space-y-2 text-xs">
               {monthPlans.map((p) => (

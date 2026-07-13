@@ -1,5 +1,5 @@
 /**
- * Snapshot of demo data used on real dashboard routes — kept in sync for the landing miniature.
+ * Snapshot of demo data used on real dashboard routes   kept in sync for the landing miniature.
  * Source routes: dashboard.index, dashboard.familles, dashboard.paiements, dashboard.rendez-vous,
  * dashboard.affiches, dashboard.rapports.
  */
@@ -25,7 +25,7 @@ export type MirrorPlanificationEntry = {
   tone: MirrorPlanTone;
 };
 
-/** Demo planifications — same list as `dashboard.planifications`. */
+/** Demo planifications   same list as `dashboard.planifications`. */
 export const mirrorPlanificationEntries: readonly MirrorPlanificationEntry[] = [
   {
     id: "1",

@@ -11,6 +11,13 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useDashboardI18n } from "@/lib/landing-i18n";
+import {
+  softCard,
+  softInput as inputClass,
+  softSelectTrigger as selectTriggerClass,
+  softSelectContent,
+  ghostPill,
+} from "@/lib/dash-ui";
 
 export const Route = createFileRoute("/dashboard/paiements")({
   head: () => ({ meta: [{ title: "Paiements   CRM" }] }),
@@ -30,12 +37,6 @@ type PaymentRow = {
   recu: string;
   facture: FactureStat;
 };
-
-const inputClass =
-  "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
-
-const selectTriggerClass =
-  "h-10 rounded-none border-border bg-card shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/70";
 
 const rowsSeed: PaymentRow[] = [
   {
@@ -129,14 +130,14 @@ function CrmPaiementsPage() {
         <button
           type="button"
           onClick={() => exportCsv(filtered)}
-          className="inline-flex items-center gap-2 border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
+          className={ghostPill}
         >
           <Download className="h-4 w-4" />
           {t.common.export}
         </button>
       </header>
 
-      <section className="border border-border bg-card p-5">
+      <section className={cn(softCard, "p-5")}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.common.filtersAndSearch}</p>
         <div className="mt-4 space-y-4">
           <div className="relative">
@@ -154,7 +155,7 @@ function CrmPaiementsPage() {
               <SelectTrigger className={selectTriggerClass} aria-label={t.paiements.paymentModeAria}>
                 <SelectValue placeholder={t.common.allModes} />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-border">
+              <SelectContent className={softSelectContent}>
                 <SelectItem value="tous">{t.common.allModes}</SelectItem>
                 <SelectItem value="espèces">{t.form.paymentModes.cash}</SelectItem>
                 <SelectItem value="virement">{t.form.paymentModes.transfer}</SelectItem>
@@ -166,7 +167,7 @@ function CrmPaiementsPage() {
               <SelectTrigger className={selectTriggerClass} aria-label={t.paiements.invoiceAria}>
                 <SelectValue placeholder={t.common.allInvoices} />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-border">
+              <SelectContent className={softSelectContent}>
                 <SelectItem value="tous">{t.common.allInvoices}</SelectItem>
                 <SelectItem value="non_envoye">{t.status.notSent}</SelectItem>
                 <SelectItem value="envoye">{t.status.sent}</SelectItem>
@@ -176,7 +177,7 @@ function CrmPaiementsPage() {
         </div>
       </section>
 
-      <section className="border border-border bg-card">
+      <section className={cn(softCard, "overflow-hidden")}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[880px] text-left text-sm">
             <thead>
@@ -201,8 +202,8 @@ function CrmPaiementsPage() {
                   </td>
                   <td className="px-4 py-3 tabular-nums text-foreground/90">{r.date}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1 border border-primary bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
-                      <span className="h-1 w-1 shrink-0 bg-card" aria-hidden />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#28396C]/8 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#28396C]">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#28396C]" aria-hidden />
                       {r.mode}
                     </span>
                   </td>
@@ -211,13 +212,13 @@ function CrmPaiementsPage() {
                   <td className="px-4 py-3">
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
                         r.facture === "non_envoye"
-                          ? "border-border bg-muted text-foreground/90"
-                          : "border-primary bg-muted text-foreground",
+                          ? "bg-muted text-foreground/70"
+                          : "bg-[#B5E18B]/30 text-[#3E6420]",
                       )}
                     >
-                      <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
+                      <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", r.facture === "non_envoye" ? "bg-current" : "bg-[#6BA53A]")} aria-hidden />
                       {r.facture === "non_envoye" ? t.status.notSent : t.status.sent}
                     </span>
                   </td>

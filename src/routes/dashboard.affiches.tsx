@@ -18,9 +18,18 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
+import {
+  softCard,
+  softInput as inputClass,
+  softSelectTrigger as selectTriggerClass,
+  softSelectContent,
+  dialogSurface,
+  labelClass,
+  iconButton,
+} from "@/lib/dash-ui";
 
 export const Route = createFileRoute("/dashboard/affiches")({
-  head: () => ({ meta: [{ title: "Affiches — Équipe" }] }),
+  head: () => ({ meta: [{ title: "Affiches   Équipe" }] }),
   component: AffichesPage,
 });
 
@@ -43,17 +52,6 @@ type Employe = {
   statut: StatutEmploye;
 };
 
-const dialogSurface =
-  "gap-0 overflow-hidden border border-border bg-card p-0 shadow-none sm:rounded-none rounded-none max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0";
-
-const labelClass = "text-[10px] font-medium uppercase tracking-wider text-muted-foreground";
-
-const inputClass =
-  "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
-
-const selectTriggerClass =
-  "h-10 rounded-none border-border bg-card shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/70";
-
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
     <div className="space-y-1.5">
@@ -69,13 +67,13 @@ function Badge({ children, variant }: { children: ReactNode; variant: "neutral" 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
         variant === "dark"
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-muted text-foreground/90",
+          ? "bg-[#B5E18B]/30 text-[#3E6420]"
+          : "bg-muted text-foreground/70",
       )}
     >
-      <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
+      <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", variant === "dark" ? "bg-[#6BA53A]" : "bg-current")} aria-hidden />
       {children}
     </span>
   );
@@ -88,8 +86,8 @@ function StatutTag({ actif }: { actif: boolean }) {
     <span
       role="status"
       className={cn(
-        "inline-flex w-fit border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider",
-        actif ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted text-muted-foreground",
+        "inline-flex w-fit rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider",
+        actif ? "bg-[#B5E18B]/30 text-[#3E6420]" : "bg-muted text-muted-foreground",
       )}
     >
       {actif ? t.status.actif : t.status.inactif}
@@ -98,7 +96,7 @@ function StatutTag({ actif }: { actif: boolean }) {
 }
 
 function dash(v: string) {
-  return v.trim() === "" ? "—" : v;
+  return v.trim() === "" ? " " : v;
 }
 
 const initialEmployes: Employe[] = [
@@ -146,8 +144,8 @@ const initialEmployes: Employe[] = [
     cin: "",
     dateNaissance: "22/07/1993",
     dateEmbauche: "10/06/2022",
-    adresse: "—",
-    contrat: "CDD — 12 mois",
+    adresse: " ",
+    contrat: "CDD   12 mois",
     statut: "actif",
   },
   {
@@ -195,7 +193,7 @@ const initialEmployes: Employe[] = [
     dateNaissance: "14/09/1991",
     dateEmbauche: "01/11/2024",
     adresse: "Temara",
-    contrat: "CDD — 6 mois",
+    contrat: "CDD   6 mois",
     statut: "inactif",
   },
 ];
@@ -278,7 +276,7 @@ function DetailEmployeDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
               {t.common.close}
             </button>
@@ -357,7 +355,7 @@ function EditEmployeDialog({
                   <SelectTrigger id="ed-statut" className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-none border-border">
+                  <SelectContent className={softSelectContent}>
                     <SelectItem value="actif">{t.status.actif}</SelectItem>
                     <SelectItem value="inactif">{t.status.inactif}</SelectItem>
                   </SelectContent>
@@ -404,13 +402,13 @@ function EditEmployeDialog({
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
                 {t.common.cancel}
               </button>
               <button
                 type="submit"
-                className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="rounded-full bg-[#B5E18B] px-5 py-2 text-sm font-bold text-[#28396C] shadow-[0_14px_30px_-14px_rgba(107,165,58,0.7)] transition hover:brightness-105"
               >
                 {t.common.saveChanges}
               </button>
@@ -488,8 +486,8 @@ function AffichesPage() {
         </p>
       </section>
 
-      <section className="border border-border bg-card">
-        <div className="border-b border-border px-5 py-4">
+      <section className={cn(softCard, "overflow-hidden")}>
+        <div className="border-b border-[#28396C]/10 px-5 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{a.employeeList}</p>
         </div>
         <div className="overflow-x-auto scroll-touch">
@@ -527,7 +525,7 @@ function AffichesPage() {
                           setDetailId(e.id);
                           setEditId(null);
                         }}
-                        className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
+                        className={iconButton}
                         aria-label={interpolate(a.viewAria, { name: e.nomComplet })}
                       >
                         <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
@@ -538,7 +536,7 @@ function AffichesPage() {
                           setEditId(e.id);
                           setDetailId(null);
                         }}
-                        className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted"
+                        className={iconButton}
                         aria-label={interpolate(a.editAria, { name: e.nomComplet })}
                       >
                         <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />

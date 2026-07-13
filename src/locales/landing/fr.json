@@ -39,12 +39,12 @@
     "tablePayment": "Paiement",
     "csvShort": "CSV",
     "locked": {
-      "openCard": "Aperçu démo — connectez-vous pour accéder à cette vue.",
-      "quickAction": "« {{title}} » — disponible après connexion.",
-      "addClient": "Ajouter un client — disponible après connexion.",
-      "exportCsv": "Export CSV — disponible après connexion.",
-      "paidList": "Familles à jour — disponible après connexion.",
-      "unpaidList": "Impayés — disponible après connexion."
+      "openCard": "Aperçu démo   connectez-vous pour accéder à cette vue.",
+      "quickAction": "« {{title}} »   disponible après connexion.",
+      "addClient": "Ajouter un client   disponible après connexion.",
+      "exportCsv": "Export CSV   disponible après connexion.",
+      "paidList": "Familles à jour   disponible après connexion.",
+      "unpaidList": "Impayés   disponible après connexion."
     }
   },
   "hero": {

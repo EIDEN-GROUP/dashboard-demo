@@ -28,8 +28,6 @@ import {
 
   Images,
 
-  BarChart3,
-
 } from "lucide-react";
 
 import { fr as dateFnsFr, ar as dateFnsAr } from "date-fns/locale";
@@ -254,27 +252,19 @@ export function useDashboardNav() {
 
       { to: "/dashboard/paiements", label: t.nav.paiements, icon: CreditCard },
 
-    ],
-
-    [t.nav],
-
-  );
-
-
-
-  const secondaryNav: NavItem[] = useMemo(
-
-    () => [
-
       { to: "/dashboard/affiches", label: t.nav.affiches, icon: Images },
 
-      { to: "/dashboard/rapports", label: t.nav.rapports, icon: BarChart3 },
-
     ],
 
     [t.nav],
 
   );
+
+
+
+  // Secondary band removed   affiches now lives in the top nav.
+
+  const secondaryNav: NavItem[] = useMemo(() => [], []);
 
 
 

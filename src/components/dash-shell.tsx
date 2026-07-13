@@ -23,7 +23,7 @@ function topNavItemActive(pathname: string, to: string) {
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-/** Mobile bottom bar — active tab: top accent bar + weight; no background fill. */
+/** Mobile bottom bar   active tab: top accent bar + weight; no background fill. */
 function MobileBottomNav({
   topNav,
   pathname,
@@ -37,7 +37,7 @@ function MobileBottomNav({
   const labelClass = compact ? "text-[9px] leading-tight" : "text-[10px] leading-tight";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-6px_24px_color-mix(in_oklab,var(--foreground)_6%,transparent)] lg:hidden" aria-label={mainNavAria}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#28396C]/10 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_35px_-15px_rgba(40,57,108,0.3)] backdrop-blur-xl lg:hidden" aria-label={mainNavAria}>
       <div className="grid min-h-[4.25rem] w-full auto-cols-fr" style={{ gridTemplateColumns: `repeat(${topNav.length}, minmax(0, 1fr))` }}>
         {topNav.map((n) => {
           const active = topNavItemActive(pathname, n.to);
@@ -110,8 +110,8 @@ export function DashShell({
     };
 
     return (
-      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-muted" dir={shellDir}>
-        <header className="z-30 shrink-0 border-b border-border bg-card">
+      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_45%,#EEF6E0_100%)]" dir={shellDir}>
+        <header className="z-30 shrink-0 border-b border-[#28396C]/10 bg-white/85 backdrop-blur-xl">
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -120,17 +120,17 @@ export function DashShell({
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
               </Link>
               {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-border px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted/70">
+                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-[#B5E18B]/15">
                   <ArrowLeftRight className="h-3 w-3 shrink-0" />
                   <span className="truncate">{switchLabel}</span>
                 </Link>
               ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-2 pt-0.5">
-              <div className="h-9 w-9 border border-border bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
                 {(user?.name || "A").slice(0, 1).toUpperCase()}
               </div>
-              <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center border border-border text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground" aria-label={t.shell.logoutAria}>
+              <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#28396C]/15 text-muted-foreground transition-colors hover:bg-[#B5E18B]/15 hover:text-foreground" aria-label={t.shell.logoutAria}>
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </div>
@@ -144,14 +144,14 @@ export function DashShell({
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
               </Link>
               {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-border px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-muted/70 w-fit" >
+                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-[#B5E18B]/15 w-fit" >
                   <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{switchLabel}</span>
                 </Link>
               ) : null}
             </div>
 
-            <nav className="scroll-touch flex justify-center gap-0 overflow-x-auto border-y border-border py-1 lg:border-y-0 lg:py-0">
+            <nav className="scroll-touch flex justify-center gap-1 overflow-x-auto rounded-full border border-[#28396C]/10 bg-white/80 p-1 shadow-sm lg:py-1">
               {topNav.map((n) => {
                 const active = topNavItemActive(loc.pathname, n.to);
                 return (
@@ -159,10 +159,10 @@ export function DashShell({
                     key={n.to}
                     to={n.to}
                     className={
-                      "flex items-center gap-2 border px-4 py-2.5 text-sm whitespace-nowrap transition-colors " +
+                      "flex items-center gap-2 rounded-full px-4 py-2 text-sm whitespace-nowrap transition-colors " +
                       (active
-                        ? "border-border bg-muted font-medium text-foreground"
-                        : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground")
+                        ? "bg-[#28396C] font-medium text-white shadow-[0_12px_25px_-12px_rgba(40,57,108,0.6)]"
+                        : "text-muted-foreground hover:bg-[#B5E18B]/20 hover:text-foreground")
                     }
                   >
                     <n.icon className="h-4 w-4 shrink-0 opacity-80" />
@@ -178,11 +178,11 @@ export function DashShell({
                   <p className="text-sm font-medium leading-none text-foreground">{user?.name || "admin"}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{brand}</p>
                 </div>
-                <div className="h-9 w-9 border border-border bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
                   {(user?.name || "A").slice(0, 1).toUpperCase()}
                 </div>
               </div>
-              <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-muted-foreground hover:bg-muted/70" aria-label={t.shell.logoutAria}>
+              <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-[#28396C]/15 px-3 py-1.5 text-muted-foreground hover:bg-[#B5E18B]/15" aria-label={t.shell.logoutAria}>
                 <LogOut className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden lg:inline">{t.shell.logout}</span>
               </button>
@@ -306,7 +306,7 @@ export function StatCard({
   icon?: any;
 }) {
   return (
-    <div className="rounded-2xl bg-card border border-border p-5">
+    <div className="rounded-2xl bg-card border border-[#28396C]/10 p-5 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)]">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">{label}</p>
         {Icon && (

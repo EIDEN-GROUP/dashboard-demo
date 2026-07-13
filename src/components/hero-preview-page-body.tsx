@@ -159,7 +159,7 @@ export function HeroPreviewPageBody({
               >
                 <span className={badgeClass}>{card.badge}</span>
                 <p className="pr-8 text-[7px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                  {card.k} — {card.label}
+                  {card.k}   {card.label}
                 </p>
                 <div className="mt-1 flex items-start justify-between gap-1">
                   <p className="font-display text-[13px] font-semibold leading-none text-foreground sm:text-sm">{card.value}</p>

@@ -22,19 +22,19 @@ export type RenderedEmail = {
   text: string;
 };
 
-// Brand palette (literal hex — email clients don't support CSS variables)
+// Brand palette (literal hex   email clients don't support CSS variables)
 const C = {
-  forest: "#122620",
-  forestMd: "#1a372f",
-  cream: "#f9f2e1",
-  beige: "#f4ebd0",
-  emerald: "#10b981",
-  emeraldDk: "#059669",
-  gold: "#d6ad60",
+  forest: "#28396c",
+  forestMd: "#32467f",
+  cream: "#f6ffdb",
+  beige: "#eae6bc",
+  emerald: "#b5e18b",
+  emeraldDk: "#9ecf6e",
+  gold: "#cfc27a",
   white: "#ffffff",
-  ink: "#2b3a33",
-  muted: "#6b7a72",
-  line: "#e4dcc7",
+  ink: "#333c5c",
+  muted: "#707893",
+  line: "#ddd8b3",
 } as const;
 
 const ADMIN_EMAIL = "contact@eiden-group.com";
@@ -222,7 +222,7 @@ export function renderVisitorConfirmationEmail(data: DemoRequest): RenderedEmail
     .join("\n");
 
   return {
-    subject: `Votre démo Gestio est en cours de confirmation — ${data.center}`,
+    subject: `Votre démo Gestio est en cours de confirmation   ${data.center}`,
     html: shell({
       preheader: `Demande reçue pour ${data.center}. Nous vous recontactons sous 2h.`,
       eyebrow: "Demande de démo reçue",
@@ -288,11 +288,11 @@ export function renderAdminNotificationEmail(data: DemoRequest): RenderedEmail {
     .join("\n");
 
   return {
-    subject: `Nouvelle demande de démo — ${data.center}`,
+    subject: `Nouvelle demande de démo   ${data.center}`,
     html: shell({
       preheader: `${data.center} · ${data.phone} · créneau : ${dateLabel}`,
       eyebrow: "Nouveau lead · à recontacter",
-      title: `Demande de démo — ${data.center}`,
+      title: `Demande de démo   ${data.center}`,
       body,
     }),
     text,
