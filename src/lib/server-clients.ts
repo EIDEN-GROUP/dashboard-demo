@@ -1,0 +1,99 @@
+import { createServerFn } from "@tanstack/react-start";
+import { supabaseAdmin } from "@/lib/supabase-server";
+
+export type ClientInput = {
+  parent_name: string;
+  child_name: string;
+  child_age?: string;
+  email?: string;
+  email2?: string;
+  phone?: string;
+  phone2?: string;
+  cin?: string;
+  father_name?: string;
+  mother_name?: string;
+  dob?: string;
+  level?: string;
+  crm_stage?: "nouveau" | "converti";
+  monthly_fee?: number;
+  payment_day?: number;
+  notes?: string;
+  whatsapp_optin?: boolean;
+};
+
+export const listClients = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data, error } = await supabaseAdmin
+      .from("clients")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const getClient = createServerFn({ method: "GET" })
+  .inputValidator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    const { data, error } = await supabaseAdmin
+      .from("clients")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  });
+
+export const createClient = createServerFn({ method: "POST" })
+  .inputValidator((input: ClientInput) => input)
+  .handler(async ({ data }) => {
+    const { data: result, error } = await supabaseAdmin
+      .from("clients")
+      .insert({
+        parent_name: data.parent_name,
+        child_name: data.child_name,
+        child_age: data.child_age ?? "",
+        email: data.email ?? "",
+        email2: data.email2 ?? "",
+        phone: data.phone ?? "",
+        phone2: data.phone2 ?? "",
+        cin: data.cin ?? "",
+        father_name: data.father_name ?? "",
+        mother_name: data.mother_name ?? "",
+        dob: data.dob ?? "",
+        level: data.level ?? "",
+        crm_stage: data.crm_stage ?? "nouveau",
+        monthly_fee: data.monthly_fee ?? 0,
+        payment_day: data.payment_day ?? 1,
+        notes: data.notes ?? "",
+        whatsapp_optin: data.whatsapp_optin ?? true,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const updateClient = createServerFn({ method: "POST" })
+  .inputValidator((input: { id: string } & Partial<ClientInput>) => input)
+  .handler(async ({ data }) => {
+    const { id, ...fields } = data;
+    const { data: result, error } = await supabaseAdmin
+      .from("clients")
+      .update(fields)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return result;
+  });
+
+export const deleteClient = createServerFn({ method: "POST" })
+  .inputValidator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    const { error } = await supabaseAdmin
+      .from("clients")
+      .delete()
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

@@ -13,7 +13,9 @@
     "familles": "Dossiers",
     "paiements": "Paiements",
     "affiches": "Affiches",
-    "rapports": "Rapports"
+    "rapports": "Rapports",
+    "messagerie": "Messagerie",
+    "settings": "Paramètres"
   },
   "common": {
     "cancel": "Annuler",

@@ -1,37 +1,54 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/lib/supabase-browser";
+import type { User } from "@supabase/supabase-js";
 
-type User = { email: string; name: string } | null;
+type AuthUser = User | null;
 
 type AuthCtx = {
-  user: User;
-  login: (email: string, password: string) => void;
-  logout: () => void;
+  user: AuthUser;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  logout: () => Promise<void>;
 };
 
-const Ctx = createContext<AuthCtx>({ user: null, login: () => {}, logout: () => {} });
-
-const KEY = "ezk_demo_user";
+const Ctx = createContext<AuthCtx>({
+  user: null,
+  loading: true,
+  login: async () => ({ error: "Not ready" }),
+  logout: async () => {},
+});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<AuthUser>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = sessionStorage.getItem(KEY);
-    if (raw) setUser(JSON.parse(raw));
+    const stored = supabase.auth.getSession();
+    stored.then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (email: string, _pw: string) => {
-    const u = { email, name: email.split("@")[0].replace(/\W/g, " ") || "Admin" };
-    sessionStorage.setItem(KEY, JSON.stringify(u));
-    setUser(u);
+  const login = async (email: string, password: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    return { error: null };
   };
-  const logout = () => {
-    sessionStorage.removeItem(KEY);
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
   };
 
-  return <Ctx.Provider value={{ user, login, logout }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>;
 }
 
 export const useAuth = () => useContext(Ctx);

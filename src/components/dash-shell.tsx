@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { useDashboardI18n } from "@/lib/landing-i18n";
 import { cn } from "@/lib/utils";
@@ -20,10 +20,11 @@ function topNavItemActive(pathname: string, to: string) {
     return pathname === "/dashboard/affiches" || pathname.startsWith("/dashboard/affiches/");
   if (to === "/dashboard/rapports")
     return pathname === "/dashboard/rapports" || pathname.startsWith("/dashboard/rapports/");
+  if (to === "/dashboard/messagerie")
+    return pathname === "/dashboard/messagerie" || pathname.startsWith("/dashboard/messagerie/");
   return pathname === to || pathname.startsWith(`${to}/`);
 }
 
-/** Mobile bottom bar — active tab: top accent bar + weight; no background fill. */
 function MobileBottomNav({
   topNav,
   pathname,
@@ -55,7 +56,7 @@ function MobileBottomNav({
                 <span className={cn("h-0.5 w-6 shrink-0 rounded-full", active ? "bg-primary" : "bg-transparent")} />
               </span>
               <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
-              <span className={cn( "w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight", labelClass, active ? "text-foreground" : "font-medium text-muted-foreground", )}>
+              <span className={cn("w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight", labelClass, active ? "text-foreground" : "font-medium text-muted-foreground")}>
                 {n.label}
               </span>
             </Link>
@@ -84,35 +85,36 @@ export function DashShell({
   topNav?: NavItem[];
   secondaryNav?: NavItem[];
   variant?: "sidebar" | "topnav";
-  /** Second workspace link (e.g. admin). Omit to hide the switch control. */
   switchTo?: string;
   switchLabel?: string;
   dir?: "ltr" | "rtl";
   children: ReactNode;
 }) {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const { t } = useDashboardI18n();
   const navigate = useNavigate();
   const loc = useLocation();
   const shellDir = dir ?? "ltr";
 
-  useEffect(() => {
-    if (!user && typeof window !== "undefined") {
-      const t = setTimeout(() => navigate({ to: "/login" }), 0);
-      return () => clearTimeout(t);
-    }
-  }, [user, navigate]);
+  const displayName = user?.user_metadata?.name as string ?? user?.email?.split("@")[0] ?? "Admin";
+  const avatarLetter = displayName.slice(0, 1).toUpperCase();
+
+  const handleLogout = useCallback(async () => {
+    await logout();
+    navigate({ to: "/login" });
+  }, [logout, navigate]);
+
+  if (loading) return null;
+
+  if (!user && typeof window !== "undefined") {
+    navigate({ to: "/login" });
+    return null;
+  }
 
   if (variant === "topnav" && topNav && topNav.length > 0) {
-    const handleLogout = () => {
-      logout();
-      navigate({ to: "/login" });
-    };
-
     return (
       <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-muted" dir={shellDir}>
         <header className="z-30 shrink-0 border-b border-border bg-card">
-          {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 flex-col">
@@ -128,7 +130,7 @@ export function DashShell({
             </div>
             <div className="flex shrink-0 items-center gap-2 pt-0.5">
               <div className="h-9 w-9 border border-border bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
-                {(user?.name || "A").slice(0, 1).toUpperCase()}
+                {avatarLetter}
               </div>
               <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center border border-border text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground" aria-label={t.shell.logoutAria}>
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
@@ -136,7 +138,6 @@ export function DashShell({
             </div>
           </div>
 
-          {/* Desktop: full header */}
           <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex flex-col">
@@ -144,7 +145,7 @@ export function DashShell({
                 <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
               </Link>
               {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-border px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-muted/70 w-fit" >
+                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 border border-dashed border-border px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-muted/70 w-fit">
                   <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{switchLabel}</span>
                 </Link>
@@ -175,11 +176,11 @@ export function DashShell({
             <div className="flex w-full flex-wrap items-center justify-end gap-2 justify-self-end lg:w-auto">
               <div className="flex items-center gap-2">
                 <div className="hidden text-right sm:block">
-                  <p className="text-sm font-medium leading-none text-foreground">{user?.name || "admin"}</p>
+                  <p className="text-sm font-medium leading-none text-foreground">{displayName}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{brand}</p>
                 </div>
                 <div className="h-9 w-9 border border-border bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
-                  {(user?.name || "A").slice(0, 1).toUpperCase()}
+                  {avatarLetter}
                 </div>
               </div>
               <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 border border-border px-2.5 py-1.5 text-muted-foreground hover:bg-muted/70" aria-label={t.shell.logoutAria}>
@@ -192,7 +193,7 @@ export function DashShell({
           {secondaryNav && secondaryNav.length > 0 ? (
             <div className="scroll-touch flex flex-nowrap items-center gap-1 overflow-x-auto border-t border-border bg-secondary/40 px-4 py-2 lg:flex-wrap lg:px-6">
               {secondaryNav.map((n) => {
-                const active = loc.pathname === n.to || loc.pathname.startsWith(`${n.to}/`);
+                const active = topNavItemActive(loc.pathname, n.to);
                 return (
                   <Link
                     key={n.to}
@@ -227,11 +228,11 @@ export function DashShell({
       <aside className="hidden h-full min-h-0 w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
         <div className="px-6 py-5 border-b border-border space-y-3">
           <div>
-            <p className="font-display text-lg leading-none text-foreground">LOGO</p>
+            <p className="font-display text-lg leading-none text-foreground">Gestio</p>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{brand}</p>
           </div>
           {switchTo && switchLabel ? (
-            <Link to={switchTo} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-border text-foreground/90 hover:bg-muted/80" >
+            <Link to={switchTo} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-border text-foreground/90 hover:bg-muted/80">
               <ArrowLeftRight className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="min-w-0 truncate">{switchLabel}</span>
             </Link>
@@ -259,10 +260,7 @@ export function DashShell({
         </nav>
         <div className="p-3 border-t border-border">
           <button
-            onClick={() => {
-              logout();
-              navigate({ to: "/login" });
-            }}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-muted/80"
           >
             <LogOut className="h-4 w-4" /> {t.shell.disconnect}
@@ -275,11 +273,11 @@ export function DashShell({
           <div className="px-6 h-16 flex items-center justify-end gap-4">
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium leading-none text-foreground">{user?.name || "Admin"}</p>
+                <p className="text-sm font-medium leading-none text-foreground">{displayName}</p>
                 <p className="text-[11px] text-muted-foreground mt-1">{brand}</p>
               </div>
               <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
-                {(user?.name || "A").slice(0, 1).toUpperCase()}
+                {avatarLetter}
               </div>
             </div>
           </div>

@@ -13,7 +13,9 @@
     "familles": "الملفات",
     "paiements": "المدفوعات",
     "affiches": "الملصقات",
-    "rapports": "التقارير"
+    "rapports": "التقارير",
+    "messagerie": "الرسائل",
+    "settings": "الإعدادات"
   },
   "common": {
     "cancel": "إلغاء",

@@ -14,4 +14,9 @@ export default defineConfig({
     server: { entry: "server" },
   },
   plugins: [nitro({ preset: "vercel" })],
+  vite: {
+    server: {
+      allowedHosts: ["tells-provides-deviant-won.trycloudflare.com"],
+    },
+  },
 });

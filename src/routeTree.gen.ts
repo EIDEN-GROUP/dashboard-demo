@@ -13,10 +13,12 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardRendezVousRouteImport } from './routes/dashboard.rendez-vous'
 import { Route as DashboardRapportsRouteImport } from './routes/dashboard.rapports'
 import { Route as DashboardPlanificationsRouteImport } from './routes/dashboard.planifications'
 import { Route as DashboardPaiementsRouteImport } from './routes/dashboard.paiements'
+import { Route as DashboardMessagerieRouteImport } from './routes/dashboard.messagerie'
 import { Route as DashboardFamillesRouteImport } from './routes/dashboard.familles'
 import { Route as DashboardAffichesRouteImport } from './routes/dashboard.affiches'
 
@@ -40,6 +42,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardRendezVousRoute = DashboardRendezVousRouteImport.update({
   id: '/rendez-vous',
   path: '/rendez-vous',
@@ -60,6 +67,11 @@ const DashboardPaiementsRoute = DashboardPaiementsRouteImport.update({
   path: '/paiements',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardMessagerieRoute = DashboardMessagerieRouteImport.update({
+  id: '/messagerie',
+  path: '/messagerie',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardFamillesRoute = DashboardFamillesRouteImport.update({
   id: '/familles',
   path: '/familles',
@@ -77,10 +89,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard/affiches': typeof DashboardAffichesRoute
   '/dashboard/familles': typeof DashboardFamillesRoute
+  '/dashboard/messagerie': typeof DashboardMessagerieRoute
   '/dashboard/paiements': typeof DashboardPaiementsRoute
   '/dashboard/planifications': typeof DashboardPlanificationsRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/rendez-vous': typeof DashboardRendezVousRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -88,10 +102,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/dashboard/affiches': typeof DashboardAffichesRoute
   '/dashboard/familles': typeof DashboardFamillesRoute
+  '/dashboard/messagerie': typeof DashboardMessagerieRoute
   '/dashboard/paiements': typeof DashboardPaiementsRoute
   '/dashboard/planifications': typeof DashboardPlanificationsRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/rendez-vous': typeof DashboardRendezVousRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
@@ -101,10 +117,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/dashboard/affiches': typeof DashboardAffichesRoute
   '/dashboard/familles': typeof DashboardFamillesRoute
+  '/dashboard/messagerie': typeof DashboardMessagerieRoute
   '/dashboard/paiements': typeof DashboardPaiementsRoute
   '/dashboard/planifications': typeof DashboardPlanificationsRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/rendez-vous': typeof DashboardRendezVousRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -115,10 +133,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/affiches'
     | '/dashboard/familles'
+    | '/dashboard/messagerie'
     | '/dashboard/paiements'
     | '/dashboard/planifications'
     | '/dashboard/rapports'
     | '/dashboard/rendez-vous'
+    | '/dashboard/settings'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -126,10 +146,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/affiches'
     | '/dashboard/familles'
+    | '/dashboard/messagerie'
     | '/dashboard/paiements'
     | '/dashboard/planifications'
     | '/dashboard/rapports'
     | '/dashboard/rendez-vous'
+    | '/dashboard/settings'
     | '/dashboard'
   id:
     | '__root__'
@@ -138,10 +160,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/affiches'
     | '/dashboard/familles'
+    | '/dashboard/messagerie'
     | '/dashboard/paiements'
     | '/dashboard/planifications'
     | '/dashboard/rapports'
     | '/dashboard/rendez-vous'
+    | '/dashboard/settings'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
@@ -181,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/rendez-vous': {
       id: '/dashboard/rendez-vous'
       path: '/rendez-vous'
@@ -209,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPaiementsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/messagerie': {
+      id: '/dashboard/messagerie'
+      path: '/messagerie'
+      fullPath: '/dashboard/messagerie'
+      preLoaderRoute: typeof DashboardMessagerieRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/familles': {
       id: '/dashboard/familles'
       path: '/familles'
@@ -229,20 +267,24 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardAffichesRoute: typeof DashboardAffichesRoute
   DashboardFamillesRoute: typeof DashboardFamillesRoute
+  DashboardMessagerieRoute: typeof DashboardMessagerieRoute
   DashboardPaiementsRoute: typeof DashboardPaiementsRoute
   DashboardPlanificationsRoute: typeof DashboardPlanificationsRoute
   DashboardRapportsRoute: typeof DashboardRapportsRoute
   DashboardRendezVousRoute: typeof DashboardRendezVousRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAffichesRoute: DashboardAffichesRoute,
   DashboardFamillesRoute: DashboardFamillesRoute,
+  DashboardMessagerieRoute: DashboardMessagerieRoute,
   DashboardPaiementsRoute: DashboardPaiementsRoute,
   DashboardPlanificationsRoute: DashboardPlanificationsRoute,
   DashboardRapportsRoute: DashboardRapportsRoute,
   DashboardRendezVousRoute: DashboardRendezVousRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 

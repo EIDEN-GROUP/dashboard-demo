@@ -1,331 +1,163 @@
 import {
-
   createContext,
-
   useCallback,
-
   useContext,
-
   useEffect,
-
   useMemo,
-
   useState,
-
   type ReactNode,
-
 } from "react";
 
 import {
-
   LayoutDashboard,
-
   Calendar,
-
   Users,
-
   CreditCard,
-
   Images,
-
   BarChart3,
-
+  MessageSquare,
+  Settings,
 } from "lucide-react";
-
 import { fr as dateFnsFr, ar as dateFnsAr } from "date-fns/locale";
-
 import frLanding from "@/locales/landing/fr.json";
-
 import arLanding from "@/locales/landing/ar.json";
-
 import frDashboard from "@/locales/dashboard/fr.json";
-
 import arDashboard from "@/locales/dashboard/ar.json";
-
 import type { NavItem } from "@/components/dash-shell";
 
-
-
 export type LandingLocale = "fr" | "ar";
-
-
-
 export type LandingTranslations = typeof frLanding;
-
 export type DashboardTranslations = typeof frDashboard;
-
-
 
 const STORAGE_KEY = "gestio-landing-locale";
 
-
-
 const landingDictionaries: Record<LandingLocale, LandingTranslations> = {
-
   fr: frLanding,
-
   ar: arLanding,
-
 };
-
-
 
 const dashboardDictionaries: Record<LandingLocale, DashboardTranslations> = {
-
   fr: frDashboard,
-
   ar: arDashboard,
-
 };
-
-
 
 type LandingI18nContextValue = {
-
   locale: LandingLocale;
-
   setLocale: (locale: LandingLocale) => void;
-
   toggleLocale: () => void;
-
   dir: "ltr" | "rtl";
-
   numberLocale: string;
-
   landing: LandingTranslations;
-
   dashboard: DashboardTranslations;
-
 };
-
-
 
 const LandingI18nContext = createContext<LandingI18nContextValue | null>(null);
 
-
-
 function readStoredLocale(): LandingLocale {
-
   if (typeof window === "undefined") return "fr";
-
   const stored = localStorage.getItem(STORAGE_KEY);
-
   return stored === "ar" ? "ar" : "fr";
-
 }
-
-
 
 export function getDateFnsLocale(locale: LandingLocale) {
-
   return locale === "ar" ? dateFnsAr : dateFnsFr;
-
 }
-
-
 
 export function LandingI18nProvider({ children }: { children: ReactNode }) {
-
   const [locale, setLocaleState] = useState<LandingLocale>("fr");
 
-
-
   useEffect(() => {
-
     setLocaleState(readStoredLocale());
-
   }, []);
-
-
 
   const setLocale = useCallback((next: LandingLocale) => {
-
     setLocaleState(next);
-
     localStorage.setItem(STORAGE_KEY, next);
-
   }, []);
 
-
-
   const toggleLocale = useCallback(() => {
-
     setLocale(locale === "fr" ? "ar" : "fr");
-
   }, [locale, setLocale]);
 
-
-
   const landing = landingDictionaries[locale];
-
   const dashboard = dashboardDictionaries[locale];
-
   const dir: "ltr" | "rtl" = locale === "ar" ? "rtl" : "ltr";
-
   const numberLocale = locale === "ar" ? "ar-MA" : "fr-MA";
 
-
-
   useEffect(() => {
-
     document.documentElement.lang = locale;
-
     document.documentElement.dir = dir;
-
   }, [locale, dir]);
 
-
-
   const value = useMemo(
-
     () => ({ locale, setLocale, toggleLocale, dir, numberLocale, landing, dashboard }),
-
     [locale, setLocale, toggleLocale, dir, numberLocale, landing, dashboard],
-
   );
-
-
 
   return <LandingI18nContext.Provider value={value}>{children}</LandingI18nContext.Provider>;
-
 }
-
-
 
 export function useLandingI18n() {
-
   const ctx = useContext(LandingI18nContext);
-
-  if (!ctx) {
-
-    throw new Error("useLandingI18n must be used within LandingI18nProvider");
-
-  }
-
+  if (!ctx) throw new Error("useLandingI18n must be used within LandingI18nProvider");
   return { ...ctx, t: ctx.landing };
-
 }
-
-
 
 export function useLandingI18nOptional() {
-
   const ctx = useContext(LandingI18nContext);
-
   if (!ctx) return null;
-
   return { ...ctx, t: ctx.landing };
-
 }
-
-
 
 export function useDashboardI18n() {
-
   const ctx = useContext(LandingI18nContext);
-
-  if (!ctx) {
-
-    throw new Error("useDashboardI18n must be used within LandingI18nProvider");
-
-  }
-
+  if (!ctx) throw new Error("useDashboardI18n must be used within LandingI18nProvider");
   return { ...ctx, t: ctx.dashboard };
-
 }
-
-
 
 export function useDashboardNav() {
-
   const { t } = useDashboardI18n();
 
-
-
   const topNav: NavItem[] = useMemo(
-
     () => [
-
       { to: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
-
       { to: "/dashboard/rendez-vous", label: t.nav.rendezVous, icon: Calendar },
-
       { to: "/dashboard/familles", label: t.nav.familles, icon: Users },
-
       { to: "/dashboard/paiements", label: t.nav.paiements, icon: CreditCard },
-
     ],
-
     [t.nav],
-
   );
-
-
 
   const secondaryNav: NavItem[] = useMemo(
-
     () => [
-
       { to: "/dashboard/affiches", label: t.nav.affiches, icon: Images },
-
       { to: "/dashboard/rapports", label: t.nav.rapports, icon: BarChart3 },
-
+      { to: "/dashboard/messagerie", label: t.nav.messagerie, icon: MessageSquare },
+      { to: "/dashboard/settings", label: t.nav.settings, icon: Settings },
     ],
-
     [t.nav],
-
   );
 
-
-
   return { topNav, secondaryNav, brand: t.shell.brand };
-
 }
-
-
-
-/** Replace `{{key}}` placeholders in translation strings */
 
 export function interpolate(template: string, vars: Record<string, string | number>) {
-
   return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(vars[key] ?? ""));
-
 }
 
-
-
-/** Demo tour step page ids aligned with JSON order */
-
 export const DEMO_STEP_PAGES = [
-
   "dashboard",
-
   "rendez-vous",
-
   "familles",
-
   "paiements",
-
   "rapports",
-
 ] as const;
-
-
 
 export const PREVIEW_TOP_NAV_IDS = [
-
   "dashboard",
-
   "rendez-vous",
-
   "familles",
-
   "paiements",
-
 ] as const;
 
-
-
 export const PREVIEW_SECONDARY_NAV_IDS = ["affiches", "rapports"] as const;
-
-
