@@ -11,14 +11,9 @@ import {
   HeartPulse,
   Utensils,
   ShieldAlert,
+  Percent,
+  Bus,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip as RTooltip,
-} from "recharts";
 import {
   Dialog,
   DialogContent,
@@ -42,7 +37,6 @@ import {
   softSelectTrigger as selectTriggerClass,
   softSelectContent,
   dialogSurface,
-  dashTooltip,
   labelClass,
   primaryPill,
   iconButton,
@@ -55,8 +49,8 @@ export const Route = createFileRoute("/dashboard/familles")({
   component: CrmParentsPage,
 });
 
-type StadeCrm = "nouveau" | "converti";
 type PaymentStatus = "paye" | "impaye" | "retard";
+type OuiNon = "Oui" | "Non";
 
 // ── Mois de facturation (démo) ─────────────────────────────
 const MONTHS: { key: string; label: string }[] = [
@@ -83,7 +77,6 @@ type Client = {
   sexe: "Garçon" | "Fille" | "";
   email: string;
   phone: string;
-  stade: StadeCrm;
   /** statut de paiement par mois (clé = MONTHS.key) */
   statuts: Record<string, PaymentStatus>;
   mensuel: number;
@@ -102,9 +95,37 @@ type Client = {
   allergies: string;
   urgenceNom: string;
   urgenceTel: string;
-  transport: "Oui" | "Non";
-  cantine: "Oui" | "Non";
+  transport: OuiNon;
+  cantine: OuiNon;
+  garderie: OuiNon;
+  activites: OuiNon;
+  /** Nombre d'enfants de la famille scolarisés à l'école. */
+  fratrie: number;
+  /** Remise fratrie en % (auto-suggérée au-delà de 2 enfants, ajustable). */
+  remise: number;
 };
+
+/** Remise fratrie suggérée : 10 % dès le 3ᵉ enfant, 15 % dès le 4ᵉ. */
+function remiseAuto(fratrie: number) {
+  if (fratrie >= 4) return 15;
+  if (fratrie >= 3) return 10;
+  return 0;
+}
+
+/** Frais mensuels nets, remise fratrie déduite. */
+function netMensuel(c: Client) {
+  return Math.round(c.mensuel * (1 - c.remise / 100));
+}
+
+/** Services souscrits par la famille (pour les puces du tableau / de la fiche). */
+function servicesOf(c: Client) {
+  return [
+    { label: "Transport", on: c.transport === "Oui" },
+    { label: "Cantine", on: c.cantine === "Oui" },
+    { label: "Garderie", on: c.garderie === "Oui" },
+    { label: "Activités", on: c.activites === "Oui" },
+  ];
+}
 
 /** Statut du mois sélectionné (défaut impayé si non renseigné). */
 function statusOf(c: Client, month: string): PaymentStatus {
@@ -122,17 +143,31 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
-/** Badge de stade CRM (nouveau / converti). */
-function StadeBadge({ children, dark }: { children: ReactNode; dark: boolean }) {
+/** Puces des services souscrits (transport, cantine, garderie, activités). */
+function ServiceChips({ client }: { client: Client }) {
+  const on = servicesOf(client).filter((s) => s.on);
+  if (on.length === 0) return <span className="text-xs text-muted-foreground">Aucun service</span>;
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
-        dark ? "bg-[#B5E18B]/30 text-[#3E6420]" : "bg-muted text-foreground/70",
-      )}
-    >
-      <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dark ? "bg-[#6BA53A]" : "bg-current")} aria-hidden />
-      {children}
+    <span className="flex flex-wrap gap-1">
+      {on.map((s) => (
+        <span
+          key={s.label}
+          className="inline-flex items-center gap-1 rounded-full bg-[#28396C]/8 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#28396C]"
+        >
+          {s.label}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Badge de remise fratrie (masqué quand la famille n'a pas de remise). */
+function RemiseBadge({ client }: { client: Client }) {
+  if (client.remise <= 0) return <span className="text-xs text-muted-foreground"> </span>;
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-[#B5E18B]/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#3E6420]">
+      <Percent className="h-3 w-3" />
+      {client.remise}%   {client.fratrie} enfants
     </span>
   );
 }
@@ -173,6 +208,29 @@ function StatusSelect({
   );
 }
 
+/** Sélecteur Oui / Non pour les services de l'école. */
+function OuiNonSelect({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: OuiNon;
+  onChange: (v: OuiNon) => void;
+}) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as OuiNon)}>
+      <SelectTrigger id={id} className={selectTriggerClass}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className={softSelectContent}>
+        <SelectItem value="Oui">Oui</SelectItem>
+        <SelectItem value="Non">Non</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
 const initialClients: Client[] = [
   {
     id: "1",
@@ -182,7 +240,6 @@ const initialClients: Client[] = [
     sexe: "Garçon",
     email: "tehgdgh@test.com",
     phone: "0614020520",
-    stade: "nouveau",
     statuts: { "2026-01": "impaye", "2026-02": "impaye", "2026-03": "impaye", "2026-04": "impaye", "2026-05": "impaye", "2026-06": "impaye" },
     mensuel: 0,
     dette: 0,
@@ -202,15 +259,18 @@ const initialClients: Client[] = [
     urgenceTel: "",
     transport: "Non",
     cantine: "Non",
+    garderie: "Non",
+    activites: "Non",
+    fratrie: 1,
+    remise: 0,
   },
   {
     id: "2",
     parent: "Famille Alami",
     child: "Yasmine",
     sexe: "Fille",
-    email: "contact.alami@example.com",
+    email: "karim.alami@example.com",
     phone: "0661122334",
-    stade: "converti",
     statuts: { "2026-01": "paye", "2026-02": "paye", "2026-03": "paye", "2026-04": "paye", "2026-05": "paye", "2026-06": "impaye" },
     mensuel: 1800,
     dette: 0,
@@ -219,8 +279,8 @@ const initialClients: Client[] = [
     pere: "Karim Alami",
     mere: "Sanae Alami",
     cin: "AB123456",
-    email2: "",
-    tel2: "",
+    email2: "sanae.alami@example.com",
+    tel2: "0662233445",
     niveau: "CM2",
     jourPaiement: 5,
     adresse: "12 Rue Ibn Batouta, Rabat",
@@ -230,15 +290,18 @@ const initialClients: Client[] = [
     urgenceTel: "0661122334",
     transport: "Oui",
     cantine: "Oui",
+    garderie: "Oui",
+    activites: "Oui",
+    fratrie: 3,
+    remise: 10,
   },
   {
     id: "3",
     parent: "Benjelloun / Sara",
     child: "Sara",
     sexe: "Fille",
-    email: "sara.b@example.com",
+    email: "omar.benjelloun@example.com",
     phone: "0611223344",
-    stade: "nouveau",
     statuts: { "2026-01": "impaye", "2026-02": "retard", "2026-03": "retard", "2026-04": "impaye", "2026-05": "retard", "2026-06": "impaye" },
     mensuel: 1600,
     dette: 1200,
@@ -247,7 +310,7 @@ const initialClients: Client[] = [
     pere: "Omar Benjelloun",
     mere: "Leila Idrissi",
     cin: " ",
-    email2: "",
+    email2: "leila.idrissi@example.com",
     tel2: "0655009911",
     niveau: "CE1",
     jourPaiement: 10,
@@ -258,15 +321,18 @@ const initialClients: Client[] = [
     urgenceTel: "0611223344",
     transport: "Non",
     cantine: "Oui",
+    garderie: "Non",
+    activites: "Oui",
+    fratrie: 2,
+    remise: 0,
   },
   {
     id: "4",
     parent: "Tazi / Mehdi",
     child: "Mehdi",
     sexe: "Garçon",
-    email: "mehdi.parent@example.com",
+    email: "hicham.tazi@example.com",
     phone: "0622334455",
-    stade: "converti",
     statuts: { "2026-01": "paye", "2026-02": "paye", "2026-03": "retard", "2026-04": "paye", "2026-05": "paye", "2026-06": "impaye" },
     mensuel: 1800,
     dette: 0,
@@ -275,8 +341,8 @@ const initialClients: Client[] = [
     pere: "Hicham Tazi",
     mere: "Nadia Tazi",
     cin: "CD998877",
-    email2: "second@example.com",
-    tel2: "",
+    email2: "nadia.tazi@example.com",
+    tel2: "0633445566",
     niveau: "1ère année collège",
     jourPaiement: 1,
     adresse: "Lotissement Al Andalous, Salé",
@@ -286,6 +352,10 @@ const initialClients: Client[] = [
     urgenceTel: "0622334455",
     transport: "Oui",
     cantine: "Non",
+    garderie: "Oui",
+    activites: "Non",
+    fratrie: 4,
+    remise: 15,
   },
 ];
 
@@ -299,7 +369,7 @@ function CrmParentsPage() {
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState<string>(DEFAULT_MONTH);
   const [statusFilter, setStatusFilter] = useState<string>("tous");
-  const [stageFilter, setStageFilter] = useState<string>("tous");
+  const [serviceFilter, setServiceFilter] = useState<string>("tous");
 
   const [addOpen, setAddOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -311,16 +381,20 @@ function CrmParentsPage() {
       prev.map((c) => (c.id === id ? { ...c, statuts: { ...c.statuts, [month]: status } } : c)),
     );
 
-  // Base = recherche + stade (sert au graphique) ; filtered ajoute le statut (sert au tableau)
+  // Base = recherche + service (sert au graphique) ; filtered ajoute le statut (sert au tableau)
   const base = useMemo(() => {
     const q = search.trim().toLowerCase();
     return clients.filter((c) => {
-      if (stageFilter !== "tous" && c.stade !== stageFilter) return false;
+      if (serviceFilter === "transport" && c.transport !== "Oui") return false;
+      if (serviceFilter === "cantine" && c.cantine !== "Oui") return false;
+      if (serviceFilter === "garderie" && c.garderie !== "Oui") return false;
+      if (serviceFilter === "activites" && c.activites !== "Oui") return false;
+      if (serviceFilter === "remise" && c.remise <= 0) return false;
       if (!q) return true;
-      const blob = `${c.parent} ${c.child} ${c.email} ${c.phone} ${c.niveau}`.toLowerCase();
+      const blob = `${c.parent} ${c.child} ${c.email} ${c.email2} ${c.phone} ${c.niveau}`.toLowerCase();
       return blob.includes(q);
     });
-  }, [clients, search, stageFilter]);
+  }, [clients, search, serviceFilter]);
 
   const filtered = useMemo(
     () => base.filter((c) => statusFilter === "tous" || statusOf(c, month) === statusFilter),
@@ -411,15 +485,18 @@ function CrmParentsPage() {
               </Select>
             </div>
             <div className="sm:col-span-2">
-              <Label className={labelClass}>Stade CRM</Label>
-              <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par stade">
+              <Label className={labelClass}>Service souscrit</Label>
+              <Select value={serviceFilter} onValueChange={setServiceFilter}>
+                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={softSelectContent}>
-                  <SelectItem value="tous">Tous les stades</SelectItem>
-                  <SelectItem value="nouveau">{t.status.stageNouveau}</SelectItem>
-                  <SelectItem value="converti">{t.status.stageConverti}</SelectItem>
+                  <SelectItem value="tous">Tous les services</SelectItem>
+                  <SelectItem value="transport">Transport scolaire</SelectItem>
+                  <SelectItem value="cantine">Cantine</SelectItem>
+                  <SelectItem value="garderie">Garderie</SelectItem>
+                  <SelectItem value="activites">Activités périscolaires</SelectItem>
+                  <SelectItem value="remise">Avec remise fratrie</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -435,43 +512,34 @@ function CrmParentsPage() {
         {/* Graphique circulaire   répartition du mois */}
         <section className={cn(softCard, "flex flex-col p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Analyse   {monthLabel}</p>
-          <div className="relative mx-auto mt-2 h-40 w-full max-w-[13rem]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={donut}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius="62%"
-                  outerRadius="90%"
-                  paddingAngle={4}
-                  cornerRadius={6}
-                  stroke="none"
-                >
-                  {donut.map((d) => (
-                    <Cell key={d.name} fill={d.color} />
-                  ))}
-                </Pie>
-                <RTooltip contentStyle={dashTooltip} formatter={(v: number, n) => [`${v} famille${v > 1 ? "s" : ""}`, n]} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 grid place-items-center">
-              <div className="text-center">
-                <p className="font-display text-2xl font-semibold text-foreground">{donutTotal}</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
-              </div>
-            </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <p className="font-display text-3xl font-semibold tabular-nums text-foreground">{donutTotal}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
           </div>
-          <ul className="mt-3 space-y-1.5">
-            {donut.map((d) => (
-              <li key={d.name} className="flex items-center justify-between gap-2 rounded-full bg-muted/60 px-3 py-1.5 text-xs">
-                <span className="flex items-center gap-2 font-medium text-foreground">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                  {d.name}
-                </span>
-                <span className="font-semibold tabular-nums text-foreground">{d.value}</span>
-              </li>
-            ))}
+          <ul className="mt-4 space-y-2">
+            {donut.map((d) => {
+              const share = donutTotal > 0 ? Math.round((d.value / donutTotal) * 100) : 0;
+              return (
+                <li key={d.name} className="rounded-2xl bg-muted/50 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="flex items-center gap-2 font-medium text-foreground">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      {d.name}
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-foreground">
+                      {d.value}
+                      <span className="ml-1.5 font-normal text-muted-foreground">{share}%</span>
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#28396C]/10">
+                    <div
+                      className="h-full rounded-full transition-[width] duration-700 ease-out"
+                      style={{ width: `${share}%`, backgroundColor: d.color }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </section>
       </div>
@@ -482,14 +550,15 @@ function CrmParentsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.familles.clientList}</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-sm">
+          <table className="w-full min-w-[1080px] text-left text-sm">
             <thead>
               <tr className="border-b border-[#28396C]/10 bg-muted/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">{t.familles.table.parent}</th>
-                <th className="px-4 py-3">{t.familles.table.child}</th>
                 <th className="px-4 py-3">Niveau</th>
+                <th className="px-4 py-3">Emails des parents</th>
                 <th className="px-4 py-3">{t.familles.table.contact}</th>
-                <th className="px-4 py-3">{t.familles.table.crmStage}</th>
+                <th className="px-4 py-3">Services</th>
+                <th className="px-4 py-3">Remise fratrie</th>
                 <th className="px-4 py-3">Statut ({monthLabel})</th>
                 <th className="px-4 py-3">{t.familles.table.monthly}</th>
                 <th className="px-4 py-3 w-16">{t.familles.table.actions}</th>
@@ -502,28 +571,40 @@ function CrmParentsPage() {
                   onClick={() => setDetailId(c.id)}
                   className="cursor-pointer transition-colors hover:bg-[#B5E18B]/10"
                 >
-                  <td className="px-4 py-3 font-medium text-foreground">{c.parent}</td>
-                  <td className="px-4 py-3 text-foreground/90">
-                    <span className="block">{c.child}</span>
-                    {c.childSubtitle ? (
-                      <span className="mt-0.5 block text-xs text-muted-foreground">{c.childSubtitle}</span>
-                    ) : null}
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <span className="block">{c.parent}</span>
+                    <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                      {c.child}
+                      {c.childSubtitle ? `   ${c.childSubtitle}` : ""}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{dash(c.niveau)}</td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    <span className="block">{c.email}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{c.phone}</span>
+                    <span className="block">{dash(c.email)}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.email2)}</span>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    <span className="block">{c.phone}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.tel2)}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <StadeBadge dark={c.stade === "converti"}>
-                      {c.stade === "nouveau" ? t.status.nouveau : t.status.converti}
-                    </StadeBadge>
+                    <ServiceChips client={c} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <RemiseBadge client={c} />
                   </td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <StatusSelect value={statusOf(c, month)} onChange={(v) => setStatus(c.id, v)} />
                   </td>
                   <td className="px-4 py-3 tabular-nums text-foreground/90">
-                    {c.mensuel} {t.common.mad}
+                    <span className="block font-semibold text-foreground">
+                      {netMensuel(c)} {t.common.mad}
+                    </span>
+                    {c.remise > 0 ? (
+                      <span className="mt-0.5 block text-xs text-muted-foreground line-through">
+                        {c.mensuel} {t.common.mad}
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <button
@@ -662,7 +743,7 @@ function DetailClientDialog({
               <InfoRow label="Date de naissance" value={dash(client.dob)} />
               <InfoRow label="Niveau / Classe" value={dash(client.niveau)} />
               <InfoRow label="Date d'inscription" value={dash(client.dateInscription)} />
-              <InfoRow label="Stade CRM" value={client.stade === "nouveau" ? t.status.nouveau : t.status.converti} />
+              <InfoRow label="Enfants scolarisés" value={`${client.fratrie}`} />
 
               <SectionTitle icon={CalendarDays}>Parents & identité</SectionTitle>
               <InfoRow label="Nom du père" value={dash(client.pere)} />
@@ -670,10 +751,10 @@ function DetailClientDialog({
               <InfoRow label="CIN / Passeport" value={dash(client.cin)} />
 
               <SectionTitle icon={Phone}>Contact</SectionTitle>
-              <InfoRow label="Email principal" value={dash(client.email)} />
-              <InfoRow label="Email secondaire" value={dash(client.email2)} />
-              <InfoRow label="Téléphone 1" value={dash(client.phone)} />
-              <InfoRow label="Téléphone 2" value={dash(client.tel2)} />
+              <InfoRow label="Email du père" value={dash(client.email)} />
+              <InfoRow label="Email de la mère" value={dash(client.email2)} />
+              <InfoRow label="Téléphone du père" value={dash(client.phone)} />
+              <InfoRow label="Téléphone de la mère" value={dash(client.tel2)} />
               <div className="sm:col-span-2">
                 <p className={labelClass}>
                   <MapPin className="mr-1 inline h-3 w-3" />
@@ -686,14 +767,23 @@ function DetailClientDialog({
               <InfoRow label="Personne à contacter" value={dash(client.urgenceNom)} />
               <InfoRow label="Téléphone d'urgence" value={dash(client.urgenceTel)} />
 
-              <SectionTitle icon={HeartPulse}>Santé & services</SectionTitle>
+              <SectionTitle icon={HeartPulse}>Santé</SectionTitle>
               <InfoRow label="Groupe sanguin" value={dash(client.groupeSanguin)} />
               <InfoRow label="Allergies" value={dash(client.allergies)} />
+
+              <SectionTitle icon={Bus}>Services souscrits</SectionTitle>
               <InfoRow label="Transport scolaire" value={client.transport} />
               <InfoRow label="Cantine" value={client.cantine} />
+              <InfoRow label="Garderie" value={client.garderie} />
+              <InfoRow label="Activités périscolaires" value={client.activites} />
 
-              <SectionTitle icon={Utensils}>Paiement</SectionTitle>
-              <InfoRow label="Frais mensuels" value={`${client.mensuel} ${t.common.mad}`} />
+              <SectionTitle icon={Utensils}>Paiement & remise</SectionTitle>
+              <InfoRow label="Frais mensuels (brut)" value={`${client.mensuel} ${t.common.mad}`} />
+              <InfoRow
+                label="Remise fratrie"
+                value={client.remise > 0 ? `${client.remise}%   ${client.fratrie} enfants` : "Aucune"}
+              />
+              <InfoRow label="Frais mensuels nets" value={`${netMensuel(client)} ${t.common.mad}`} />
               <InfoRow label="Jour de paiement" value={client.jourPaiement ? `Le ${client.jourPaiement}` : " "} />
               <InfoRow label="Dette totale" value={`${client.dette} ${t.common.mad}`} />
               <div className="sm:col-span-2">
@@ -770,6 +860,7 @@ function AddClientDialog({
               const fd = new FormData(e.currentTarget);
               const parent = String(fd.get("parent") || "Nouveau parent");
               const child = String(fd.get("child") || "Enfant");
+              const fratrie = Number(fd.get("fratrie") || 1);
               onCreated({
                 id: `n-${Date.now()}`,
                 parent,
@@ -777,7 +868,6 @@ function AddClientDialog({
                 sexe: "",
                 email: String(fd.get("email1") || ""),
                 phone: String(fd.get("tel1") || ""),
-                stade: "nouveau",
                 statuts: {},
                 mensuel: Number(fd.get("mensuel") || 0),
                 dette: 0,
@@ -786,7 +876,7 @@ function AddClientDialog({
                 pere: "",
                 mere: "",
                 cin: "",
-                email2: "",
+                email2: String(fd.get("email2") || ""),
                 tel2: "",
                 niveau: String(fd.get("niveau") || ""),
                 jourPaiement: 1,
@@ -795,8 +885,12 @@ function AddClientDialog({
                 allergies: "",
                 urgenceNom: "",
                 urgenceTel: "",
-                transport: "Non",
-                cantine: "Non",
+                transport: fd.get("transport") ? "Oui" : "Non",
+                cantine: fd.get("cantine") ? "Oui" : "Non",
+                garderie: fd.get("garderie") ? "Oui" : "Non",
+                activites: fd.get("activites") ? "Oui" : "Non",
+                fratrie,
+                remise: remiseAuto(fratrie),
               });
               onOpenChange(false);
             }}
@@ -808,8 +902,11 @@ function AddClientDialog({
               <Field id="nc-child" label={f.studentName}>
                 <Input id="nc-child" name="child" required className={inputClass} />
               </Field>
-              <Field id="nc-email" label={f.email1}>
+              <Field id="nc-email" label="Email du père">
                 <Input id="nc-email" name="email1" type="email" className={inputClass} />
+              </Field>
+              <Field id="nc-email2" label="Email de la mère">
+                <Input id="nc-email2" name="email2" type="email" className={inputClass} />
               </Field>
               <Field id="nc-tel" label={f.phone1}>
                 <Input id="nc-tel" name="tel1" type="tel" className={inputClass} />
@@ -820,6 +917,32 @@ function AddClientDialog({
               <Field id="nc-mensuel" label={f.monthlyFeesMad}>
                 <Input id="nc-mensuel" name="mensuel" type="number" min={0} defaultValue={0} className={inputClass} />
               </Field>
+              <Field id="nc-fratrie" label="Enfants scolarisés">
+                <Input id="nc-fratrie" name="fratrie" type="number" min={1} max={10} defaultValue={1} className={inputClass} />
+              </Field>
+              <div className="sm:col-span-2">
+                <Label className={labelClass}>Services souscrits</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Une remise fratrie de 10 % est appliquée dès le 3ᵉ enfant, 15 % dès le 4ᵉ.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {[
+                    { name: "transport", label: "Transport" },
+                    { name: "cantine", label: "Cantine" },
+                    { name: "garderie", label: "Garderie" },
+                    { name: "activites", label: "Activités" },
+                  ].map((s) => (
+                    <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="checkbox"
+                        name={s.name}
+                        className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
+                      />
+                      {s.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="mt-6 flex justify-end gap-3 border-t border-[#28396C]/10 pt-5">
               <button
@@ -918,17 +1041,23 @@ function EditClientDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (patch: Partial<Client>) => void;
 }) {
-  const [stade, setStade] = useState<StadeCrm>(client.stade);
   const [sexe, setSexe] = useState<Client["sexe"]>(client.sexe);
-  const [transport, setTransport] = useState<Client["transport"]>(client.transport);
-  const [cantine, setCantine] = useState<Client["cantine"]>(client.cantine);
+  const [transport, setTransport] = useState<OuiNon>(client.transport);
+  const [cantine, setCantine] = useState<OuiNon>(client.cantine);
+  const [garderie, setGarderie] = useState<OuiNon>(client.garderie);
+  const [activites, setActivites] = useState<OuiNon>(client.activites);
+  const [fratrie, setFratrie] = useState<number>(client.fratrie);
+  const [remise, setRemise] = useState<number>(client.remise);
 
   useEffect(() => {
-    setStade(client.stade);
     setSexe(client.sexe);
     setTransport(client.transport);
     setCantine(client.cantine);
-  }, [client.id, client.stade, client.sexe, client.transport, client.cantine]);
+    setGarderie(client.garderie);
+    setActivites(client.activites);
+    setFratrie(client.fratrie);
+    setRemise(client.remise);
+  }, [client]);
 
   const { t } = useDashboardI18n();
   const f = t.form;
@@ -969,7 +1098,10 @@ function EditClientDialog({
                 urgenceTel: String(fd.get("urgenceTel") ?? client.urgenceTel),
                 transport,
                 cantine,
-                stade,
+                garderie,
+                activites,
+                fratrie,
+                remise,
                 mensuel: Number(fd.get("mensuel") ?? client.mensuel),
                 dette: Number(fd.get("dette") ?? client.dette),
                 jourPaiement: Number(fd.get("jour") ?? client.jourPaiement ?? 1),
@@ -1012,27 +1144,16 @@ function EditClientDialog({
               <Field id="e-cin" label={f.cinPassport}>
                 <Input id="e-cin" name="cin" defaultValue={client.cin} className={inputClass} />
               </Field>
-              <Field id="e-stade" label={f.crmStage}>
-                <Select value={stade} onValueChange={(v) => setStade(v as StadeCrm)}>
-                  <SelectTrigger id="e-stade" className={selectTriggerClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={softSelectContent}>
-                    <SelectItem value="nouveau">{t.status.nouveau}</SelectItem>
-                    <SelectItem value="converti">{t.status.converti}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field id="e-email" label={f.email1}>
+              <Field id="e-email" label="Email du père">
                 <Input id="e-email" name="email" type="email" defaultValue={client.email} className={inputClass} />
               </Field>
-              <Field id="e-email2" label={f.email2}>
+              <Field id="e-email2" label="Email de la mère">
                 <Input id="e-email2" name="email2" type="email" defaultValue={client.email2} className={inputClass} />
               </Field>
-              <Field id="e-phone" label={f.phone1}>
+              <Field id="e-phone" label="Téléphone du père">
                 <Input id="e-phone" name="phone" type="tel" defaultValue={client.phone} className={inputClass} />
               </Field>
-              <Field id="e-tel2" label={f.phone2}>
+              <Field id="e-tel2" label="Téléphone de la mère">
                 <Input id="e-tel2" name="tel2" type="tel" defaultValue={client.tel2} className={inputClass} />
               </Field>
               <div className="space-y-1.5 sm:col-span-2">
@@ -1054,26 +1175,42 @@ function EditClientDialog({
                 <Input id="e-allergies" name="allergies" defaultValue={client.allergies} className={inputClass} />
               </Field>
               <Field id="e-transport" label="Transport scolaire">
-                <Select value={transport} onValueChange={(v) => setTransport(v as Client["transport"])}>
-                  <SelectTrigger id="e-transport" className={selectTriggerClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={softSelectContent}>
-                    <SelectItem value="Oui">Oui</SelectItem>
-                    <SelectItem value="Non">Non</SelectItem>
-                  </SelectContent>
-                </Select>
+                <OuiNonSelect id="e-transport" value={transport} onChange={setTransport} />
               </Field>
               <Field id="e-cantine" label="Cantine">
-                <Select value={cantine} onValueChange={(v) => setCantine(v as Client["cantine"])}>
-                  <SelectTrigger id="e-cantine" className={selectTriggerClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={softSelectContent}>
-                    <SelectItem value="Oui">Oui</SelectItem>
-                    <SelectItem value="Non">Non</SelectItem>
-                  </SelectContent>
-                </Select>
+                <OuiNonSelect id="e-cantine" value={cantine} onChange={setCantine} />
+              </Field>
+              <Field id="e-garderie" label="Garderie">
+                <OuiNonSelect id="e-garderie" value={garderie} onChange={setGarderie} />
+              </Field>
+              <Field id="e-activites" label="Activités périscolaires">
+                <OuiNonSelect id="e-activites" value={activites} onChange={setActivites} />
+              </Field>
+              <Field id="e-fratrie" label="Enfants scolarisés">
+                <Input
+                  id="e-fratrie"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={fratrie}
+                  onChange={(ev) => {
+                    const n = Number(ev.target.value || 1);
+                    setFratrie(n);
+                    setRemise(remiseAuto(n));
+                  }}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="e-remise" label="Remise fratrie (%)">
+                <Input
+                  id="e-remise"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={remise}
+                  onChange={(ev) => setRemise(Number(ev.target.value || 0))}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-mensuel" label={f.monthlyFeesMad}>
                 <Input id="e-mensuel" name="mensuel" type="number" min={0} defaultValue={client.mensuel} className={inputClass} />

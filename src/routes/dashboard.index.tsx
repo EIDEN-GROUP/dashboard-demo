@@ -6,22 +6,24 @@ import {
   AlertCircle,
   Plus,
   ArrowUpRight,
+  ArrowUp,
+  ArrowDown,
+  TrendingUp,
   Calendar,
   Send,
-  TrendingUp,
   Clock,
 } from "lucide-react";
 import {
   ResponsiveContainer,
+  ComposedChart,
   AreaChart,
   Area,
-  BarChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
-  Cell,
 } from "recharts";
 import {
   Dialog,
@@ -62,8 +64,64 @@ export const Route = createFileRoute("/dashboard/")({
 });
 
 // ──────────────────────────────────────────────────────────
-// Données démo   activité d'encaissement (MAD, en milliers)
+// Données démo   statistique générale (encaissé en k MAD + nb de paiements)
 // ──────────────────────────────────────────────────────────
+type Grain = "annee" | "semestre";
+
+type StatPoint = { mois: string; encaisse: number; paiements: number };
+
+const STAT_SERIES: Record<string, Record<Grain, StatPoint[]>> = {
+  "2026": {
+    annee: [
+      { mois: "Jan", encaisse: 34, paiements: 22 },
+      { mois: "Fév", encaisse: 42, paiements: 27 },
+      { mois: "Mar", encaisse: 41, paiements: 26 },
+      { mois: "Avr", encaisse: 33, paiements: 21 },
+      { mois: "Mai", encaisse: 48, paiements: 31 },
+      { mois: "Juin", encaisse: 44, paiements: 29 },
+      { mois: "Juil", encaisse: 21, paiements: 13 },
+      { mois: "Août", encaisse: 12, paiements: 8 },
+      { mois: "Sep", encaisse: 52, paiements: 34 },
+      { mois: "Oct", encaisse: 47, paiements: 30 },
+      { mois: "Nov", encaisse: 45, paiements: 28 },
+      { mois: "Déc", encaisse: 38, paiements: 24 },
+    ],
+    semestre: [
+      { mois: "Jan", encaisse: 34, paiements: 22 },
+      { mois: "Fév", encaisse: 42, paiements: 27 },
+      { mois: "Mar", encaisse: 41, paiements: 26 },
+      { mois: "Avr", encaisse: 33, paiements: 21 },
+      { mois: "Mai", encaisse: 48, paiements: 31 },
+      { mois: "Juin", encaisse: 44, paiements: 29 },
+    ],
+  },
+  "2025": {
+    annee: [
+      { mois: "Jan", encaisse: 28, paiements: 18 },
+      { mois: "Fév", encaisse: 31, paiements: 20 },
+      { mois: "Mar", encaisse: 35, paiements: 23 },
+      { mois: "Avr", encaisse: 29, paiements: 19 },
+      { mois: "Mai", encaisse: 39, paiements: 25 },
+      { mois: "Juin", encaisse: 37, paiements: 24 },
+      { mois: "Juil", encaisse: 18, paiements: 11 },
+      { mois: "Août", encaisse: 9, paiements: 6 },
+      { mois: "Sep", encaisse: 44, paiements: 29 },
+      { mois: "Oct", encaisse: 40, paiements: 26 },
+      { mois: "Nov", encaisse: 38, paiements: 24 },
+      { mois: "Déc", encaisse: 32, paiements: 21 },
+    ],
+    semestre: [
+      { mois: "Jan", encaisse: 28, paiements: 18 },
+      { mois: "Fév", encaisse: 31, paiements: 20 },
+      { mois: "Mar", encaisse: 35, paiements: 23 },
+      { mois: "Avr", encaisse: 29, paiements: 19 },
+      { mois: "Mai", encaisse: 39, paiements: 25 },
+      { mois: "Juin", encaisse: 37, paiements: 24 },
+    ],
+  },
+};
+
+// Encaissements mensuels   série d'activité par plage (MAD, en milliers)
 type Range = "1S" | "1M" | "3M" | "1A";
 
 const ACTIVITY: Record<Range, { x: string; v: number }[]> = {
@@ -106,6 +164,14 @@ const ACTIVITY_TOTAL: Record<Range, string> = {
   "3M": "122 000",
   "1A": "344 000",
 };
+
+// Indicateurs de la colonne latérale   valeur + évolution vs période précédente
+const STAT_KPIS = [
+  { label: "Total encaissé", value: "457k", delta: "+62k", up: true },
+  { label: "Paiements reçus", value: "293", delta: "+24", up: true },
+  { label: "Impayés", value: "38", delta: "+7", up: false },
+  { label: "Nouvelles inscriptions", value: "46", delta: "+12", up: true },
+];
 
 // Répartition des paiements par statut   payé / impayé / en retard (ce mois)
 const STATUS_DATA = [
@@ -247,7 +313,13 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
 function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
+  const [grain, setGrain] = useState<Grain>("annee");
+  const [year, setYear] = useState("2026");
+
   const [range, setRange] = useState<Range>("1A");
+
+  const statSeries = STAT_SERIES[year][grain];
+  const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
 
   // 4 indicateurs   total / payé / en retard / impayé
   const metrics = [
@@ -316,8 +388,6 @@ function CrmDash() {
     },
   ];
 
-  const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
-  const statusTotal = STATUS_DATA.reduce((s, d) => s + d.value, 0);
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -363,115 +433,176 @@ function CrmDash() {
         ))}
       </div>
 
-      {/* 2 graphiques   gauche : BarChart par statut · droite : AreaChart mensuel */}
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
-        {/* Gauche   répartition par statut (3 couleurs) */}
-        <div className={cn(softCard, "min-w-0 p-5 sm:p-6")}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className={eyebrowClass}>Répartition</p>
-              <h2 className="mt-1 font-display text-xl text-foreground">
-                Paiements <span className="font-normal italic text-muted-foreground">par statut</span>
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">Payé · Impayé · En retard   ce mois</p>
+      {/* Statistique générale   barres (encaissé) + courbe (paiements reçus) et colonne d'indicateurs */}
+      <div className={cn(softCard, "overflow-hidden")}>
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_17rem]">
+          {/* Graphique */}
+          <div className="min-w-0 p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className={eyebrowClass}>Vue d'ensemble</p>
+                <h2 className="mt-1 font-display text-2xl text-foreground">
+                  Statistique <span className="font-normal italic text-muted-foreground">générale</span>
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select value={grain} onValueChange={(v) => setGrain(v as Grain)}>
+                  <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[7.5rem] rounded-xl")} aria-label="Granularité">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="annee">Année</SelectItem>
+                    <SelectItem value="semestre">Semestre</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={year} onValueChange={setYear}>
+                  <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[6.5rem] rounded-xl")} aria-label="Année">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="2026">2026</SelectItem>
+                    <SelectItem value="2025">2025</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-display text-2xl font-semibold tabular-nums text-foreground">{statusTotal}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
-            </div>
-          </div>
-          <div className="mt-4 h-72 w-full min-w-0 sm:h-[24rem]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={STATUS_DATA} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
-                <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={40} />
-                <Tooltip
-                  contentStyle={dashTooltip}
-                  cursor={{ fill: "rgba(181,225,139,0.18)" }}
-                  formatter={(v: number) => [`${v} famille${v > 1 ? "s" : ""}`, "Familles"]}
-                />
-                <Bar dataKey="value" radius={[10, 10, 0, 0]} maxBarSize={70}>
-                  {STATUS_DATA.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {STATUS_DATA.map((s) => (
-              <li key={s.name} className="inline-flex items-center gap-2 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium text-foreground">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                {s.name}
-                <span className="font-semibold tabular-nums">{s.value}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
 
-        {/* Droite   activité mensuelle (aires) */}
-        <div className={cn(softCard, "min-w-0 p-5 sm:p-6")}>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className={eyebrowClass}>Mon activité</p>
-              <h2 className="mt-1 font-display text-xl text-foreground">
-                Encaissements <span className="font-normal italic text-muted-foreground">mensuels</span>
-              </h2>
+            <div className="mt-6 h-[20rem] w-full min-w-0 sm:h-[24rem]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={statSeries} margin={{ top: 8, right: 8, left: -14, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.08)" vertical={false} />
+                  <XAxis
+                    dataKey="mois"
+                    stroke="var(--muted-foreground)"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    dy={6}
+                  />
+                  <YAxis
+                    stroke="var(--muted-foreground)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    width={44}
+                  />
+                  <Tooltip
+                    contentStyle={dashTooltip}
+                    cursor={{ fill: "rgba(181,225,139,0.16)" }}
+                    formatter={(v: number, n) =>
+                      n === "Encaissé" ? [`${v}k MAD`, n] : [`${v} paiements`, n]
+                    }
+                  />
+                  <Bar dataKey="encaisse" name="Encaissé" fill="#C9DCF2" radius={[8, 8, 0, 0]} maxBarSize={38} />
+                  <Line
+                    type="monotone"
+                    dataKey="paiements"
+                    name="Paiements"
+                    stroke="#28396C"
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5, fill: "#6BA53A", stroke: "#fff", strokeWidth: 2 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
             </div>
-            <div className="flex items-center gap-1 rounded-full border border-[#28396C]/10 bg-muted/60 p-1">
-              {rangeButtons.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRange(r)}
-                  className={cn(
-                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                    range === r ? "bg-[#28396C] text-white shadow-sm" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {r}
-                </button>
+
+            <ul className="mt-4 flex flex-wrap gap-3">
+              <li className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <span className="h-2.5 w-3.5 rounded-sm bg-[#C9DCF2]" /> Encaissé (k MAD)
+              </li>
+              <li className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <span className="h-0.5 w-4 rounded-full bg-[#28396C]" /> Paiements reçus
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne d'indicateurs   comme la maquette : une ligne par KPI, séparateurs fins */}
+          <div className="border-t border-[#28396C]/10 lg:border-l lg:border-t-0">
+            <ul className="divide-y divide-[#28396C]/10">
+              {STAT_KPIS.map((k) => (
+                <li key={k.label} className="px-5 py-5 sm:px-6">
+                  <p className="text-xs text-muted-foreground">{k.label}</p>
+                  <div className="mt-1.5 flex items-end justify-between gap-2">
+                    <p className="font-display text-2xl font-semibold tabular-nums text-foreground">{k.value}</p>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-0.5 text-xs font-semibold",
+                        k.up ? "text-[#3E6420]" : "text-[#9A2F2F]",
+                      )}
+                    >
+                      {k.delta}
+                      {k.up ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                    </span>
+                  </div>
+                </li>
               ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Encaissements mensuels   courbe d'activité avec plages 1S / 1M / 3M / 1A */}
+      <div className={cn(softCard, "min-w-0 p-5 sm:p-6")}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className={eyebrowClass}>Mon activité</p>
+            <h2 className="mt-1 font-display text-xl text-foreground">
+              Encaissements <span className="font-normal italic text-muted-foreground">mensuels</span>
+            </h2>
+            <div className="mt-2 flex items-end gap-2">
+              <p className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                {ACTIVITY_TOTAL[range]} <span className="text-sm font-normal text-muted-foreground">MAD</span>
+              </p>
+              <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-[#B5E18B]/30 px-2 py-0.5 text-[11px] font-semibold text-[#3E6420]">
+                <TrendingUp className="h-3 w-3" /> +8,4%
+              </span>
             </div>
           </div>
-          <div className="mt-3 flex items-end gap-2">
-            <p className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              {ACTIVITY_TOTAL[range]} <span className="text-sm font-normal text-muted-foreground">MAD</span>
-            </p>
-            <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-[#B5E18B]/30 px-2 py-0.5 text-[11px] font-semibold text-[#3E6420]">
-              <TrendingUp className="h-3 w-3" /> +8,4%
-            </span>
+          <div className="flex items-center gap-1 rounded-full border border-[#28396C]/10 bg-muted/60 p-1">
+            {rangeButtons.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRange(r)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  range === r ? "bg-[#28396C] text-white shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {r}
+              </button>
+            ))}
           </div>
-          <div className="mt-4 h-56 w-full min-w-0 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={ACTIVITY[range]} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6BA53A" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#6BA53A" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
-                <XAxis dataKey="x" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={40} />
-                <Tooltip
-                  contentStyle={dashTooltip}
-                  cursor={{ stroke: "rgba(40,57,108,0.25)", strokeWidth: 1 }}
-                  formatter={(v: number) => [`${v}k MAD`, "Encaissé"]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="v"
-                  stroke="#28396C"
-                  strokeWidth={2.5}
-                  fill="url(#activityFill)"
-                  dot={{ r: 3, fill: "#28396C", strokeWidth: 0 }}
-                  activeDot={{ r: 5, fill: "#6BA53A", stroke: "#fff", strokeWidth: 2 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+        </div>
+        <div className="mt-4 h-56 w-full min-w-0 sm:h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={ACTIVITY[range]} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+              <defs>
+                <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6BA53A" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#6BA53A" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
+              <XAxis dataKey="x" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={40} />
+              <Tooltip
+                contentStyle={dashTooltip}
+                cursor={{ stroke: "rgba(40,57,108,0.25)", strokeWidth: 1 }}
+                formatter={(v: number) => [`${v}k MAD`, "Encaissé"]}
+              />
+              <Area
+                type="monotone"
+                dataKey="v"
+                stroke="#28396C"
+                strokeWidth={2.5}
+                fill="url(#activityFill)"
+                dot={{ r: 3, fill: "#28396C", strokeWidth: 0 }}
+                activeDot={{ r: 5, fill: "#6BA53A", stroke: "#fff", strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

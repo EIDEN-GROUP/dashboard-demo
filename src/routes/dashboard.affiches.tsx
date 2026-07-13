@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Eye, Pencil, Search } from "lucide-react";
+import { AlertTriangle, CalendarDays, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import {
   dialogSurface,
   labelClass,
   iconButton,
+  primaryPill,
 } from "@/lib/dash-ui";
 
 export const Route = createFileRoute("/dashboard/affiches")({
@@ -49,8 +50,55 @@ type Employe = {
   dateEmbauche: string;
   adresse: string;
   contrat: string;
+  /** Salaire mensuel brut, en MAD. */
+  salaire: number;
+  /** Congés posés   dates ISO (AAAA-MM-JJ). Vides = aucun congé planifié. */
+  congeDebut: string;
+  congeFin: string;
   statut: StatutEmploye;
 };
+
+type CongeState = "en_cours" | "a_venir" | "termine" | "aucun";
+
+/** Un congé n'existe que si les deux bornes sont renseignées. */
+function aConge(e: Employe) {
+  return e.congeDebut.trim() !== "" && e.congeFin.trim() !== "";
+}
+
+/** Date ISO -> JJ/MM/AAAA. */
+function formatDateFr(iso: string) {
+  if (!iso.trim()) return " ";
+  const [y, m, d] = iso.split("-");
+  return d && m && y ? `${d}/${m}/${y}` : iso;
+}
+
+/** Durée du congé, bornes incluses. */
+function joursConge(e: Employe) {
+  const start = new Date(e.congeDebut);
+  const end = new Date(e.congeFin);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+  return Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000) + 1);
+}
+
+/** Position du congé par rapport à aujourd'hui. */
+function congeState(e: Employe): CongeState {
+  if (!aConge(e)) return "aucun";
+  const today = new Date().toISOString().slice(0, 10);
+  if (today < e.congeDebut) return "a_venir";
+  if (today > e.congeFin) return "termine";
+  return "en_cours";
+}
+
+const CONGE_TONE: Record<Exclude<CongeState, "aucun">, { label: string; chip: string }> = {
+  en_cours: { label: "En congé", chip: "bg-[#F4E3C0] text-[#8A5A16]" },
+  a_venir: { label: "Congé à venir", chip: "bg-[#EAE6BC]/70 text-[#7A6E2E]" },
+  termine: { label: "Congé passé", chip: "bg-muted text-muted-foreground" },
+};
+
+/** Formate un salaire en MAD (séparateur d'espace fine, comme le reste du CRM). */
+function formatSalaire(v: number) {
+  return v.toLocaleString("fr-FR").replace(/ | /g, " ");
+}
 
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
@@ -114,6 +162,9 @@ const initialEmployes: Employe[] = [
     dateEmbauche: "01/09/2019",
     adresse: "12 Rue Ibn Batouta, Rabat",
     contrat: "CDI",
+    salaire: 14000,
+    congeDebut: "2026-08-03",
+    congeFin: "2026-08-21",
     statut: "actif",
   },
   {
@@ -130,6 +181,9 @@ const initialEmployes: Employe[] = [
     dateEmbauche: "15/01/2021",
     adresse: "Lotissement Al Andalous, Salé",
     contrat: "CDI",
+    salaire: 11500,
+    congeDebut: "",
+    congeFin: "",
     statut: "actif",
   },
   {
@@ -146,6 +200,9 @@ const initialEmployes: Employe[] = [
     dateEmbauche: "10/06/2022",
     adresse: " ",
     contrat: "CDD   12 mois",
+    salaire: 7200,
+    congeDebut: "2026-07-06",
+    congeFin: "2026-07-24",
     statut: "actif",
   },
   {
@@ -162,6 +219,9 @@ const initialEmployes: Employe[] = [
     dateEmbauche: "01/09/2023",
     adresse: "Hay Riad, Rabat",
     contrat: "CDI",
+    salaire: 5400,
+    congeDebut: "2026-06-01",
+    congeFin: "2026-06-12",
     statut: "inactif",
   },
   {
@@ -178,6 +238,9 @@ const initialEmployes: Employe[] = [
     dateEmbauche: "01/03/2020",
     adresse: "Avenue Allal Ben Abdellah, Rabat",
     contrat: "CDI",
+    salaire: 12000,
+    congeDebut: "2026-12-21",
+    congeFin: "2027-01-02",
     statut: "actif",
   },
   {
@@ -194,6 +257,9 @@ const initialEmployes: Employe[] = [
     dateEmbauche: "01/11/2024",
     adresse: "Temara",
     contrat: "CDD   6 mois",
+    salaire: 8600,
+    congeDebut: "",
+    congeFin: "",
     statut: "inactif",
   },
 ];
@@ -244,6 +310,18 @@ function DetailEmployeDialog({
             </Field>
             <Field id="emp-contrat" label={f.contractType}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.contrat)}</p>
+            </Field>
+            <Field id="emp-salaire" label="Salaire mensuel brut">
+              <p className="text-sm font-semibold text-foreground">
+                {formatSalaire(employe.salaire)} {t.common.mad}
+              </p>
+            </Field>
+            <Field id="emp-conge" label="Congés">
+              <p className="text-sm font-semibold text-foreground">
+                {aConge(employe)
+                  ? `Du ${formatDateFr(employe.congeDebut)} au ${formatDateFr(employe.congeFin)}   ${joursConge(employe)} j`
+                  : "Aucun congé planifié"}
+              </p>
             </Field>
             <Field id="emp-email" label={f.workEmail}>
               <p className="text-sm font-semibold text-foreground">{dash(employe.email)}</p>
@@ -341,6 +419,9 @@ function EditEmployeDialog({
                 dateEmbauche: String(fd.get("dateEmbauche") ?? employe.dateEmbauche),
                 adresse: String(fd.get("adresse") ?? employe.adresse),
                 contrat: String(fd.get("contrat") ?? employe.contrat),
+                salaire: Number(fd.get("salaire") ?? employe.salaire),
+                congeDebut: String(fd.get("congeDebut") ?? employe.congeDebut),
+                congeFin: String(fd.get("congeFin") ?? employe.congeFin),
                 statut,
               });
               onOpenChange(false);
@@ -391,6 +472,35 @@ function EditEmployeDialog({
               <Field id="ed-contrat" label={f.contractType}>
                 <Input id="ed-contrat" name="contrat" defaultValue={employe.contrat} className={inputClass} />
               </Field>
+              <Field id="ed-salaire" label={`Salaire mensuel brut (${t.common.mad})`}>
+                <Input
+                  id="ed-salaire"
+                  name="salaire"
+                  type="number"
+                  min={0}
+                  step={100}
+                  defaultValue={employe.salaire}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="ed-conge-debut" label="Congé   début">
+                <Input
+                  id="ed-conge-debut"
+                  name="congeDebut"
+                  type="date"
+                  defaultValue={employe.congeDebut}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="ed-conge-fin" label="Congé   fin">
+                <Input
+                  id="ed-conge-fin"
+                  name="congeFin"
+                  type="date"
+                  defaultValue={employe.congeFin}
+                  className={inputClass}
+                />
+              </Field>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="ed-adresse" className={labelClass}>
                   {t.common.address}
@@ -420,6 +530,262 @@ function EditEmployeDialog({
   );
 }
 
+function AddEmployeDialog({
+  open,
+  onOpenChange,
+  onCreate,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreate: (employe: Employe) => void;
+}) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const [statut, setStatut] = useState<StatutEmploye>("actif");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
+        <DialogDescription className="sr-only">Ajouter un nouvel employé à l'équipe</DialogDescription>
+        <div className="border-t-4 border-t-primary">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Équipe</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
+              Ajouter un employé
+            </DialogTitle>
+          </div>
+          <form
+            className="max-h-[65vh] space-y-4 overflow-y-auto scroll-touch px-6 py-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              onCreate({
+                id: `e-${Date.now()}`,
+                nomComplet: String(fd.get("nomComplet") || "Nouvel employé"),
+                poste: String(fd.get("poste") || ""),
+                departement: String(fd.get("departement") || ""),
+                email: String(fd.get("email") || ""),
+                emailPerso: "",
+                tel: String(fd.get("tel") || ""),
+                tel2: "",
+                cin: String(fd.get("cin") || ""),
+                dateNaissance: "",
+                dateEmbauche: String(fd.get("dateEmbauche") || ""),
+                adresse: "",
+                contrat: String(fd.get("contrat") || "CDI"),
+                salaire: Number(fd.get("salaire") || 0),
+                congeDebut: String(fd.get("congeDebut") || ""),
+                congeFin: String(fd.get("congeFin") || ""),
+                statut,
+              });
+              onOpenChange(false);
+              setStatut("actif");
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field id="ae-nom" label={f.fullName}>
+                <Input id="ae-nom" name="nomComplet" required className={inputClass} />
+              </Field>
+              <Field id="ae-statut" label={t.common.status}>
+                <Select value={statut} onValueChange={(v) => setStatut(v as StatutEmploye)}>
+                  <SelectTrigger id="ae-statut" className={selectTriggerClass}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="actif">{t.status.actif}</SelectItem>
+                    <SelectItem value="inactif">{t.status.inactif}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field id="ae-poste" label={t.common.position}>
+                <Input id="ae-poste" name="poste" className={inputClass} placeholder="Ex. Professeur des écoles" />
+              </Field>
+              <Field id="ae-dept" label={t.common.department}>
+                <Input id="ae-dept" name="departement" className={inputClass} placeholder="Ex. Pédagogie" />
+              </Field>
+              <Field id="ae-email" label={f.workEmail}>
+                <Input id="ae-email" name="email" type="email" className={inputClass} />
+              </Field>
+              <Field id="ae-tel" label={f.phone1}>
+                <Input id="ae-tel" name="tel" type="tel" className={inputClass} />
+              </Field>
+              <Field id="ae-cin" label={f.cinPassport}>
+                <Input id="ae-cin" name="cin" className={inputClass} />
+              </Field>
+              <Field id="ae-embauche" label={f.hireDate}>
+                <Input id="ae-embauche" name="dateEmbauche" className={inputClass} placeholder="JJ/MM/AAAA" />
+              </Field>
+              <Field id="ae-contrat" label={f.contractType}>
+                <Input id="ae-contrat" name="contrat" defaultValue="CDI" className={inputClass} />
+              </Field>
+              <Field id="ae-salaire" label={`Salaire mensuel brut (${t.common.mad})`}>
+                <Input
+                  id="ae-salaire"
+                  name="salaire"
+                  type="number"
+                  min={0}
+                  step={100}
+                  defaultValue={0}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="ae-conge-debut" label="Congé   début">
+                <Input id="ae-conge-debut" name="congeDebut" type="date" className={inputClass} />
+              </Field>
+              <Field id="ae-conge-fin" label="Congé   fin">
+                <Input id="ae-conge-fin" name="congeFin" type="date" className={inputClass} />
+              </Field>
+            </div>
+            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t.common.cancel}
+              </button>
+              <button type="submit" className={cn(primaryPill, "px-5 py-2")}>
+                Ajouter l'employé
+              </button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Popup des dates de congé d'un employé. */
+function CongeDialog({
+  employe,
+  open,
+  onOpenChange,
+}: {
+  employe: Employe | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useDashboardI18n();
+
+  if (!employe) return null;
+  const st = congeState(employe);
+  const tone = st === "aucun" ? null : CONGE_TONE[st];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn(dialogSurface, "max-w-[460px]")}>
+        <DialogDescription className="sr-only">Congés de {employe.nomComplet}</DialogDescription>
+        <div className="border-t-4 border-t-[#CFC27A]">
+          <div className="flex items-start justify-between gap-3 border-b border-border px-6 pb-4 pt-6 pr-14">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Congés</p>
+              <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
+                {employe.nomComplet}
+              </DialogTitle>
+              <p className="mt-0.5 text-xs text-muted-foreground">{employe.poste}</p>
+            </div>
+            {tone ? (
+              <span
+                className={cn(
+                  "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
+                  tone.chip,
+                )}
+              >
+                {tone.label}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="px-6 py-5">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-muted/60 px-4 py-3">
+                <p className={labelClass}>Date de début</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{formatDateFr(employe.congeDebut)}</p>
+              </div>
+              <div className="rounded-2xl bg-muted/60 px-4 py-3">
+                <p className={labelClass}>Date de fin</p>
+                <p className="mt-1 text-sm font-semibold text-foreground">{formatDateFr(employe.congeFin)}</p>
+              </div>
+            </div>
+            <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <CalendarDays className="h-4 w-4 shrink-0 text-[#7A6E2E]" />
+              {joursConge(employe)} jour{joursConge(employe) > 1 ? "s" : ""} de congé
+            </p>
+          </div>
+
+          <div className="flex justify-end border-t border-border px-6 py-4">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              {t.common.close}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeleteEmployeDialog({
+  employe,
+  open,
+  onOpenChange,
+  onConfirm,
+}: {
+  employe: Employe | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}) {
+  const { t } = useDashboardI18n();
+
+  if (!employe) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn(dialogSurface, "max-w-[440px]")}>
+        <DialogDescription className="sr-only">Confirmer la suppression de {employe.nomComplet}</DialogDescription>
+        <div className="border-t-4 border-t-[#E25C5C]">
+          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Équipe</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
+              Supprimer cet employé ?
+            </DialogTitle>
+          </div>
+          <div className="px-6 py-5">
+            <div className="flex items-start gap-3 rounded-2xl bg-[#F6D8D8]/50 px-4 py-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#9A2F2F]" />
+              <p className="text-sm text-foreground">
+                <span className="font-semibold">{employe.nomComplet}</span>   {employe.poste} sera retiré de la liste du
+                personnel. Cette action est irréversible.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-end gap-3 border-t border-border px-6 py-4">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              {t.common.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className="inline-flex items-center gap-2 rounded-full bg-[#E25C5C] px-5 py-2 text-sm font-bold text-white shadow-[0_14px_30px_-14px_rgba(226,92,92,0.8)] transition hover:brightness-105"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function AffichesPage() {
   const { t } = useDashboardI18n();
   const a = t.affiches;
@@ -427,6 +793,9 @@ function AffichesPage() {
   const [search, setSearch] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [congeId, setCongeId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -442,6 +811,8 @@ function AffichesPage() {
 
   const selected = detailId ? employes.find((e) => e.id === detailId) ?? null : null;
   const editing = editId ? employes.find((e) => e.id === editId) ?? null : null;
+  const deleting = deleteId ? employes.find((e) => e.id === deleteId) ?? null : null;
+  const conge = congeId ? employes.find((e) => e.id === congeId) ?? null : null;
 
   return (
     <div className="space-y-8">
@@ -455,14 +826,36 @@ function AffichesPage() {
         }}
       />
 
+      <AddEmployeDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onCreate={(employe) => setEmployes((list) => [...list, employe])}
+      />
+      <DeleteEmployeDialog
+        employe={deleting}
+        open={Boolean(deleting)}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        onConfirm={() => {
+          setEmployes((list) => list.filter((row) => row.id !== deleteId));
+          setDeleteId(null);
+        }}
+      />
+      <CongeDialog employe={conge} open={Boolean(conge)} onOpenChange={(o) => !o && setCongeId(null)} />
+
       <header className="space-y-4">
         <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{a.eyebrow}</p>
-        <div>
-          <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
-            <span className="font-semibold">{a.titleBold}</span>{" "}
-            <span className="font-normal italic text-muted-foreground">{a.titleItalic}</span>
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{a.subtitle}</p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl md:text-[2.35rem] leading-tight tracking-tight text-foreground">
+              <span className="font-semibold">{a.titleBold}</span>{" "}
+              <span className="font-normal italic text-muted-foreground">{a.titleItalic}</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{a.subtitle}</p>
+          </div>
+          <button type="button" onClick={() => setAddOpen(true)} className={cn(primaryPill, "shrink-0")}>
+            <Plus className="h-4 w-4" />
+            Ajouter un employé
+          </button>
         </div>
       </header>
 
@@ -491,20 +884,28 @@ function AffichesPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{a.employeeList}</p>
         </div>
         <div className="overflow-x-auto scroll-touch">
-          <table className="w-full min-w-[720px] text-left text-sm">
+          <table className="w-full min-w-[860px] text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">{a.table.name}</th>
                 <th className="px-4 py-3">{a.table.position}</th>
                 <th className="px-4 py-3">{a.table.department}</th>
                 <th className="px-4 py-3">{a.table.contact}</th>
+                <th className="px-4 py-3">Salaire</th>
                 <th className="px-4 py-3">{a.table.status}</th>
                 <th className="px-4 py-3 w-28">{a.table.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.map((e) => (
-                <tr key={e.id} className="hover:bg-muted/80">
+                <tr
+                  key={e.id}
+                  onClick={() => {
+                    setDetailId(e.id);
+                    setEditId(null);
+                  }}
+                  className="cursor-pointer transition-colors hover:bg-[#B5E18B]/10"
+                >
                   <td className="px-4 py-3 font-medium text-foreground">{e.nomComplet}</td>
                   <td className="px-4 py-3 text-foreground/90">{e.poste}</td>
                   <td className="px-4 py-3 text-muted-foreground">{e.departement}</td>
@@ -512,24 +913,40 @@ function AffichesPage() {
                     <span className="block">{e.email}</span>
                     <span className="mt-0.5 block text-xs text-muted-foreground">{e.tel}</span>
                   </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={e.statut === "actif" ? "dark" : "neutral"}>
-                      {e.statut === "actif" ? t.status.actif : t.status.inactif}
-                    </Badge>
+                  <td className="px-4 py-3 font-semibold tabular-nums text-foreground">
+                    {formatSalaire(e.salaire)} <span className="text-xs font-normal text-muted-foreground">{t.common.mad}</span>
                   </td>
                   <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant={e.statut === "actif" ? "dark" : "neutral"}>
+                        {e.statut === "actif" ? t.status.actif : t.status.inactif}
+                      </Badge>
+                      {(() => {
+                        const st = congeState(e);
+                        if (st === "aucun") return null;
+                        const tone = CONGE_TONE[st];
+                        return (
+                          <button
+                            type="button"
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              setCongeId(e.id);
+                            }}
+                            aria-label={`Congés de ${e.nomComplet}`}
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition hover:brightness-95",
+                              tone.chip,
+                            )}
+                          >
+                            <CalendarDays className="h-3 w-3" />
+                            {tone.label}
+                          </button>
+                        );
+                      })()}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3" onClick={(ev) => ev.stopPropagation()}>
                     <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDetailId(e.id);
-                          setEditId(null);
-                        }}
-                        className={iconButton}
-                        aria-label={interpolate(a.viewAria, { name: e.nomComplet })}
-                      >
-                        <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -540,6 +957,17 @@ function AffichesPage() {
                         aria-label={interpolate(a.editAria, { name: e.nomComplet })}
                       >
                         <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteId(e.id)}
+                        className={cn(
+                          iconButton,
+                          "hover:border-[#E25C5C]/40 hover:bg-[#F6D8D8] hover:text-[#9A2F2F]",
+                        )}
+                        aria-label={`Supprimer ${e.nomComplet}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
                       </button>
                     </div>
                   </td>

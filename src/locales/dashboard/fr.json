@@ -53,7 +53,7 @@
     "amount": "Montant",
     "period": "Période",
     "receipt": "Reçu",
-    "invoice": "Facture",
+    "invoice": "Reçu de paiement",
     "name": "Nom",
     "status": "Status",
     "monthly": "Mensuel",
@@ -300,7 +300,7 @@
       "mode": "Mode",
       "period": "Période",
       "receipt": "Reçu",
-      "invoice": "Facture"
+      "invoice": "Reçu de paiement"
     },
     "csvFilename": "paiements-export.csv"
   },

@@ -222,58 +222,67 @@ function CrmCalendrier() {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-7 gap-1 sm:gap-1.5">
-            {JOURS_FR.map((j) => (
-              <div key={j} className="py-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-[11px]">
-                {j}
-              </div>
-            ))}
-            {cells.map((c, i) =>
-              c === null ? (
-                <div key={`e-${i}`} />
-              ) : (
+          {/* Grille continue   trame d'un vrai calendrier (filets fins, pas de pastilles flottantes) */}
+          <div className="mt-4 overflow-hidden rounded-2xl border border-[#28396C]/10">
+            <div className="grid grid-cols-7 border-b border-[#28396C]/10 bg-muted/40">
+              {JOURS_FR.map((j) => (
                 <div
-                  key={c.day}
-                  title={c.ferie ?? c.vacance ?? undefined}
-                  className={cn(
-                    "relative flex min-h-[3.1rem] flex-col items-center justify-start gap-0.5 rounded-xl border p-1 text-center transition sm:min-h-[4.6rem] sm:rounded-2xl sm:p-1.5",
-                    c.ferie
-                      ? "border-[#6BA53A]/30 bg-[#B5E18B]/30"
-                      : c.vacance
-                        ? "border-[#CFC27A]/40 bg-[#EAE6BC]/45"
-                        : "border-transparent bg-muted/40 hover:bg-[#B5E18B]/10",
-                    c.isToday && "ring-2 ring-[#28396C]",
-                  )}
+                  key={j}
+                  className="py-2.5 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[11px]"
                 >
-                  <span
+                  {j}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-px bg-[#28396C]/[0.07]">
+              {cells.map((c, i) =>
+                c === null ? (
+                  <div key={`e-${i}`} className="min-h-[3.4rem] bg-muted/20 sm:min-h-[5.25rem]" />
+                ) : (
+                  <div
+                    key={c.day}
+                    title={c.ferie ?? c.vacance ?? undefined}
                     className={cn(
-                      "mt-0.5 grid h-6 w-6 place-items-center rounded-full text-xs font-semibold sm:text-sm",
-                      c.isToday ? "bg-[#28396C] text-white" : "text-foreground",
+                      "relative flex min-h-[3.4rem] flex-col items-start gap-1 p-1.5 transition sm:min-h-[5.25rem] sm:p-2",
+                      c.ferie ? "bg-[#B5E18B]/20" : c.vacance ? "bg-[#EAE6BC]/30" : "bg-card hover:bg-muted/60",
                     )}
                   >
-                    {c.day}
-                  </span>
-                  {c.ferie ? (
-                    <span className="hidden w-full truncate px-0.5 text-[9px] font-semibold leading-tight text-[#3E6420] sm:block">
-                      {c.ferie}
-                    </span>
-                  ) : c.vacance ? (
-                    <span className="hidden w-full truncate px-0.5 text-[9px] font-medium leading-tight text-[#7A6E2E] sm:block">
-                      Vacances
-                    </span>
-                  ) : null}
-                  {/* Point coloré sur mobile */}
-                  {(c.ferie || c.vacance) && (
                     <span
                       className={cn(
-                        "h-1.5 w-1.5 rounded-full sm:hidden",
-                        c.ferie ? "bg-[#6BA53A]" : "bg-[#CFC27A]",
+                        "grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums sm:text-sm",
+                        c.isToday ? "bg-[#28396C] text-white" : "text-foreground/80",
                       )}
-                    />
-                  )}
-                </div>
-              ),
-            )}
+                    >
+                      {c.day}
+                    </span>
+
+                    {/* Jour férié : nom sur 2 lignes max, en vert. Vacances : simple mention discrète. */}
+                    {c.ferie ? (
+                      <span className="hidden items-start gap-1 text-[10px] font-semibold leading-tight text-[#3E6420] sm:flex">
+                        <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#6BA53A]" aria-hidden />
+                        <span className="line-clamp-2">{c.ferie}</span>
+                      </span>
+                    ) : c.vacance ? (
+                      <span className="hidden items-center gap-1 text-[10px] font-medium leading-tight text-[#8A7F3E] sm:flex">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#CFC27A]" aria-hidden />
+                        Vacances
+                      </span>
+                    ) : null}
+
+                    {/* Point coloré sur mobile */}
+                    {(c.ferie || c.vacance) && (
+                      <span
+                        className={cn(
+                          "absolute bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full sm:hidden",
+                          c.ferie ? "bg-[#6BA53A]" : "bg-[#CFC27A]",
+                        )}
+                      />
+                    )}
+                  </div>
+                ),
+              )}
+            </div>
           </div>
 
           {/* Événements du mois */}

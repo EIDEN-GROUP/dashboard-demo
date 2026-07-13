@@ -81,6 +81,45 @@ export function statusPill(tone: "paye" | "impaye" | "retard" | "neutral") {
   return `inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${map[tone]}`;
 }
 
+/**
+ * Étiquette « % » inscrite au centre de chaque part d'un camembert Recharts.
+ * Les parts nulles ne sont pas étiquetées (sinon le 0 % se superpose aux voisines).
+ */
+export function renderPieLabel({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+}: {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+}) {
+  if (!percent) return null;
+  const RAD = Math.PI / 180;
+  const r = innerRadius + (outerRadius - innerRadius) * 0.6;
+  const x = cx + r * Math.cos(-midAngle * RAD);
+  const y = cy + r * Math.sin(-midAngle * RAD);
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="#fff"
+      fontSize={12}
+      fontWeight={700}
+      textAnchor="middle"
+      dominantBaseline="central"
+    >
+      {`${Math.round(percent * 100)}%`}
+    </text>
+  );
+}
+
 /** Deterministic initials from a name string (for avatar chips). */
 export function initials(name: string) {
   const parts = name.replace(/[/].*/, "").trim().split(/\s+/).filter(Boolean);

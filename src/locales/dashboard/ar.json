@@ -53,7 +53,7 @@
     "amount": "المبلغ",
     "period": "الفترة",
     "receipt": "الإيصال",
-    "invoice": "الفاتورة",
+    "invoice": "إيصال الدفع",
     "name": "الاسم",
     "status": "الحالة",
     "monthly": "شهري",
@@ -300,7 +300,7 @@
       "mode": "الطريقة",
       "period": "الفترة",
       "receipt": "الإيصال",
-      "invoice": "الفاتورة"
+      "invoice": "إيصال الدفع"
     },
     "csvFilename": "paiements-export.csv"
   },
