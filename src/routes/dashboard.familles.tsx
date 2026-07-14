@@ -13,6 +13,8 @@ import {
   ShieldAlert,
   Percent,
   Bus,
+  Wallet,
+  Users,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -37,7 +39,6 @@ import {
   primaryPill,
   iconButton,
   statusPill,
-  STATUS_COLORS,
 } from "@/lib/dash-ui";
 
 export const Route = createFileRoute("/dashboard/familles")({
@@ -467,19 +468,22 @@ function CrmParentsPage() {
     [base, statusFilter, month],
   );
 
-  // Répartition du mois pour le graphique circulaire
-  const donut = useMemo(() => {
-    const counts = { paye: 0, impaye: 0, retard: 0 };
-    base.forEach((c) => {
-      counts[statusOf(c, month)] += 1;
-    });
-    return [
-      { name: "Payé", value: counts.paye, color: STATUS_COLORS.paye },
-      { name: "Impayé", value: counts.impaye, color: STATUS_COLORS.impaye },
-      { name: "En retard", value: counts.retard, color: STATUS_COLORS.retard },
-    ];
-  }, [base, month]);
-  const donutTotal = donut.reduce((s, d) => s + d.value, 0);
+  /**
+   * Synthèse financière des familles affichées. La répartition payé / impayé
+   * vit déjà sur la page Paiements : ici on montre ce que seule cette page sait
+   * (revenu net, remises fratrie accordées, dette).
+   */
+  const synthese = useMemo(() => {
+    const brut = base.reduce((s, c) => s + c.mensuel, 0);
+    const net = base.reduce((s, c) => s + netMensuel(c), 0);
+    return {
+      familles: base.length,
+      net,
+      remises: brut - net,
+      dette: base.reduce((s, c) => s + c.dette, 0),
+      avecRemise: base.filter((c) => c.remise > 0).length,
+    };
+  }, [base]);
 
   const monthLabel = MONTHS.find((m) => m.key === month)?.label ?? "";
 
@@ -590,45 +594,66 @@ function CrmParentsPage() {
           </p>
         </section>
 
-        {/* Graphique circulaire   répartition du mois */}
+        {/* Synthèse financière   la répartition des statuts vit sur la page Paiements */}
         <section className={cn(softCard, "flex flex-col p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Analyse {monthLabel}
           </p>
           <div className="mt-3 flex items-baseline gap-2">
             <p className="font-display text-3xl font-semibold tabular-nums text-foreground">
-              {donutTotal}
+              {synthese.familles}
             </p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
           </div>
-          <ul className="mt-4 space-y-2">
-            {donut.map((d) => {
-              const share = donutTotal > 0 ? Math.round((d.value / donutTotal) * 100) : 0;
-              return (
-                <li key={d.name} className="rounded-2xl bg-muted/50 px-3 py-2">
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="flex items-center gap-2 font-medium text-foreground">
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: d.color }}
-                      />
-                      {d.name}
-                    </span>
-                    <span className="shrink-0 font-semibold tabular-nums text-foreground">
-                      {d.value}
-                      <span className="ml-1.5 font-normal text-muted-foreground">{share}%</span>
-                    </span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#28396C]/10">
-                    <div
-                      className="h-full rounded-full transition-[width] duration-700 ease-out"
-                      style={{ width: `${share}%`, backgroundColor: d.color }}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+
+          <dl className="mt-4 space-y-2">
+            <div className="flex items-center justify-between gap-2 rounded-2xl bg-muted/50 px-3 py-2.5">
+              <dt className="flex items-center gap-2 text-xs font-medium text-foreground">
+                <Wallet className="h-3.5 w-3.5 text-[#3E6420]" />
+                Revenu mensuel net
+              </dt>
+              <dd className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                {synthese.net} <span className="text-xs font-normal">{t.common.mad}</span>
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 rounded-2xl bg-muted/50 px-3 py-2.5">
+              <dt className="flex items-center gap-2 text-xs font-medium text-foreground">
+                <Percent className="h-3.5 w-3.5 text-[#8A7F3E]" />
+                Remises fratrie
+              </dt>
+              <dd className="shrink-0 text-sm font-semibold tabular-nums text-[#8A5A16]">
+                {synthese.remises > 0 ? "-" : ""}
+                {synthese.remises} <span className="text-xs font-normal">{t.common.mad}</span>
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 rounded-2xl bg-muted/50 px-3 py-2.5">
+              <dt className="flex items-center gap-2 text-xs font-medium text-foreground">
+                <ShieldAlert className="h-3.5 w-3.5 text-[#9A2F2F]" />
+                Dette totale
+              </dt>
+              <dd
+                className={cn(
+                  "shrink-0 text-sm font-semibold tabular-nums",
+                  synthese.dette > 0 ? "text-[#9A2F2F]" : "text-foreground",
+                )}
+              >
+                {synthese.dette} <span className="text-xs font-normal">{t.common.mad}</span>
+              </dd>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 rounded-2xl bg-muted/50 px-3 py-2.5">
+              <dt className="flex items-center gap-2 text-xs font-medium text-foreground">
+                <Users className="h-3.5 w-3.5 text-[#28396C]" />
+                Familles avec remise
+              </dt>
+              <dd className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                {synthese.avecRemise}
+                <span className="font-normal text-muted-foreground"> / {synthese.familles}</span>
+              </dd>
+            </div>
+          </dl>
         </section>
       </div>
 
