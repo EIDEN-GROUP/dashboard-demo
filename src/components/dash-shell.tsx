@@ -26,7 +26,14 @@ import {
 
 export type NavItem = { to: string; label: string; icon: any };
 
-type ShellMessage = { id: string; from: string; phone: string; preview: string; time: string; unread: boolean };
+type ShellMessage = {
+  id: string;
+  from: string;
+  phone: string;
+  preview: string;
+  time: string;
+  unread: boolean;
+};
 
 /** Un message WhatsApp est soit parti (vert), soit non envoyé (rouge). */
 type WhatsappState = "envoye" | "non_envoye";
@@ -85,7 +92,10 @@ const WHATSAPP_MESSAGES: WhatsappMessage[] = [
   },
 ];
 
-const WHATSAPP_STATE: Record<WhatsappState, { label: string; icon: typeof Check; pill: string; row: string }> = {
+const WHATSAPP_STATE: Record<
+  WhatsappState,
+  { label: string; icon: typeof Check; pill: string; row: string }
+> = {
   envoye: {
     label: "Envoyé",
     icon: CheckCheck,
@@ -101,10 +111,38 @@ const WHATSAPP_STATE: Record<WhatsappState, { label: string; icon: typeof Check;
 };
 
 const MESSAGES: ShellMessage[] = [
-  { id: "1", from: "Famille Alami", phone: "0661122334", preview: "Bonjour, le reçu de paiement de mai est-il disponible ?", time: "Il y a 10 min", unread: true },
-  { id: "2", from: "Benjelloun / Sara", phone: "0611223344", preview: "Nous réglerons la mensualité en retard vendredi.", time: "Il y a 2 h", unread: true },
-  { id: "3", from: "Tazi / Mehdi", phone: "0622334455", preview: "Merci d'ajouter Mehdi au service de cantine.", time: "Hier", unread: true },
-  { id: "4", from: "Famille Amrani", phone: "0655009911", preview: "Demande d'inscription pour la rentrée 2026.", time: "Lundi", unread: false },
+  {
+    id: "1",
+    from: "Famille Alami",
+    phone: "0661122334",
+    preview: "Bonjour, le reçu de paiement de mai est-il disponible ?",
+    time: "Il y a 10 min",
+    unread: true,
+  },
+  {
+    id: "2",
+    from: "Benjelloun / Sara",
+    phone: "0611223344",
+    preview: "Nous réglerons la mensualité en retard vendredi.",
+    time: "Il y a 2 h",
+    unread: true,
+  },
+  {
+    id: "3",
+    from: "Tazi / Mehdi",
+    phone: "0622334455",
+    preview: "Merci d'ajouter Mehdi au service de cantine.",
+    time: "Hier",
+    unread: true,
+  },
+  {
+    id: "4",
+    from: "Famille Amrani",
+    phone: "0655009911",
+    preview: "Demande d'inscription pour la rentrée 2026.",
+    time: "Lundi",
+    unread: false,
+  },
 ];
 
 type PanelTab = "alertes" | "whatsapp";
@@ -141,12 +179,16 @@ function ShellNotifications() {
 
   /** Renvoie un message WhatsApp qui n'était pas parti. */
   const resend = (id: string) =>
-    setWaMessages((prev) => prev.map((m) => (m.id === id ? { ...m, state: "envoye", time: "À l'instant" } : m)));
+    setWaMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, state: "envoye", time: "À l'instant" } : m)),
+    );
 
   const markAllRead = () => setAlerts((prev) => prev.map((m) => ({ ...m, unread: false })));
 
-  const selectedAlert = tab === "alertes" && selected ? alerts.find((m) => m.id === selected) : undefined;
-  const selectedWa = tab === "whatsapp" && selected ? waMessages.find((m) => m.id === selected) : undefined;
+  const selectedAlert =
+    tab === "alertes" && selected ? alerts.find((m) => m.id === selected) : undefined;
+  const selectedWa =
+    tab === "whatsapp" && selected ? waMessages.find((m) => m.id === selected) : undefined;
 
   const triggerClass =
     "relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#28396C]/15 text-muted-foreground transition-colors hover:text-foreground";
@@ -174,7 +216,11 @@ function ShellNotifications() {
       <button
         type="button"
         onClick={() => openOn("whatsapp")}
-        aria-label={failed > 0 ? `Messages WhatsApp   ${failed} non envoyés` : `Messages WhatsApp   ${sent} envoyés`}
+        aria-label={
+          failed > 0
+            ? `Messages WhatsApp   ${failed} non envoyés`
+            : `Messages WhatsApp   ${sent} envoyés`
+        }
         className={cn(triggerClass, "hover:bg-[#25D366]/15")}
       >
         <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
@@ -196,7 +242,9 @@ function ShellNotifications() {
           className="flex w-[min(26rem,100vw-2rem)] flex-col gap-0 border-l-[#28396C]/10 bg-card p-0 sm:max-w-md"
         >
           <SheetHeader className="space-y-1 border-b border-[#28396C]/10 px-5 pb-4 pt-5 pr-14 text-left">
-            <SheetTitle className="font-display text-xl tracking-tight text-foreground">Centre de messages</SheetTitle>
+            <SheetTitle className="font-display text-xl tracking-tight text-foreground">
+              Centre de messages
+            </SheetTitle>
             <SheetDescription className="text-xs">
               Notifications reçues des parents et messages envoyés sur WhatsApp.
             </SheetDescription>
@@ -207,7 +255,12 @@ function ShellNotifications() {
             <div className="flex items-center justify-between gap-2 border-b border-[#28396C]/10 px-5 py-3">
               <div className="flex gap-1">
                 {[
-                  { key: "alertes" as const, label: "Notifications", count: unread, dot: "bg-[#E25C5C]" },
+                  {
+                    key: "alertes" as const,
+                    label: "Notifications",
+                    count: unread,
+                    dot: "bg-[#E25C5C]",
+                  },
                   {
                     key: "whatsapp" as const,
                     label: "WhatsApp",
@@ -268,9 +321,11 @@ function ShellNotifications() {
             {selectedAlert ? (
               <div className="space-y-4 px-5 py-5">
                 <div>
-                  <p className="font-display text-lg font-semibold text-foreground">{selectedAlert.from}</p>
+                  <p className="font-display text-lg font-semibold text-foreground">
+                    {selectedAlert.from}
+                  </p>
                   <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {selectedAlert.time}   {selectedAlert.phone}
+                    {selectedAlert.time} {selectedAlert.phone}
                   </p>
                 </div>
                 <p className="rounded-2xl bg-muted/60 px-4 py-3 text-sm leading-relaxed text-foreground">
@@ -288,7 +343,10 @@ function ShellNotifications() {
                   <Link
                     to="/dashboard/paiements"
                     onClick={() => setOpen(false)}
-                    className={cn(actionClass, "border border-[#28396C]/15 text-foreground hover:bg-muted")}
+                    className={cn(
+                      actionClass,
+                      "border border-[#28396C]/15 text-foreground hover:bg-muted",
+                    )}
                   >
                     Voir les paiements
                   </Link>
@@ -301,9 +359,11 @@ function ShellNotifications() {
               <div className="space-y-4 px-5 py-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-display text-lg font-semibold text-foreground">{selectedWa.to}</p>
+                    <p className="font-display text-lg font-semibold text-foreground">
+                      {selectedWa.to}
+                    </p>
                     <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {selectedWa.time}   {selectedWa.phone}
+                      {selectedWa.time} {selectedWa.phone}
                     </p>
                   </div>
                   <span
@@ -326,7 +386,7 @@ function ShellNotifications() {
                 {selectedWa.state === "non_envoye" ? (
                   <>
                     <p className="text-xs font-medium text-[#9A2F2F]">
-                      Le message n'est pas parti   numéro WhatsApp injoignable.
+                      Le message n'est pas parti numéro WhatsApp injoignable.
                     </p>
                     <button
                       type="button"
@@ -341,7 +401,10 @@ function ShellNotifications() {
                   <Link
                     to="/dashboard/familles"
                     onClick={() => setOpen(false)}
-                    className={cn(actionClass, "border border-[#28396C]/15 text-foreground hover:bg-muted")}
+                    className={cn(
+                      actionClass,
+                      "border border-[#28396C]/15 text-foreground hover:bg-muted",
+                    )}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     Voir la fiche famille
@@ -365,10 +428,14 @@ function ShellNotifications() {
                       />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium text-foreground">{m.from}</span>
+                          <span className="truncate text-sm font-medium text-foreground">
+                            {m.from}
+                          </span>
                           <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         </span>
-                        <span className="mt-0.5 block text-xs text-muted-foreground">{m.preview}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">
+                          {m.preview}
+                        </span>
                         <span className="mt-1 block text-[10px] uppercase tracking-wider text-muted-foreground/80">
                           {m.time}
                         </span>
@@ -392,12 +459,20 @@ function ShellNotifications() {
                         className={cn(rowClass, "flex-col border-l-[3px]", s.row)}
                       >
                         <span className="flex w-full items-baseline justify-between gap-2">
-                          <span className="truncate text-sm font-medium text-foreground">{m.to}</span>
-                          <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{m.phone}</span>
+                          <span className="truncate text-sm font-medium text-foreground">
+                            {m.to}
+                          </span>
+                          <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                            {m.phone}
+                          </span>
                         </span>
-                        <span className="mt-1 block w-full text-xs text-muted-foreground">{m.text}</span>
+                        <span className="mt-1 block w-full text-xs text-muted-foreground">
+                          {m.text}
+                        </span>
                         <span className="mt-2 flex w-full items-center justify-between gap-2">
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground/80">{m.time}</span>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground/80">
+                            {m.time}
+                          </span>
                           <span
                             className={cn(
                               "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
@@ -422,10 +497,9 @@ function ShellNotifications() {
 }
 
 function topNavItemActive(pathname: string, to: string) {
-  if (to === "/dashboard")
-    return pathname === "/dashboard" || pathname === "/dashboard/";
-  if (to === "/dashboard/rendez-vous")
-    return pathname === "/dashboard/rendez-vous" || pathname.startsWith("/dashboard/rendez-vous/");
+  if (to === "/dashboard") return pathname === "/dashboard" || pathname === "/dashboard/";
+  if (to === "/dashboard/calendar")
+    return pathname === "/dashboard/calendar" || pathname.startsWith("/dashboard/calendar/");
   if (to === "/dashboard/familles")
     return pathname === "/dashboard/familles" || pathname.startsWith("/dashboard/familles/");
   if (to === "/dashboard/paiements")
@@ -451,8 +525,14 @@ function MobileBottomNav({
   const labelClass = compact ? "text-[9px] leading-tight" : "text-[10px] leading-tight";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#28396C]/10 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_35px_-15px_rgba(40,57,108,0.3)] backdrop-blur-xl lg:hidden" aria-label={mainNavAria}>
-      <div className="grid min-h-[4.25rem] w-full auto-cols-fr" style={{ gridTemplateColumns: `repeat(${topNav.length}, minmax(0, 1fr))` }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#28396C]/10 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_35px_-15px_rgba(40,57,108,0.3)] backdrop-blur-xl lg:hidden"
+      aria-label={mainNavAria}
+    >
+      <div
+        className="grid min-h-[4.25rem] w-full auto-cols-fr"
+        style={{ gridTemplateColumns: `repeat(${topNav.length}, minmax(0, 1fr))` }}
+      >
         {topNav.map((n) => {
           const active = topNavItemActive(pathname, n.to);
           const Icon = n.icon;
@@ -462,14 +542,27 @@ function MobileBottomNav({
               to={n.to}
               className={cn(
                 "relative mx-0.5 flex min-w-0 flex-col items-center justify-center gap-1 rounded-full px-0.5 py-2 font-sans transition-colors",
-                active ? "text-foreground" : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                active
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >
               <span className="flex h-1 w-full shrink-0 items-center justify-center" aria-hidden>
-                <span className={cn("h-0.5 w-6 shrink-0 rounded-full", active ? "bg-primary" : "bg-transparent")} />
+                <span
+                  className={cn(
+                    "h-0.5 w-6 shrink-0 rounded-full",
+                    active ? "bg-primary" : "bg-transparent",
+                  )}
+                />
               </span>
               <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
-              <span className={cn( "w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight", labelClass, active ? "text-foreground" : "font-medium text-muted-foreground", )}>
+              <span
+                className={cn(
+                  "w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight",
+                  labelClass,
+                  active ? "text-foreground" : "font-medium text-muted-foreground",
+                )}
+              >
                 {n.label}
               </span>
             </Link>
@@ -524,17 +617,27 @@ export function DashShell({
     };
 
     return (
-      <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_45%,#EEF6E0_100%)]" dir={shellDir}>
+      <div
+        className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_45%,#EEF6E0_100%)]"
+        dir={shellDir}
+      >
         <header className="z-30 shrink-0 border-b border-[#28396C]/10 bg-white/85 backdrop-blur-xl">
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 flex-col">
-                <span className="font-display text-xl leading-none tracking-tight text-foreground">{t.shell.platform}</span>
-                <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
+                <span className="font-display text-xl leading-none tracking-tight text-foreground">
+                  {t.shell.platform}
+                </span>
+                <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {brand}
+                </span>
               </Link>
               {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-[#B5E18B]/15">
+                <Link
+                  to={switchTo}
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-[#B5E18B]/15"
+                >
                   <ArrowLeftRight className="h-3 w-3 shrink-0" />
                   <span className="truncate">{switchLabel}</span>
                 </Link>
@@ -545,7 +648,12 @@ export function DashShell({
               <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
                 {(user?.name || "A").slice(0, 1).toUpperCase()}
               </div>
-              <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#28396C]/15 text-muted-foreground transition-colors hover:bg-[#B5E18B]/15 hover:text-foreground" aria-label={t.shell.logoutAria}>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#28396C]/15 text-muted-foreground transition-colors hover:bg-[#B5E18B]/15 hover:text-foreground"
+                aria-label={t.shell.logoutAria}
+              >
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </div>
@@ -555,11 +663,18 @@ export function DashShell({
           <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex flex-col">
-                <span className="font-display text-4xl leading-none text-foreground">{t.shell.platform}</span>
-                <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
+                <span className="font-display text-4xl leading-none text-foreground">
+                  {t.shell.platform}
+                </span>
+                <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {brand}
+                </span>
               </Link>
               {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-[#B5E18B]/15 w-fit" >
+                <Link
+                  to={switchTo}
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-[#B5E18B]/15 w-fit"
+                >
                   <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{switchLabel}</span>
                 </Link>
@@ -591,14 +706,21 @@ export function DashShell({
               <ShellNotifications />
               <div className="flex items-center gap-2">
                 <div className="hidden text-right sm:block">
-                  <p className="text-sm font-medium leading-none text-foreground">{user?.name || "admin"}</p>
+                  <p className="text-sm font-medium leading-none text-foreground">
+                    {user?.name || "admin"}
+                  </p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{brand}</p>
                 </div>
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
                   {(user?.name || "A").slice(0, 1).toUpperCase()}
                 </div>
               </div>
-              <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-[#28396C]/15 px-3 py-1.5 text-muted-foreground hover:bg-[#B5E18B]/15" aria-label={t.shell.logoutAria}>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#28396C]/15 px-3 py-1.5 text-muted-foreground hover:bg-[#B5E18B]/15"
+                aria-label={t.shell.logoutAria}
+              >
                 <LogOut className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden lg:inline">{t.shell.logout}</span>
               </button>
@@ -629,11 +751,19 @@ export function DashShell({
           ) : null}
         </header>
 
-        <main data-dashboard-main dir={shellDir} className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-24 lg:p-8 lg:pb-8">
+        <main
+          data-dashboard-main
+          dir={shellDir}
+          className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-24 lg:p-8 lg:pb-8"
+        >
           {children}
         </main>
 
-        <MobileBottomNav topNav={topNav} pathname={loc.pathname} mainNavAria={t.shell.mainNavAria} />
+        <MobileBottomNav
+          topNav={topNav}
+          pathname={loc.pathname}
+          mainNavAria={t.shell.mainNavAria}
+        />
       </div>
     );
   }
@@ -644,10 +774,15 @@ export function DashShell({
         <div className="px-6 py-5 border-b border-border space-y-3">
           <div>
             <p className="font-display text-lg leading-none text-foreground">LOGO</p>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{brand}</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
+              {brand}
+            </p>
           </div>
           {switchTo && switchLabel ? (
-            <Link to={switchTo} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-border text-foreground/90 hover:bg-muted/80" >
+            <Link
+              to={switchTo}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-border text-foreground/90 hover:bg-muted/80"
+            >
               <ArrowLeftRight className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="min-w-0 truncate">{switchLabel}</span>
             </Link>
@@ -691,7 +826,9 @@ export function DashShell({
           <div className="px-6 h-16 flex items-center justify-end gap-4">
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium leading-none text-foreground">{user?.name || "Admin"}</p>
+                <p className="text-sm font-medium leading-none text-foreground">
+                  {user?.name || "Admin"}
+                </p>
                 <p className="text-[11px] text-muted-foreground mt-1">{brand}</p>
               </div>
               <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
@@ -735,7 +872,10 @@ export function StatCard({
             style={
               monochrome
                 ? undefined
-                : { backgroundColor: `color-mix(in oklab, var(--${color}) 22%, var(--background))`, color: `var(--${color})` }
+                : {
+                    backgroundColor: `color-mix(in oklab, var(--${color}) 22%, var(--background))`,
+                    color: `var(--${color})`,
+                  }
             }
           >
             <Icon className="h-4 w-4" />
@@ -748,11 +888,21 @@ export function StatCard({
   );
 }
 
-export function PageTitle({ eyebrow, title, action }: { eyebrow?: string; title: string; action?: ReactNode }) {
+export function PageTitle({
+  eyebrow,
+  title,
+  action,
+}: {
+  eyebrow?: string;
+  title: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
       <div>
-        {eyebrow && <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{eyebrow}</p>}
+        {eyebrow && (
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{eyebrow}</p>
+        )}
         <h1 className="mt-1 font-display text-3xl md:text-4xl text-foreground">{title}</h1>
       </div>
       {action}

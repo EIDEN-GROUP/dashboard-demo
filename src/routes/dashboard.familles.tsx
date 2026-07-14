@@ -14,14 +14,10 @@ import {
   Percent,
   Bus,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -112,6 +108,47 @@ function remiseAuto(fratrie: number) {
   return 0;
 }
 
+/** La remise fratrie n'est ouverte qu'au-delà de 2 enfants scolarisés. */
+function remiseEligible(fratrie: number) {
+  return fratrie > 2;
+}
+
+/** Interrupteur de remise fratrie   désactivé tant que la famille n'a pas 3 enfants. */
+function RemiseToggle({
+  id,
+  fratrie,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  fratrie: number;
+  checked: boolean;
+  onCheckedChange: (on: boolean) => void;
+}) {
+  const eligible = remiseEligible(fratrie);
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-2xl border border-[#28396C]/10 bg-muted/40 px-4 py-3">
+      <div className="min-w-0">
+        <Label htmlFor={id} className={labelClass}>
+          Appliquer la remise fratrie
+        </Label>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {eligible
+            ? `${fratrie} enfants scolarisés   remise de ${remiseAuto(fratrie)} % suggérée.`
+            : "Disponible à partir de 3 enfants scolarisés."}
+        </p>
+      </div>
+      <Switch
+        id={id}
+        checked={checked}
+        disabled={!eligible}
+        onCheckedChange={onCheckedChange}
+        aria-label="Appliquer la remise fratrie"
+      />
+    </div>
+  );
+}
+
 /** Frais mensuels nets, remise fratrie déduite. */
 function netMensuel(c: Client) {
   return Math.round(c.mensuel * (1 - c.remise / 100));
@@ -167,7 +204,7 @@ function RemiseBadge({ client }: { client: Client }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-[#B5E18B]/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#3E6420]">
       <Percent className="h-3 w-3" />
-      {client.remise}%   {client.fratrie} enfants
+      {client.remise}% {client.fratrie} enfants
     </span>
   );
 }
@@ -240,7 +277,14 @@ const initialClients: Client[] = [
     sexe: "Garçon",
     email: "tehgdgh@test.com",
     phone: "0614020520",
-    statuts: { "2026-01": "impaye", "2026-02": "impaye", "2026-03": "impaye", "2026-04": "impaye", "2026-05": "impaye", "2026-06": "impaye" },
+    statuts: {
+      "2026-01": "impaye",
+      "2026-02": "impaye",
+      "2026-03": "impaye",
+      "2026-04": "impaye",
+      "2026-05": "impaye",
+      "2026-06": "impaye",
+    },
     mensuel: 0,
     dette: 0,
     dob: "",
@@ -271,7 +315,14 @@ const initialClients: Client[] = [
     sexe: "Fille",
     email: "karim.alami@example.com",
     phone: "0661122334",
-    statuts: { "2026-01": "paye", "2026-02": "paye", "2026-03": "paye", "2026-04": "paye", "2026-05": "paye", "2026-06": "impaye" },
+    statuts: {
+      "2026-01": "paye",
+      "2026-02": "paye",
+      "2026-03": "paye",
+      "2026-04": "paye",
+      "2026-05": "paye",
+      "2026-06": "impaye",
+    },
     mensuel: 1800,
     dette: 0,
     dob: "15/03/2012",
@@ -302,7 +353,14 @@ const initialClients: Client[] = [
     sexe: "Fille",
     email: "omar.benjelloun@example.com",
     phone: "0611223344",
-    statuts: { "2026-01": "impaye", "2026-02": "retard", "2026-03": "retard", "2026-04": "impaye", "2026-05": "retard", "2026-06": "impaye" },
+    statuts: {
+      "2026-01": "impaye",
+      "2026-02": "retard",
+      "2026-03": "retard",
+      "2026-04": "impaye",
+      "2026-05": "retard",
+      "2026-06": "impaye",
+    },
     mensuel: 1600,
     dette: 1200,
     dob: "22/06/2015",
@@ -333,7 +391,14 @@ const initialClients: Client[] = [
     sexe: "Garçon",
     email: "hicham.tazi@example.com",
     phone: "0622334455",
-    statuts: { "2026-01": "paye", "2026-02": "paye", "2026-03": "retard", "2026-04": "paye", "2026-05": "paye", "2026-06": "impaye" },
+    statuts: {
+      "2026-01": "paye",
+      "2026-02": "paye",
+      "2026-03": "retard",
+      "2026-04": "paye",
+      "2026-05": "paye",
+      "2026-06": "impaye",
+    },
     mensuel: 1800,
     dette: 0,
     dob: "02/11/2010",
@@ -391,7 +456,8 @@ function CrmParentsPage() {
       if (serviceFilter === "activites" && c.activites !== "Oui") return false;
       if (serviceFilter === "remise" && c.remise <= 0) return false;
       if (!q) return true;
-      const blob = `${c.parent} ${c.child} ${c.email} ${c.email2} ${c.phone} ${c.niveau}`.toLowerCase();
+      const blob =
+        `${c.parent} ${c.child} ${c.email} ${c.email2} ${c.phone} ${c.niveau}`.toLowerCase();
       return blob.includes(q);
     });
   }, [clients, search, serviceFilter]);
@@ -425,13 +491,17 @@ function CrmParentsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.familles.eyebrow}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            {t.familles.eyebrow}
+          </p>
           <h1 className="mt-1 font-display text-3xl tracking-tight text-foreground md:text-4xl">
             {t.familles.titleBold}{" "}
-            {t.familles.titleItalic ? <span className="italic text-muted-foreground">{t.familles.titleItalic}</span> : null}
+            {t.familles.titleItalic ? (
+              <span className="italic text-muted-foreground">{t.familles.titleItalic}</span>
+            ) : null}
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Fiches élèves complètes   scolarité, contacts, santé et suivi des paiements mensuels.
+            Fiches élèves complètes scolarité, contacts, santé et suivi des paiements mensuels.
           </p>
         </div>
         <button type="button" onClick={() => setAddOpen(true)} className={primaryPill}>
@@ -443,7 +513,9 @@ function CrmParentsPage() {
       {/* Filtres + analyse du mois */}
       <div className="grid gap-4 lg:grid-cols-3">
         <section className={cn(softCard, "p-5 lg:col-span-2")}>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres   vue mensuelle</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Filtres vue mensuelle
+          </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="relative min-w-0 sm:col-span-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
@@ -458,7 +530,10 @@ function CrmParentsPage() {
             <div>
               <Label className={labelClass}>Mois</Label>
               <Select value={month} onValueChange={setMonth}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par mois">
+                <SelectTrigger
+                  className={cn(selectTriggerClass, "mt-1.5")}
+                  aria-label="Filtrer par mois"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={softSelectContent}>
@@ -473,7 +548,10 @@ function CrmParentsPage() {
             <div>
               <Label className={labelClass}>Statut de paiement</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par statut">
+                <SelectTrigger
+                  className={cn(selectTriggerClass, "mt-1.5")}
+                  aria-label="Filtrer par statut"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={softSelectContent}>
@@ -487,7 +565,10 @@ function CrmParentsPage() {
             <div className="sm:col-span-2">
               <Label className={labelClass}>Service souscrit</Label>
               <Select value={serviceFilter} onValueChange={setServiceFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
+                <SelectTrigger
+                  className={cn(selectTriggerClass, "mt-1.5")}
+                  aria-label="Filtrer par service"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={softSelectContent}>
@@ -505,15 +586,19 @@ function CrmParentsPage() {
             {filtered.length === 1
               ? t.familles.clientsFoundOne
               : interpolate(t.familles.clientsFoundMany, { count: filtered.length })}{" "}
-              {monthLabel}
+            {monthLabel}
           </p>
         </section>
 
         {/* Graphique circulaire   répartition du mois */}
         <section className={cn(softCard, "flex flex-col p-5")}>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Analyse   {monthLabel}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Analyse {monthLabel}
+          </p>
           <div className="mt-3 flex items-baseline gap-2">
-            <p className="font-display text-3xl font-semibold tabular-nums text-foreground">{donutTotal}</p>
+            <p className="font-display text-3xl font-semibold tabular-nums text-foreground">
+              {donutTotal}
+            </p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
           </div>
           <ul className="mt-4 space-y-2">
@@ -523,7 +608,10 @@ function CrmParentsPage() {
                 <li key={d.name} className="rounded-2xl bg-muted/50 px-3 py-2">
                   <div className="flex items-center justify-between gap-2 text-xs">
                     <span className="flex items-center gap-2 font-medium text-foreground">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: d.color }}
+                      />
                       {d.name}
                     </span>
                     <span className="shrink-0 font-semibold tabular-nums text-foreground">
@@ -547,7 +635,9 @@ function CrmParentsPage() {
       {/* Tableau   cliquer une ligne ouvre la fiche complète */}
       <section className={cn(softCard, "overflow-hidden")}>
         <div className="border-b border-[#28396C]/10 px-5 py-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.familles.clientList}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {t.familles.clientList}
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1080px] text-left text-sm">
@@ -581,11 +671,15 @@ function CrmParentsPage() {
                   <td className="px-4 py-3 text-muted-foreground">{dash(c.niveau)}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     <span className="block">{dash(c.email)}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.email2)}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {dash(c.email2)}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     <span className="block">{c.phone}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.tel2)}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {dash(c.tel2)}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <ServiceChips client={c} />
@@ -622,11 +716,17 @@ function CrmParentsPage() {
           </table>
         </div>
         {filtered.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-muted-foreground">{t.familles.noMatch}</p>
+          <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+            {t.familles.noMatch}
+          </p>
         ) : null}
       </section>
 
-      <AddClientDialog open={addOpen} onOpenChange={setAddOpen} onCreated={(row) => setClients((p) => [...p, row])} />
+      <AddClientDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onCreated={(row) => setClients((p) => [...p, row])}
+      />
 
       {detail ? (
         <DetailClientDialog
@@ -683,7 +783,13 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SectionTitle({ icon: Icon, children }: { icon: typeof GraduationCap; children: ReactNode }) {
+function SectionTitle({
+  icon: Icon,
+  children,
+}: {
+  icon: typeof GraduationCap;
+  children: ReactNode;
+}) {
   return (
     <p className="col-span-full mt-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
       <span className="grid h-6 w-6 place-items-center rounded-lg bg-[#28396C]/8 text-[#28396C]">
@@ -722,13 +828,16 @@ function DetailClientDialog({
         <div className="border-t-4 border-t-[#B5E18B]">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Fiche élève</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                Fiche élève
+              </p>
               <DialogTitle className="mt-1 text-left font-display text-xl font-semibold tracking-tight text-foreground">
-                {client.child} <span className="font-normal text-muted-foreground">· {client.parent}</span>
+                {client.child}{" "}
+                <span className="font-normal text-muted-foreground">· {client.parent}</span>
               </DialogTitle>
             </div>
             <div className="text-right">
-              <p className={labelClass}>Statut   {monthLabel}</p>
+              <p className={labelClass}>Statut {monthLabel}</p>
               <div className="mt-1">
                 <StatusSelect value={statusOf(client, month)} onChange={onStatusChange} />
               </div>
@@ -781,10 +890,18 @@ function DetailClientDialog({
               <InfoRow label="Frais mensuels (brut)" value={`${client.mensuel} ${t.common.mad}`} />
               <InfoRow
                 label="Remise fratrie"
-                value={client.remise > 0 ? `${client.remise}%   ${client.fratrie} enfants` : "Aucune"}
+                value={
+                  client.remise > 0 ? `${client.remise}%   ${client.fratrie} enfants` : "Aucune"
+                }
               />
-              <InfoRow label="Frais mensuels nets" value={`${netMensuel(client)} ${t.common.mad}`} />
-              <InfoRow label="Jour de paiement" value={client.jourPaiement ? `Le ${client.jourPaiement}` : " "} />
+              <InfoRow
+                label="Frais mensuels nets"
+                value={`${netMensuel(client)} ${t.common.mad}`}
+              />
+              <InfoRow
+                label="Jour de paiement"
+                value={client.jourPaiement ? `Le ${client.jourPaiement}` : " "}
+              />
               <InfoRow label="Dette totale" value={`${client.dette} ${t.common.mad}`} />
               <div className="sm:col-span-2">
                 <p className={labelClass}>Historique des statuts</p>
@@ -844,14 +961,35 @@ function AddClientDialog({
   const f = t.form;
   const a = t.familles.addModal;
 
+  const [fratrie, setFratrie] = useState(1);
+  const [remiseOn, setRemiseOn] = useState(false);
+
+  // Repartir d'un formulaire vierge à chaque ouverture.
+  useEffect(() => {
+    if (open) {
+      setFratrie(1);
+      setRemiseOn(false);
+    }
+  }, [open]);
+
+  const setFratrieCount = (n: number) => {
+    setFratrie(n);
+    // La remise s'active d'office dès le 3ᵉ enfant, et retombe sous le seuil.
+    setRemiseOn(remiseEligible(n));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[640px]")}>
         <DialogDescription className="sr-only">{a.srDesc}</DialogDescription>
         <div className="border-t-4 border-t-[#B5E18B]">
           <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{a.title}</DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              {a.eyebrow}
+            </p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
+              {a.title}
+            </DialogTitle>
           </div>
           <form
             className="max-h-[calc(90vh-10rem)] overflow-y-auto px-6 py-5"
@@ -860,7 +998,6 @@ function AddClientDialog({
               const fd = new FormData(e.currentTarget);
               const parent = String(fd.get("parent") || "Nouveau parent");
               const child = String(fd.get("child") || "Enfant");
-              const fratrie = Number(fd.get("fratrie") || 1);
               onCreated({
                 id: `n-${Date.now()}`,
                 parent,
@@ -890,14 +1027,20 @@ function AddClientDialog({
                 garderie: fd.get("garderie") ? "Oui" : "Non",
                 activites: fd.get("activites") ? "Oui" : "Non",
                 fratrie,
-                remise: remiseAuto(fratrie),
+                remise: remiseOn && remiseEligible(fratrie) ? remiseAuto(fratrie) : 0,
               });
               onOpenChange(false);
             }}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field id="nc-parent" label={f.parentDisplayName}>
-                <Input id="nc-parent" name="parent" required className={inputClass} placeholder={f.parentDisplayPlaceholder} />
+                <Input
+                  id="nc-parent"
+                  name="parent"
+                  required
+                  className={inputClass}
+                  placeholder={f.parentDisplayPlaceholder}
+                />
               </Field>
               <Field id="nc-child" label={f.studentName}>
                 <Input id="nc-child" name="child" required className={inputClass} />
@@ -912,19 +1055,45 @@ function AddClientDialog({
                 <Input id="nc-tel" name="tel1" type="tel" className={inputClass} />
               </Field>
               <Field id="nc-niveau" label={f.level}>
-                <Input id="nc-niveau" name="niveau" className={inputClass} placeholder={f.levelExample} />
+                <Input
+                  id="nc-niveau"
+                  name="niveau"
+                  className={inputClass}
+                  placeholder={f.levelExample}
+                />
               </Field>
               <Field id="nc-mensuel" label={f.monthlyFeesMad}>
-                <Input id="nc-mensuel" name="mensuel" type="number" min={0} defaultValue={0} className={inputClass} />
+                <Input
+                  id="nc-mensuel"
+                  name="mensuel"
+                  type="number"
+                  min={0}
+                  defaultValue={0}
+                  className={inputClass}
+                />
               </Field>
               <Field id="nc-fratrie" label="Enfants scolarisés">
-                <Input id="nc-fratrie" name="fratrie" type="number" min={1} max={10} defaultValue={1} className={inputClass} />
+                <Input
+                  id="nc-fratrie"
+                  name="fratrie"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={fratrie}
+                  onChange={(ev) => setFratrieCount(Number(ev.target.value || 1))}
+                  className={inputClass}
+                />
               </Field>
               <div className="sm:col-span-2">
+                <RemiseToggle
+                  id="nc-remise"
+                  fratrie={fratrie}
+                  checked={remiseOn}
+                  onCheckedChange={setRemiseOn}
+                />
+              </div>
+              <div className="sm:col-span-2">
                 <Label className={labelClass}>Services souscrits</Label>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Une remise fratrie de 10 % est appliquée dès le 3ᵉ enfant, 15 % dès le 4ᵉ.
-                </p>
                 <div className="mt-2 flex flex-wrap gap-4">
                   {[
                     { name: "transport", label: "Transport" },
@@ -979,11 +1148,17 @@ function PaymentDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[480px]")}>
-        <DialogDescription className="sr-only">{interpolate(p.srDesc, { name: clientLabel })}</DialogDescription>
+        <DialogDescription className="sr-only">
+          {interpolate(p.srDesc, { name: clientLabel })}
+        </DialogDescription>
         <div className="border-t-4 border-t-[#B5E18B]">
           <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{p.eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{p.title}</DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              {p.eyebrow}
+            </p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
+              {p.title}
+            </DialogTitle>
           </div>
           <form
             className="space-y-4 px-6 py-5"
@@ -993,10 +1168,23 @@ function PaymentDialog({
             }}
           >
             <Field id="pay-montant" label={f.amountMad}>
-              <Input id="pay-montant" name="montant" type="number" defaultValue={0} min={0} className={inputClass} />
+              <Input
+                id="pay-montant"
+                name="montant"
+                type="number"
+                defaultValue={0}
+                min={0}
+                className={inputClass}
+              />
             </Field>
             <Field id="pay-date" label={f.paymentDate}>
-              <Input id="pay-date" name="date" type="date" className={inputClass} defaultValue="2026-05-12" />
+              <Input
+                id="pay-date"
+                name="date"
+                type="date"
+                className={inputClass}
+                defaultValue="2026-05-12"
+              />
             </Field>
             <Field id="pay-mode" label={f.paymentMode}>
               <Select name="mode" defaultValue="especes">
@@ -1048,6 +1236,7 @@ function EditClientDialog({
   const [activites, setActivites] = useState<OuiNon>(client.activites);
   const [fratrie, setFratrie] = useState<number>(client.fratrie);
   const [remise, setRemise] = useState<number>(client.remise);
+  const [remiseOn, setRemiseOn] = useState<boolean>(client.remise > 0);
 
   useEffect(() => {
     setSexe(client.sexe);
@@ -1057,7 +1246,20 @@ function EditClientDialog({
     setActivites(client.activites);
     setFratrie(client.fratrie);
     setRemise(client.remise);
+    setRemiseOn(client.remise > 0);
   }, [client]);
+
+  const setFratrieCount = (n: number) => {
+    setFratrie(n);
+    const on = remiseEligible(n);
+    setRemiseOn(on);
+    setRemise(on ? remiseAuto(n) : 0);
+  };
+
+  const toggleRemise = (on: boolean) => {
+    setRemiseOn(on);
+    setRemise(on ? remiseAuto(fratrie) : 0);
+  };
 
   const { t } = useDashboardI18n();
   const f = t.form;
@@ -1066,11 +1268,17 @@ function EditClientDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,640px)] max-w-[640px]")}>
-        <DialogDescription className="sr-only">{interpolate(e.srDesc, { name: client.child })}</DialogDescription>
+        <DialogDescription className="sr-only">
+          {interpolate(e.srDesc, { name: client.child })}
+        </DialogDescription>
         <div className="border-t-4 border-t-[#B5E18B]">
           <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{e.eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{e.title}</DialogTitle>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              {e.eyebrow}
+            </p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
+              {e.title}
+            </DialogTitle>
           </div>
           <form
             className="max-h-[65vh] space-y-4 overflow-y-auto scroll-touch px-6 py-5"
@@ -1110,13 +1318,26 @@ function EditClientDialog({
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field id="e-parent" label={t.common.parent}>
-                <Input id="e-parent" name="parent" defaultValue={client.parent} className={inputClass} />
+                <Input
+                  id="e-parent"
+                  name="parent"
+                  defaultValue={client.parent}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-child" label={t.common.child}>
-                <Input id="e-child" name="child" defaultValue={client.child} className={inputClass} />
+                <Input
+                  id="e-child"
+                  name="child"
+                  defaultValue={client.child}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-sexe" label="Sexe">
-                <Select value={sexe || undefined} onValueChange={(v) => setSexe(v as Client["sexe"])}>
+                <Select
+                  value={sexe || undefined}
+                  onValueChange={(v) => setSexe(v as Client["sexe"])}
+                >
                   <SelectTrigger id="e-sexe" className={selectTriggerClass}>
                     <SelectValue placeholder=" " />
                   </SelectTrigger>
@@ -1130,10 +1351,20 @@ function EditClientDialog({
                 <Input id="e-dob" name="dob" defaultValue={client.dob} className={inputClass} />
               </Field>
               <Field id="e-niveau" label={f.level}>
-                <Input id="e-niveau" name="niveau" defaultValue={client.niveau} className={inputClass} />
+                <Input
+                  id="e-niveau"
+                  name="niveau"
+                  defaultValue={client.niveau}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-inscription" label="Date d'inscription">
-                <Input id="e-inscription" name="dateInscription" defaultValue={client.dateInscription} className={inputClass} />
+                <Input
+                  id="e-inscription"
+                  name="dateInscription"
+                  defaultValue={client.dateInscription}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-pere" label={f.fatherName}>
                 <Input id="e-pere" name="pere" defaultValue={client.pere} className={inputClass} />
@@ -1145,34 +1376,83 @@ function EditClientDialog({
                 <Input id="e-cin" name="cin" defaultValue={client.cin} className={inputClass} />
               </Field>
               <Field id="e-email" label="Email du père">
-                <Input id="e-email" name="email" type="email" defaultValue={client.email} className={inputClass} />
+                <Input
+                  id="e-email"
+                  name="email"
+                  type="email"
+                  defaultValue={client.email}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-email2" label="Email de la mère">
-                <Input id="e-email2" name="email2" type="email" defaultValue={client.email2} className={inputClass} />
+                <Input
+                  id="e-email2"
+                  name="email2"
+                  type="email"
+                  defaultValue={client.email2}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-phone" label="Téléphone du père">
-                <Input id="e-phone" name="phone" type="tel" defaultValue={client.phone} className={inputClass} />
+                <Input
+                  id="e-phone"
+                  name="phone"
+                  type="tel"
+                  defaultValue={client.phone}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-tel2" label="Téléphone de la mère">
-                <Input id="e-tel2" name="tel2" type="tel" defaultValue={client.tel2} className={inputClass} />
+                <Input
+                  id="e-tel2"
+                  name="tel2"
+                  type="tel"
+                  defaultValue={client.tel2}
+                  className={inputClass}
+                />
               </Field>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="e-adresse" className={labelClass}>
                   Adresse
                 </Label>
-                <Input id="e-adresse" name="adresse" defaultValue={client.adresse} className={inputClass} />
+                <Input
+                  id="e-adresse"
+                  name="adresse"
+                  defaultValue={client.adresse}
+                  className={inputClass}
+                />
               </div>
               <Field id="e-urg-nom" label="Contact d'urgence">
-                <Input id="e-urg-nom" name="urgenceNom" defaultValue={client.urgenceNom} className={inputClass} />
+                <Input
+                  id="e-urg-nom"
+                  name="urgenceNom"
+                  defaultValue={client.urgenceNom}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-urg-tel" label="Téléphone d'urgence">
-                <Input id="e-urg-tel" name="urgenceTel" defaultValue={client.urgenceTel} className={inputClass} />
+                <Input
+                  id="e-urg-tel"
+                  name="urgenceTel"
+                  defaultValue={client.urgenceTel}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-sang" label="Groupe sanguin">
-                <Input id="e-sang" name="groupeSanguin" defaultValue={client.groupeSanguin} className={inputClass} />
+                <Input
+                  id="e-sang"
+                  name="groupeSanguin"
+                  defaultValue={client.groupeSanguin}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-allergies" label="Allergies">
-                <Input id="e-allergies" name="allergies" defaultValue={client.allergies} className={inputClass} />
+                <Input
+                  id="e-allergies"
+                  name="allergies"
+                  defaultValue={client.allergies}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-transport" label="Transport scolaire">
                 <OuiNonSelect id="e-transport" value={transport} onChange={setTransport} />
@@ -1193,11 +1473,7 @@ function EditClientDialog({
                   min={1}
                   max={10}
                   value={fratrie}
-                  onChange={(ev) => {
-                    const n = Number(ev.target.value || 1);
-                    setFratrie(n);
-                    setRemise(remiseAuto(n));
-                  }}
+                  onChange={(ev) => setFratrieCount(Number(ev.target.value || 1))}
                   className={inputClass}
                 />
               </Field>
@@ -1208,18 +1484,49 @@ function EditClientDialog({
                   min={0}
                   max={100}
                   value={remise}
+                  disabled={!remiseOn}
                   onChange={(ev) => setRemise(Number(ev.target.value || 0))}
                   className={inputClass}
                 />
               </Field>
+              <div className="sm:col-span-2">
+                <RemiseToggle
+                  id="e-remise-toggle"
+                  fratrie={fratrie}
+                  checked={remiseOn}
+                  onCheckedChange={toggleRemise}
+                />
+              </div>
               <Field id="e-mensuel" label={f.monthlyFeesMad}>
-                <Input id="e-mensuel" name="mensuel" type="number" min={0} defaultValue={client.mensuel} className={inputClass} />
+                <Input
+                  id="e-mensuel"
+                  name="mensuel"
+                  type="number"
+                  min={0}
+                  defaultValue={client.mensuel}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-dette" label="Dette (MAD)">
-                <Input id="e-dette" name="dette" type="number" min={0} defaultValue={client.dette} className={inputClass} />
+                <Input
+                  id="e-dette"
+                  name="dette"
+                  type="number"
+                  min={0}
+                  defaultValue={client.dette}
+                  className={inputClass}
+                />
               </Field>
               <Field id="e-jour" label={f.paymentDay}>
-                <Input id="e-jour" name="jour" type="number" min={1} max={31} defaultValue={client.jourPaiement ?? 1} className={inputClass} />
+                <Input
+                  id="e-jour"
+                  name="jour"
+                  type="number"
+                  min={1}
+                  max={31}
+                  defaultValue={client.jourPaiement ?? 1}
+                  className={inputClass}
+                />
               </Field>
             </div>
             <div className="flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
