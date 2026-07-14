@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { ArrowRight, BarChart3, Building2, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin, MessageSquare, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
+import { ArrowRight, BarChart3, Building2, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin, MessageSquare, Phone, Send, Sparkles, TrendingUp, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { format } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
@@ -8,6 +8,7 @@ import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { HeroPreviewPageBody } from "@/components/hero-preview-page-body";
+import { HeroDashboardShot } from "@/components/hero-dashboard-shot";
 import type { DashboardMiniaturePageId } from "@/lib/dashboard-mirror-data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
@@ -51,6 +52,9 @@ const PRICING_AMOUNTS = {
   pro: { monthly: 2000, yearly: 16000, popular: true },
   reseau: { monthly: null, yearly: null, popular: false },
 } as const;
+
+// Per-plan icon shown at the top of each pricing card.
+const PRICING_ICONS = [Sparkles, BadgeDollarSign, Building2] as const;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -253,39 +257,53 @@ function Header() {
 // ─────────────────────────────────────────────
 // Hero miniature dashboard
 // ─────────────────────────────────────────────
-function HeroDashboardPreview() {
+function HeroDashboardShowcase() {
   const { t } = useLandingI18n();
-  const previewTopNav = usePreviewTopNav();
   const reduceMotion = useReducedMotion();
-  const [page, setPage] = useState<DashboardMiniaturePageId>("dashboard");
-  const [notice, setNotice] = useState<string | null>(null);
 
-  const showLocked = (msg: string) => {
-    setNotice(msg);
-    window.setTimeout(() => setNotice(null), 4000);
-  };
-
-  const previewBtn = "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-1.5 py-0.5 text-[9px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[10px]";
-
-  const panelTransition = reduceMotion
-    ? { duration: 0.15 }
-    : { duration: 0.42, ease: [0.22, 1, 0.36, 1] as const };
+  const toolIcons = [LayoutDashboard, Users, CreditCard, BarChart3, Images];
 
   return (
-    <div className="relative w-full">
-      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-[#B5E18B]/20 via-transparent to-[#5C6B94]/10 blur-2xl" />
+    <div className="relative w-full [perspective:1600px]">
+      {/* Soft glow behind the window */}
+      <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-[#B5E18B]/25 via-transparent to-[#5C6B94]/10 blur-3xl" />
 
+      {/* Stacked panels behind for depth */}
+      <div className="pointer-events-none absolute -right-5 -top-5 hidden h-full w-full rounded-3xl border border-white/40 bg-white/25 backdrop-blur-sm lg:block" aria-hidden />
+      <div className="pointer-events-none absolute -right-2.5 -top-2.5 hidden h-full w-full rounded-3xl border border-white/50 bg-white/45 lg:block" aria-hidden />
+
+      {/* Floating toolbar chip */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.9, ease, delay: 0.25 }}
-        className="relative min-w-0 overflow-hidden rounded-2xl border border-white/15 bg-[#FBFDF2] shadow-[0_20px_50px_-25px_rgba(10,16,40,0.7)]"
+        animate={!reduceMotion ? { y: [0, -8, 0] } : {}}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-5 left-5 z-30 hidden items-center gap-1 rounded-2xl border border-[#28396C]/10 bg-white/90 px-2 py-1.5 shadow-[0_16px_35px_-18px_rgba(40,57,108,0.5)] backdrop-blur sm:flex"
       >
-        <div className="flex items-center gap-1.5 border-b border-[#B5E18B]/30 bg-[#28396C] px-3 py-2">
+        {toolIcons.map((Icon, i) => (
+          <span
+            key={i}
+            className={cn(
+              "grid h-6 w-6 place-items-center rounded-lg transition",
+              i === 0 ? "bg-[#28396C] text-[#B5E18B]" : "bg-[#28396C]/5 text-[#28396C]",
+            )}
+          >
+            <Icon className="h-3 w-3" />
+          </span>
+        ))}
+      </motion.div>
+
+      {/* Main browser window */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 18 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.9, ease, delay: 0.2 }}
+        className="relative z-10 min-w-0 overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white shadow-[0_40px_90px_-45px_rgba(40,57,108,0.75)]"
+      >
+        {/* Browser chrome */}
+        <div className="flex items-center gap-1.5 border-b border-[#28396C]/10 bg-[#28396C] px-3 py-2">
           <span className="h-2.5 w-2.5 rounded-full bg-[#6BA53A]/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#5C6B94]/50" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#B5E18B]/40" />
-          <span className="ml-2 flex-1 truncate rounded border border-[#B5E18B]/20 bg-[#FBFDF2]/10 px-2 py-0.5 font-mono text-[9px] text-[#B5E18B]">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#EAE6BC]/60" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#B5E18B]/50" />
+          <span className="ml-2 flex-1 truncate rounded-md border border-[#B5E18B]/20 bg-white/10 px-2 py-0.5 font-mono text-[9px] text-[#B5E18B]">
             {t.hero.previewUrl}
           </span>
           <span className="flex shrink-0 items-center gap-1 rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[#B5E18B]">
@@ -294,67 +312,60 @@ function HeroDashboardPreview() {
           </span>
         </div>
 
-        <div className="flex flex-col bg-[#FBFDF2] text-[10px] text-[#28396C]">
-          <div className="shrink-0 border-b border-[#B5E18B]/30 bg-white px-2.5 py-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-bold tracking-tight text-[#28396C] sm:text-xs">Gestio</p>
-                <p className="text-[8px] uppercase tracking-widest text-[#5C6B94] sm:text-[9px]">{t.hero.specializedCenter}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="grid h-5 w-5 place-items-center bg-[#6BA53A] text-[8px] font-bold text-[#FBFDF2] sm:h-6 sm:w-6 sm:text-[9px]">A</div>
-                <button
-                  type="button"
-                  className="grid h-5 w-5 place-items-center border border-[#B5E18B]/40 text-[#5C6B94] transition hover:bg-[#B5E18B]/20 sm:h-6 sm:w-6"
-                  onClick={() => showLocked(t.hero.loginToAccess)}
-                >
-                  <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </button>
-              </div>
-            </div>
-            <nav className="mt-2 flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
-              {previewTopNav.map((n) => {
-                const Icon = n.icon;
-                const active = page === n.id;
-                return (
-                  <button
-                    key={n.id}
-                    onClick={() => setPage(n.id)}
-                    className={cn(
-                      "flex shrink-0 items-center gap-1 border px-1.5 py-1 transition",
-                      active
-                        ? "border-[#28396C] bg-[#28396C] font-semibold text-[#FBFDF2]"
-                        : "border-transparent text-[#5C6B94] hover:bg-[#B5E18B]/20",
-                    )}
-                  >
-                    <Icon className="h-2.5 w-2.5 opacity-70" />
-                    <span>{n.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <main className="relative flex h-[240px] flex-col overflow-hidden bg-white sm:h-[300px]">
-            <AnimatePresence mode="wait">
-              {notice && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="absolute left-2 right-2 top-2 z-20 flex justify-center"
-                >
-                  <p className="max-w-xs rounded-full border border-[#28396C]/15 bg-[#FBFDF2]/95 px-3 py-1.5 text-center text-[10px] text-[#5C6B94] shadow-md backdrop-blur-sm">
-                    {notice}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 text-[#28396C]">
-               <HeroPreviewPageBody page={page} previewBtn={previewBtn} showLocked={showLocked} />
-            </div>
-          </main>
+        {/* Static product shot of the real dashboard (cropped by the frame fade) */}
+        <div className="relative h-[340px] overflow-hidden bg-[#FBFDF2] sm:h-[420px]">
+          <HeroDashboardShot />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#FBFDF2] via-[#FBFDF2]/70 to-transparent" />
         </div>
+      </motion.div>
+
+      {/* Floating KPI chip (top-right) */}
+      <motion.div
+        animate={!reduceMotion ? { y: [0, -10, 0] } : {}}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -right-3 top-14 z-30 hidden rounded-2xl border border-[#28396C]/10 bg-white/95 px-3 py-2 shadow-[0_20px_45px_-20px_rgba(40,57,108,0.5)] backdrop-blur sm:block"
+      >
+        <p className="text-[9px] font-medium uppercase tracking-wider text-[#5C6B94]">Paiements reçus</p>
+        <p className="font-display text-base font-bold text-[#28396C]">293</p>
+      </motion.div>
+
+      {/* Floating stat card with sparkline (bottom-left) */}
+      <motion.div
+        animate={!reduceMotion ? { y: [0, 10, 0] } : {}}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-6 -left-3 z-30 w-40 rounded-2xl border border-[#28396C]/10 bg-white/95 p-3 shadow-[0_24px_50px_-22px_rgba(40,57,108,0.5)] backdrop-blur sm:-left-6 sm:w-44"
+      >
+        <p className="text-[10px] font-medium text-[#5C6B94]">Encaissé ce mois</p>
+        <div className="mt-0.5 flex items-end justify-between gap-2">
+          <p className="font-display text-lg font-bold text-[#28396C]">
+            48k <span className="text-[10px] font-normal text-[#5C6B94]">MAD</span>
+          </p>
+          <span className="inline-flex items-center gap-0.5 rounded-full bg-[#B5E18B]/30 px-1.5 py-0.5 text-[9px] font-bold text-[#3E6420]">
+            <TrendingUp className="h-2.5 w-2.5" /> +8,4%
+          </span>
+        </div>
+        <svg viewBox="0 0 120 34" preserveAspectRatio="none" className="mt-1.5 h-8 w-full" aria-hidden>
+          <polyline
+            points="0,26 20,22 40,24 60,14 80,16 100,7 120,4"
+            fill="none"
+            stroke="#28396C"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="120" cy="4" r="3" fill="#6BA53A" />
+        </svg>
+      </motion.div>
+
+      {/* Floating promo badge (bottom-right) */}
+      <motion.div
+        animate={!reduceMotion ? { y: [0, -8, 0] } : {}}
+        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-6 -right-2 z-30 flex flex-col items-center rounded-2xl border border-[#28396C]/10 bg-white/95 p-3 text-center shadow-[0_24px_50px_-20px_rgba(40,57,108,0.4)] backdrop-blur sm:-right-6"
+      >
+        <Gift className="mb-1 h-5 w-5 text-[#6BA53A]" />
+        <p className="text-[9px] font-black uppercase tracking-widest text-[#5C6B94]">{t.hero.promoLabel}</p>
+        <p className="text-[11px] font-bold text-[#28396C]">{t.hero.promoText}</p>
       </motion.div>
     </div>
   );
@@ -410,7 +421,7 @@ function Hero() {
         </motion.div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           {/* Copy Area */}
           <motion.div
@@ -418,18 +429,14 @@ function Hero() {
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#28396C] shadow-sm backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 animate-pulse text-[#6BA53A]" />
-              {t.hero.badge}
-            </motion.div>
 
-            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl lg:text-7xl">
+            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-3xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl">
               {t.hero.titleLine1} <br />
-              <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
+              <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, &nbsp;
               {t.hero.titleLine2}
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-[#28396C]/70 sm:text-xl">
+            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-sm leading-relaxed text-[#28396C]/70 sm:text-medium">
               {t.hero.subtitle}
             </motion.p>
 
@@ -486,23 +493,9 @@ function Hero() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1, delay: 0.3 }}
-            className="relative lg:ml-12"
+            className="relative lg:ml-8"
           >
-            <div className="relative rounded-[2rem] bg-[#28396C] p-3 shadow-[0_45px_90px_-40px_rgba(40,57,108,0.65)] sm:p-4">
-              <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_20%_0%,_rgba(181,225,139,0.18)_0%,_transparent_55%)]" />
-              <HeroDashboardPreview />
-            </div>
-
-            {/* Promotional Badge */}
-            <motion.div
-              animate={!reduceMotion ? { y: [0, -10, 0] } : {}}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -right-3 flex flex-col items-center justify-center rounded-2xl border border-[#28396C]/10 bg-white/90 p-4 text-center shadow-[0_24px_50px_-20px_rgba(40,57,108,0.4)] backdrop-blur sm:-right-6"
-            >
-              <Gift className="h-6 w-6 text-[#6BA53A] mb-1" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#5C6B94]">{t.hero.promoLabel}</p>
-              <p className="text-xs font-bold text-[#28396C]">{t.hero.promoText}</p>
-            </motion.div>
+            <HeroDashboardShowcase />
           </motion.div>
         </div>
       </div>
@@ -1430,49 +1423,54 @@ function buildPricingPlans(t: ReturnType<typeof useLandingI18n>["t"]): Plan[] {
 
 function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: boolean }) {
   const { t, numberLocale } = useLandingI18n();
+  const Icon = PRICING_ICONS[idx] ?? PRICING_ICONS[0];
+  const featured = plan.popular;
 
   return (
     <motion.div
       variants={fadeUp}
-      whileHover={{ y: plan.popular ? -6 : -4 }}
+      whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 260 }}
       className={cn(
-        "relative flex h-full min-h-0 flex-col rounded-[2rem] border transition-shadow",
-        plan.popular
-          ? "z-10 border-[#28396C] bg-[#28396C] p-6 text-[#FBFDF2] shadow-[0_45px_90px_-40px_rgba(40,57,108,0.7)] sm:p-8"
-          : "border-[#28396C]/10 bg-white p-5 text-[#28396C] shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] hover:border-[#6BA53A]/40 sm:p-7",
+        "relative flex h-full min-h-0 flex-col rounded-[2rem] px-6 pb-8 pt-9 text-center sm:px-8",
+        featured
+          ? "z-10 bg-[#28396C] text-[#FBFDF2] shadow-[0_38px_80px_-30px_rgba(40,57,108,0.75)] lg:-my-4"
+          : "bg-white text-[#28396C] ring-1 ring-[#28396C]/10 shadow-[0_28px_65px_-38px_rgba(40,57,108,0.5)]",
       )}
     >
-      {plan.popular && (
-        <>
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35, ease, delay: 0.15 }}
-            className="absolute -top-3 right-6 z-20 rounded-full bg-[#B5E18B] px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-[#28396C] shadow-[0_12px_25px_-10px_rgba(107,165,58,0.7)] sm:px-4 sm:text-[10px]"
-          >
-            <Star className="inline h-3 w-3 fill-current" /> {t.pricing.popular}
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35, ease, delay: 0.25 }}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 px-2.5 py-1 text-[10px] font-bold text-[#B5E18B]"
-          >
-            <Gift className="h-3.5 w-3.5 shrink-0" /> {t.pricing.onboardingOffer}
-          </motion.div>
-        </>
+      {/* Popular ribbon */}
+      {featured && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35, ease, delay: 0.15 }}
+          className="absolute right-5 top-5 z-20 inline-flex items-center gap-1 rounded-full bg-[#B5E18B] px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-[#28396C] shadow-[0_12px_25px_-10px_rgba(107,165,58,0.7)] sm:text-[10px]"
+        >
+          <Star className="h-3 w-3 fill-current" /> {t.pricing.popular}
+        </motion.div>
       )}
-      <div className="flex items-center justify-between gap-2">
-        <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>{`0${idx + 1}`} / 03</span>
-        <span className={cn("h-2 w-2 shrink-0 rounded-full", plan.popular ? "bg-[#B5E18B]" : "bg-[#28396C]")} />
-      </div>
-      <h3 className={cn("mt-4 text-2xl font-black sm:text-3xl", plan.popular && "sm:text-4xl")}>{plan.name}</h3>
-      <p className={cn("mt-2 text-sm", plan.popular ? "text-[#FBFDF2]/70" : "text-[#5C6B94]")}>{plan.blurb}</p>
-      <div className={cn("my-6 h-px w-full rounded-none", plan.popular ? "bg-[#B5E18B]/25" : "bg-[#28396C]/15")} />
-      <div>
+
+      {/* Icon */}
+      <span
+        className={cn(
+          "mx-auto flex h-16 w-16 items-center justify-center rounded-2xl",
+          featured ? "bg-[#B5E18B]/15 text-[#B5E18B]" : "bg-[#28396C]/5 text-[#6BA53A]",
+        )}
+      >
+        <Icon className="h-8 w-8" strokeWidth={1.5} />
+      </span>
+
+      {/* Name + blurb */}
+      <h3 className={cn("mt-5 text-xl font-black tracking-tight sm:text-2xl", featured ? "text-[#FBFDF2]" : "text-[#28396C]")}>
+        {plan.name}
+      </h3>
+      <p className={cn("mx-auto mt-2 max-w-[26ch] text-xs leading-relaxed sm:text-sm", featured ? "text-[#FBFDF2]/70" : "text-[#5C6B94]")}>
+        {plan.blurb}
+      </p>
+
+      {/* Price */}
+      <div className="mt-6 min-h-[4.5rem]">
         <AnimatePresence mode="wait">
           <motion.div
             key={`${plan.id}-${yearly}`}
@@ -1482,17 +1480,24 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.3, ease }}
           >
             {plan.monthly == null ? (
-              <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">{t.pricing.custom}</div>
+              <div className={cn("text-4xl font-black tracking-tight sm:text-5xl", featured ? "text-[#FBFDF2]" : "text-[#28396C]")}>
+                {t.pricing.custom}
+              </div>
             ) : (
               <>
-                <div className="flex min-w-0 flex-wrap items-baseline gap-1">
-                  <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-4xl sm:text-5xl lg:text-6xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString(numberLocale) : plan.monthly?.toLocaleString(numberLocale)}</span>
-                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>{yearly ? t.pricing.perYear : t.pricing.perMonth}</span>
+                <div className={cn("text-5xl font-black tracking-tight tabular-nums sm:text-6xl", featured ? "text-[#FBFDF2]" : "text-[#28396C]")}>
+                  {yearly ? plan.yearly?.toLocaleString(numberLocale) : plan.monthly?.toLocaleString(numberLocale)}
                 </div>
+                <p className={cn("mt-1.5 text-xs font-semibold uppercase tracking-wider sm:text-sm", featured ? "text-[#FBFDF2]/70" : "text-[#5C6B94]")}>
+                  {yearly ? t.pricing.perYear : t.pricing.perMonth}
+                </p>
                 {yearly && (
-                  <p className={cn("mt-2 text-xs", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>
+                  <p className={cn("mt-1 text-xs", featured ? "text-[#FBFDF2]/60" : "text-[#5C6B94]/80")}>
                     {t.pricing.yearlyEquiv}{" "}
-                    <span className={cn("font-semibold", plan.popular ? "text-[#FBFDF2]" : "text-[#28396C]")}>{Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}{t.pricing.perMonthShort}</span> {t.pricing.yearlyEquivSuffix}
+                    <span className={featured ? "font-semibold text-[#FBFDF2]" : "font-semibold text-[#28396C]"}>
+                      {Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}{t.pricing.perMonthShort}
+                    </span>{" "}
+                    {t.pricing.yearlyEquivSuffix}
                   </p>
                 )}
               </>
@@ -1500,21 +1505,39 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
           </motion.div>
         </AnimatePresence>
       </div>
-      <ul className="mt-8 flex-1 space-y-3">
+
+      {/* Divider */}
+      <div className={cn("mt-6 h-px w-full", featured ? "bg-[#B5E18B]/20" : "bg-[#28396C]/10")} />
+
+      {featured && (
+        <div className="mt-5 inline-flex items-center gap-1.5 self-center rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/10 px-2.5 py-1 text-[10px] font-bold text-[#B5E18B]">
+          <Gift className="h-3.5 w-3.5 shrink-0" /> {t.pricing.onboardingOffer}
+        </div>
+      )}
+
+      {/* Features */}
+      <ul className="mt-5 flex-1 space-y-3.5 text-left">
         {plan.features.map((f) => (
           <motion.li key={f} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease }} className="flex items-start gap-3 text-sm">
-            <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full", plan.popular ? "bg-[#B5E18B] text-[#28396C]" : "bg-[#28396C] text-[#FBFDF2]")}>
+            <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full", featured ? "bg-[#B5E18B] text-[#28396C]" : "bg-[#6BA53A] text-[#FBFDF2]")}>
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
             </span>
-            <span className={plan.popular ? "text-[#FBFDF2]/90" : "text-[#28396C]/80"}>{f}</span>
+            <span className={featured ? "text-[#FBFDF2]/85" : "text-[#28396C]/80"}>{f}</span>
           </motion.li>
         ))}
       </ul>
+
+      {/* CTA */}
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => scrollToId("contact")}
-        className="landing-cta-primary mt-8 w-full py-4 text-sm font-black uppercase tracking-wider transition hover:brightness-105"
+        className={cn(
+          "mt-8 w-full rounded-full py-4 text-sm font-black uppercase tracking-widest transition hover:brightness-105",
+          featured
+            ? "bg-[#B5E18B] text-[#28396C] shadow-[0_18px_35px_-16px_rgba(107,165,58,0.8)]"
+            : "bg-[#28396C] text-[#FBFDF2] shadow-[0_18px_35px_-16px_rgba(40,57,108,0.6)]",
+        )}
       >
         {plan.cta}
       </motion.button>

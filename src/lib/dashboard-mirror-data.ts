@@ -71,6 +71,52 @@ export const mirrorPlanificationEntries: readonly MirrorPlanificationEntry[] = [
 
 export const mirrorFilterTags = ["CLIENTS", "PAIEMENTS", "DETTE", "COLLECTE"] as const;
 
+/**
+ * Home dashboard snapshot   mirrors the reworked `dashboard.index` route:
+ * 4 status cards + « Statistique générale » composed chart with a KPI column +
+ * « Derniers paiements » activity list.
+ */
+export const mirrorDashboardMetrics: readonly {
+  k: string;
+  label: string;
+  value: string;
+  sub: string;
+  accent: string;
+  tint: string;
+  icon: LucideIcon;
+  to: string;
+}[] = [
+  { k: "01", label: "Total familles", value: "4", sub: "familles inscrites", accent: "#28396C", tint: "rgba(40,57,108,0.10)", icon: Users, to: "/dashboard/familles" },
+  { k: "02", label: "Payé", value: "2", sub: "reçus ce mois", accent: "#6BA53A", tint: "rgba(107,165,58,0.14)", icon: CreditCard, to: "/dashboard/paiements" },
+  { k: "03", label: "En retard", value: "1", sub: "relance conseillée", accent: "#E25C5C", tint: "rgba(226,92,92,0.12)", icon: Clock, to: "/dashboard/paiements" },
+  { k: "04", label: "Impayé", value: "1", sub: "facture en attente", accent: "#E8A13C", tint: "rgba(232,161,60,0.14)", icon: AlertCircle, to: "/dashboard/paiements" },
+];
+
+/** Encaissé (k MAD) + paiements reçus   subset of `STAT_SERIES["2026"].semestre`. */
+export const mirrorStatSeries: { mois: string; encaisse: number; paiements: number }[] = [
+  { mois: "Jan", encaisse: 34, paiements: 22 },
+  { mois: "Fév", encaisse: 42, paiements: 27 },
+  { mois: "Mar", encaisse: 41, paiements: 26 },
+  { mois: "Avr", encaisse: 33, paiements: 21 },
+  { mois: "Mai", encaisse: 48, paiements: 31 },
+  { mois: "Juin", encaisse: 44, paiements: 29 },
+];
+
+/** Side KPI column   same figures as `STAT_KPIS` on the real dashboard. */
+export const mirrorStatKpis = [
+  { label: "Total encaissé", value: "457k", delta: "+62k", up: true },
+  { label: "Paiements reçus", value: "293", delta: "+24", up: true },
+  { label: "Impayés", value: "38", delta: "+7", up: false },
+  { label: "Inscriptions", value: "46", delta: "+12", up: true },
+] as const;
+
+/** « Derniers paiements » list   mirrors `LAST_PAYMENTS` on the real dashboard. */
+export const mirrorLastPayments = [
+  { who: "Famille Alami", note: "Frais mensuels · Yasmine", amount: "1 800", status: "paye" as const },
+  { who: "Tazi / Mehdi", note: "Frais mensuels · Mehdi", amount: "1 800", status: "paye" as const },
+  { who: "Benjelloun / Sara", note: "Échéance dépassée · Sara", amount: "1 200", status: "retard" as const },
+] as const;
+
 
 export const mirrorMetrics: readonly {
   k: string;

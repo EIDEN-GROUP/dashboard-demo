@@ -1,43 +1,51 @@
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  AlertCircle,
+  ArrowUp,
+  ArrowDown,
   ArrowUpRight,
-  Banknote,
   CheckCircle2,
-  Clock,
-  CreditCard,
   Plus,
   Search,
+  Send,
+  TrendingUp,
   Users,
   XCircle,
 } from "lucide-react";
-import { CartesianGrid, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useDashboardI18n, useLandingI18n, interpolate } from "@/lib/landing-i18n";
+import { CartesianGrid, Bar, BarChart, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useDashboardI18n, useLandingI18n } from "@/lib/landing-i18n";
 import { cn } from "@/lib/utils";
+import { initials } from "@/lib/dash-ui";
 import {
   mirrorClients,
+  mirrorDashboardMetrics,
   mirrorDemandes,
   mirrorEmployes,
+  mirrorLastPayments,
   mirrorPaymentRows,
   mirrorRapportsChart,
   mirrorRapportsImpayeCount,
   mirrorRapportsPayeCount,
   mirrorRapportsTotalFamilles,
+  mirrorStatKpis,
+  mirrorStatSeries,
   type DashboardMiniaturePageId,
 } from "@/lib/dashboard-mirror-data";
-
-const tagClass =
-  "inline-flex items-center border border-border bg-muted px-2 py-0.5 text-[7px] font-semibold uppercase tracking-wider text-foreground/90 sm:text-[8px]";
-
-const badgeClass =
-  "absolute right-1 top-1 border border-border bg-card px-1 py-px text-[7px] font-medium text-muted-foreground sm:right-1.5 sm:top-1.5 sm:text-[8px]";
 
 const chartTooltipBar = {
   background: "var(--card)",
   border: "1px solid var(--border)",
   borderRadius: 0,
   color: "var(--foreground)",
+} as const;
+
+// Rounded tooltip matching the real dashboard shot.
+const shotTooltip = {
+  background: "var(--card)",
+  border: "1px solid rgba(40,57,108,0.15)",
+  borderRadius: 10,
+  color: "var(--foreground)",
+  fontSize: 11,
 } as const;
 
 export function HeroPreviewPageBody({
@@ -52,63 +60,6 @@ export function HeroPreviewPageBody({
   const { t } = useDashboardI18n();
   const { t: tl } = useLandingI18n();
   const pv = tl.preview;
-
-  const filterTags = useMemo(
-    () => [t.home.tags.clients, t.home.tags.payments, t.home.tags.debt, t.home.tags.collection],
-    [t.home.tags],
-  );
-
-  const metrics = useMemo(
-    () => [
-      {
-        k: "01",
-        label: t.home.metrics.totalClients,
-        value: "4",
-        sub: t.home.metrics.oneActive,
-        badge: t.common.active,
-        borderClass: "border-t-primary",
-        icon: Users,
-      },
-      {
-        k: "02",
-        label: t.home.metrics.paidThisMonth,
-        value: "2",
-        sub: t.home.metrics.onePending,
-        badge: t.common.active,
-        borderClass: "border-t-chart-4",
-        icon: CreditCard,
-      },
-      {
-        k: "03",
-        label: t.home.metrics.totalDebt,
-        value: "0 MAD",
-        sub: t.home.metrics.calculatedDynamic,
-        badge: t.common.active,
-        borderClass: "border-t-chart-2",
-        icon: AlertCircle,
-      },
-      {
-        k: "04",
-        label: t.home.metrics.totalRevenue,
-        value: "12 600 MAD",
-        sub: t.home.metrics.reportsDemo,
-        badge: t.common.active,
-        borderClass: "border-t-muted-foreground",
-        icon: Banknote,
-      },
-    ],
-    [t.home.metrics, t.common.active],
-  );
-
-  const quickActions = useMemo(
-    () => [
-      { title: t.home.quickActions.manageClients.title, desc: t.home.quickActions.manageClients.desc, icon: Users },
-      { title: t.home.quickActions.recordPayment.title, desc: t.home.quickActions.recordPayment.desc, icon: CreditCard },
-      { title: t.home.quickActions.lateClients.title, desc: t.home.quickActions.lateClients.desc, icon: Clock },
-      { title: t.home.quickActions.addClient.title, desc: t.home.quickActions.addClient.desc, icon: Plus },
-    ],
-    [t.home.quickActions],
-  );
 
   const chartData = useMemo(
     () => mirrorRapportsChart.map((row, i) => ({ m: t.rapports.months[i] ?? row.m, v: row.v })),
@@ -126,86 +77,180 @@ export function HeroPreviewPageBody({
   switch (page) {
     case "dashboard":
       return (
-        <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden">
-          <div className="shrink-0 space-y-0.5">
-            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.home.eyebrow}</p>
-            <p className="font-display text-[11px] font-semibold leading-tight text-foreground sm:text-[12px]">
-              <span className="font-semibold">{t.home.titleBold}</span>{" "}
-              <span className="font-normal italic text-muted-foreground">{t.home.titleItalic}</span>
-            </p>
-            <div className="flex flex-wrap gap-0.5 pt-0.5">
-              {filterTags.map((label) => (
-                <span key={label} className={tagClass}>
-                  {label}
-                </span>
-              ))}
+        <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain text-[#28396C]">
+          {/* Header */}
+          <div className="flex shrink-0 items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#5C6B94]">{t.home.eyebrow}</p>
+              <p className="mt-0.5 font-display text-sm font-semibold leading-tight sm:text-base">
+                <span className="font-semibold">{t.home.titleBold}</span>{" "}
+                <span className="font-normal italic text-[#5C6B94]">{t.home.titleItalic}</span>
+              </p>
+              <p className="mt-0.5 truncate text-[9px] text-[#5C6B94] sm:text-[10px]">{t.home.subtitle}</p>
             </div>
+            <button
+              type="button"
+              onClick={() => showLocked(pv.locked.addClient)}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#B5E18B] px-2.5 py-1.5 text-[9px] font-bold text-[#28396C] shadow-sm sm:text-[10px]"
+            >
+              <Plus className="h-3 w-3" />
+              <span className="hidden sm:inline">{t.home.quickActions.addClient.title}</span>
+            </button>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 gap-0.5 sm:grid-cols-4">
-            {metrics.map((card) => (
+          {/* 4 status cards   total familles / payé / en retard / impayé */}
+          <div className="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
+            {mirrorDashboardMetrics.map((card) => (
               <Link
                 key={card.k}
-                to={card.k === "01" || card.k === "02" ? "/dashboard/familles" : "/dashboard/rapports"}
+                to={card.to}
                 onClick={(e) => {
                   e.preventDefault();
                   showLocked(pv.locked.openCard);
                 }}
-                className={cn(
-                  "relative block border border-border bg-card p-1.5 text-left text-inherit no-underline sm:p-2",
-                  card.borderClass,
-                  "border-t-2",
-                )}
+                className="relative block overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white p-2.5 text-left text-inherit no-underline shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)]"
               >
-                <span className={badgeClass}>{card.badge}</span>
-                <p className="pr-8 text-[7px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                  {card.k}   {card.label}
-                </p>
-                <div className="mt-1 flex items-start justify-between gap-1">
-                  <p className="font-display text-[13px] font-semibold leading-none text-foreground sm:text-sm">{card.value}</p>
-                  <span className="grid h-5 w-5 shrink-0 place-items-center border border-border bg-muted text-foreground/85 sm:h-6 sm:w-6">
-                    <card.icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <div className="flex items-start justify-between gap-1">
+                  <p className="text-[8px] font-medium uppercase tracking-wider text-[#5C6B94] sm:text-[9px]">{card.label}</p>
+                  <span
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-xl"
+                    style={{ backgroundColor: card.tint, color: card.accent }}
+                  >
+                    <card.icon className="h-3 w-3" />
                   </span>
                 </div>
-                {card.sub ? <p className="mt-0.5 text-[7px] text-muted-foreground sm:text-[8px]">{card.sub}</p> : null}
+                <p className="mt-1.5 font-display text-lg font-semibold leading-none tracking-tight sm:text-xl">{card.value}</p>
+                <p className="mt-1 text-[8px] text-[#5C6B94] sm:text-[9px]">{card.sub}</p>
+                <span className="mt-2 block h-1 w-8 rounded-full" style={{ backgroundColor: card.accent }} />
               </Link>
             ))}
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-border bg-card p-1.5 sm:p-2">
-            <div className="shrink-0">
-              <p className="text-[7px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[8px]">
-                {t.home.quickActionsEyebrow}
-              </p>
-              <h2 className="mt-0.5 font-display text-[10px] text-foreground sm:text-[11px]">
-                {t.home.quickNavBold} <span className="font-normal italic text-muted-foreground">{t.home.quickNavItalic}</span>
-              </h2>
-            </div>
-            <ul className="mt-1 min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
-              {quickActions.map((a) => {
-                const QIcon = a.icon;
-                return (
-                  <li key={a.title}>
-                    <button
-                      type="button"
-                      onClick={() => showLocked(interpolate(pv.locked.quickAction, { title: a.title }))}
-                      className="group flex w-full items-start gap-1 border border-transparent p-1 text-left transition hover:border-border hover:bg-muted/70"
-                    >
-                      <span className="mt-px grid h-5 w-5 shrink-0 place-items-center border border-border bg-muted text-foreground/85">
-                        <QIcon className="h-2.5 w-2.5" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center justify-between gap-1">
-                          <span className="text-[8px] font-medium text-foreground sm:text-[9px]">{a.title}</span>
-                          <ArrowUpRight className="h-2.5 w-2.5 shrink-0 text-muted-foreground" />
-                        </span>
-                        <span className="mt-px block text-[7px] leading-snug text-muted-foreground sm:text-[8px]">{a.desc}</span>
-                      </span>
-                    </button>
+          {/* Statistique générale   barres (encaissé) + courbe (paiements) + colonne KPI */}
+          <div className="shrink-0 overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)]">
+            <div className="grid sm:grid-cols-[minmax(0,1fr)_9rem]">
+              <div className="min-w-0 p-2.5 sm:p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#5C6B94] sm:text-[9px]">Vue d'ensemble</p>
+                    <h2 className="mt-0.5 font-display text-xs text-[#28396C] sm:text-sm">
+                      Statistique <span className="font-normal italic text-[#5C6B94]">générale</span>
+                    </h2>
+                  </div>
+                  <span className="rounded-lg border border-[#28396C]/10 bg-muted/60 px-2 py-0.5 text-[8px] font-medium text-[#5C6B94] sm:text-[9px]">2026</span>
+                </div>
+                <div className="mt-2 h-[6.5rem] w-full min-w-0 sm:h-[7.5rem]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={mirrorStatSeries} margin={{ top: 6, right: 4, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.08)" vertical={false} />
+                      <XAxis dataKey="mois" stroke="var(--muted-foreground)" tick={{ fontSize: 8 }} tickLine={false} axisLine={false} />
+                      <YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 8 }} width={20} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={shotTooltip} cursor={{ fill: "rgba(181,225,139,0.16)" }} />
+                      <Bar dataKey="encaisse" fill="#C9DCF2" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                      <Line type="monotone" dataKey="paiements" stroke="#28396C" strokeWidth={2} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+                <ul className="mt-2 flex flex-wrap gap-3">
+                  <li className="inline-flex items-center gap-1.5 text-[8px] font-medium text-[#5C6B94] sm:text-[9px]">
+                    <span className="h-2 w-3 rounded-sm bg-[#C9DCF2]" /> Encaissé (k MAD)
                   </li>
-                );
-              })}
-            </ul>
+                  <li className="inline-flex items-center gap-1.5 text-[8px] font-medium text-[#5C6B94] sm:text-[9px]">
+                    <span className="h-0.5 w-3.5 rounded-full bg-[#28396C]" /> Paiements reçus
+                  </li>
+                </ul>
+              </div>
+
+              <ul className="grid grid-cols-2 border-t border-[#28396C]/10 sm:grid-cols-1 sm:border-l sm:border-t-0 sm:divide-y sm:divide-[#28396C]/10">
+                {mirrorStatKpis.map((k) => (
+                  <li key={k.label} className="border-b border-[#28396C]/10 px-2.5 py-1.5 sm:border-b-0 sm:py-2">
+                    <p className="truncate text-[8px] text-[#5C6B94] sm:text-[9px]">{k.label}</p>
+                    <div className="mt-0.5 flex items-end justify-between gap-1">
+                      <p className="font-display text-sm font-semibold tabular-nums leading-none">{k.value}</p>
+                      <span className={cn("inline-flex items-center gap-0.5 text-[8px] font-semibold sm:text-[9px]", k.up ? "text-[#3E6420]" : "text-[#9A2F2F]")}>
+                        {k.delta}
+                        {k.up ? <ArrowUp className="h-2 w-2" /> : <ArrowDown className="h-2 w-2" />}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Derniers paiements + Relance rapide */}
+          <div className="grid min-h-0 flex-1 gap-2 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+            <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white p-2.5 shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)]">
+              <div className="flex shrink-0 items-center justify-between gap-2">
+                <div>
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#5C6B94] sm:text-[9px]">Activité récente</p>
+                  <h2 className="mt-0.5 font-display text-xs text-[#28396C] sm:text-sm">Derniers paiements</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => showLocked(pv.locked.openCard)}
+                  className="inline-flex items-center gap-1 text-[8px] font-semibold text-[#28396C] sm:text-[9px]"
+                >
+                  Voir tout <ArrowUpRight className="h-3 w-3" />
+                </button>
+              </div>
+              <ul className="mt-1.5 min-h-0 flex-1 divide-y divide-[#28396C]/8 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+                {mirrorLastPayments.map((p) => (
+                  <li key={p.who + p.note} className="flex items-center gap-2 py-1.5">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-[#28396C]/8 text-[9px] font-bold text-[#28396C]">
+                      {initials(p.who)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[10px] font-medium leading-tight sm:text-[11px]">{p.who}</p>
+                      <p className="truncate text-[8px] leading-tight text-[#5C6B94] sm:text-[9px]">{p.note}</p>
+                    </div>
+                    <span className="shrink-0 text-[10px] font-semibold tabular-nums sm:text-[11px]">{p.amount} MAD</span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-2 py-0.5 text-[7px] font-semibold uppercase tracking-wide sm:text-[8px]",
+                        p.status === "paye"
+                          ? "bg-[#B5E18B]/30 text-[#3E6420]"
+                          : p.status === "retard"
+                            ? "bg-[#F6D8D8] text-[#9A2F2F]"
+                            : "bg-[#F4E3C0] text-[#8A5A16]",
+                      )}
+                    >
+                      {p.status === "paye" ? "Payé" : p.status === "retard" ? "En retard" : "Impayé"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Relance rapide teaser */}
+            <div className="hidden overflow-hidden rounded-2xl border border-[#28396C]/10 bg-[#28396C] p-2.5 text-white shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)] lg:block">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-[#B5E18B] sm:text-[9px]">Relance rapide</p>
+                <TrendingUp className="h-3.5 w-3.5 text-[#B5E18B]" />
+              </div>
+              <h4 className="mt-1 font-display text-xs font-semibold sm:text-sm">Rappel de paiement</h4>
+              <div className="mt-2 flex items-center gap-1.5">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80">
+                  <Plus className="h-3 w-3" />
+                </span>
+                {["Famille Alami", "Tazi / Mehdi", "Benjelloun"].map((name) => (
+                  <span
+                    key={name}
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#B5E18B] text-[9px] font-bold text-[#28396C] ring-2 ring-[#28396C]"
+                  >
+                    {initials(name)}
+                  </span>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => showLocked(pv.locked.openCard)}
+                className="mt-2.5 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#B5E18B] px-3 py-2 text-[10px] font-bold text-[#28396C]"
+              >
+                <Send className="h-3 w-3" />
+                Envoyer le rappel
+              </button>
+            </div>
           </div>
         </div>
       );
