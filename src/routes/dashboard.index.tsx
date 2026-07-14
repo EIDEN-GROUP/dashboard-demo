@@ -1,16 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getDashboardStats, getMonthlyRevenue } from "@/lib/server-dashboard";
+import { getDashboardStats } from "@/lib/server-dashboard";
 import { listPayments } from "@/lib/server-payments";
 import { listClients } from "@/lib/server-clients";
 import { sendBroadcast } from "@/lib/server-whatsapp";
+import {
+  getInvoiceAnalytics,
+  getOutstanding,
+  listInvoiceYears,
+  type InvoicePoint,
+} from "@/lib/server-invoices";
 import { toast } from "sonner";
 import {
   Users,
   CreditCard,
   AlertCircle,
   Plus,
+  ArrowRight,
   ArrowUpRight,
   ArrowUp,
   ArrowDown,
@@ -21,11 +28,10 @@ import {
 } from "lucide-react";
 import {
   ResponsiveContainer,
-  ComposedChart,
+  BarChart,
   AreaChart,
   Area,
   Bar,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -72,13 +78,21 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 // Données démo   statistique générale (encaissé en k MAD + nb de paiements)
 // ──────────────────────────────────────────────────────────
-type Grain = "annee" | "semestre";
-
-type StatPoint = { mois: string; encaisse: number; paiements: number };
+type Grain = "mensuel" | "annuel";
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-// Encaissements mensuels   série d'activité par plage (MAD, en milliers)
 type Range = "1S" | "1M" | "3M" | "1A";
+
+/** How many months each range button shows. "1S" (one week) still lands inside a month. */
+const RANGE_MONTHS: Record<Range, number> = { "1S": 1, "1M": 1, "3M": 3, "1A": 12 };
+
+type SeriesKey = "encaisse" | "impaye" | "retard";
+
+const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
+  { key: "encaisse", label: "Encaissé", color: "#28396C" },
+  { key: "impaye", label: "Impayé", color: STATUS_COLORS.impaye },
+  { key: "retard", label: "En retard", color: STATUS_COLORS.retard },
+];
 
 type QuickAction =
   | { kind: "link"; to: string; title: string; desc: string; icon: typeof Users }
@@ -109,15 +123,15 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
         )}
       >
         <DialogDescription className="sr-only">{m.srDesc}</DialogDescription>
-        <div className="border-t-4 border-t-[#B5E18B]">
-          <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{m.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               {m.title}
             </DialogTitle>
           </div>
           <form
-            className="max-h-[calc(90vh-12rem)] overflow-y-auto px-6 py-5"
+            className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5"
             onSubmit={(e) => {
               e.preventDefault();
               onOpenChange(false);
@@ -203,22 +217,60 @@ function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [range, setRange] = useState<Range>("1A");
-  const [grain, setGrain] = useState<Grain>("annee");
+  const [grain, setGrain] = useState<Grain>("mensuel");
   const [year, setYear] = useState(String(new Date().getFullYear()));
 
+  // Which money series are drawn. Clicking a legend chip toggles one on/off.
+  const [series, setSeries] = useState<Record<SeriesKey, boolean>>({
+    encaisse: true,
+    impaye: true,
+    retard: true,
+  });
+  const toggleSeries = (k: SeriesKey) =>
+    setSeries((s) => {
+      const next = { ...s, [k]: !s[k] };
+      // Never leave the chart empty.
+      return Object.values(next).some(Boolean) ? next : s;
+    });
+
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: getDashboardStats });
-  const { data: monthlyRevenue } = useQuery({ queryKey: ["monthly-revenue"], queryFn: getMonthlyRevenue });
   const { data: payments = [] } = useQuery({ queryKey: ["payments"], queryFn: listPayments });
   const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: listClients });
+  const { data: years = [] } = useQuery({ queryKey: ["invoice-years"], queryFn: listInvoiceYears });
+  const { data: outstanding } = useQuery({ queryKey: ["outstanding"], queryFn: getOutstanding });
+
+  // The bar series comes straight off the invoices ledger, so impayé/retard are
+  // recorded facts (what was owed, and whether the due date passed), not guesses.
+  const { data: barData = [] } = useQuery({
+    queryKey: ["invoice-analytics", grain, year],
+    queryFn: () => getInvoiceAnalytics({ data: { grain, year } }),
+  });
+  // The activity card is always monthly, whatever the bar granularity is.
+  const { data: monthlyData = [] } = useQuery({
+    queryKey: ["invoice-analytics", "mensuel", year],
+    queryFn: () => getInvoiceAnalytics({ data: { grain: "mensuel", year } }),
+  });
 
   const dbPayments = payments as unknown as Array<{ id: string; amount: number; date: string; mode: string; period: string; invoice_sent: boolean; clients: { parent_name: string; child_name: string; phone: string; email: string; level: string; monthly_fee: number; payment_status: string; subscribed_services: string[] } }>;
   const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
 
-  // Build chart data from real monthly revenue
-  const chartData = useMemo(() => {
-    const rev = (monthlyRevenue ?? []) as Array<{ m: string; v: number }>;
-    return rev.map((r) => ({ mois: r.m, encaisse: Math.round(r.v / 1000), paiements: Math.round(r.v / 50) }));
-  }, [monthlyRevenue]);
+  const chartData = barData as InvoicePoint[];
+
+  /** 1S/1M/3M/1A now actually cut the window: last N months of the year's series. */
+  const areaData = useMemo(() => {
+    const months = monthlyData as InvoicePoint[];
+    const take = RANGE_MONTHS[range];
+    const thisYear = String(new Date().getFullYear()) === year;
+    // Anchor the window on the current month when looking at the current year.
+    const end = thisYear ? new Date().getMonth() + 1 : months.length;
+    const start = Math.max(0, end - take);
+    return months.slice(start, end);
+  }, [monthlyData, range, year]);
+
+  const rangeTotal = useMemo(
+    () => areaData.reduce((sum, p) => sum + (p.encaisse ?? 0), 0),
+    [areaData],
+  );
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
@@ -249,6 +301,8 @@ function CrmDash() {
   const unpaidCount = statusCounts.impaye;
   const totalRevenue = stats?.total_revenue ?? 0;
 
+  // Each card opens the client list already filtered to the status it counts,
+  // rather than dropping you on an unfiltered page.
   const metrics = [
     {
       k: "01",
@@ -259,6 +313,7 @@ function CrmDash() {
       tint: "rgba(40,57,108,0.10)",
       icon: Users,
       to: "/dashboard/familles",
+      search: {},
     },
     {
       k: "02",
@@ -268,7 +323,8 @@ function CrmDash() {
       accent: STATUS_COLORS.paye,
       tint: "rgba(107,165,58,0.14)",
       icon: CreditCard,
-      to: "/dashboard/paiements",
+      to: "/dashboard/familles",
+      search: { statut: "paye" },
     },
     {
       k: "03",
@@ -278,7 +334,8 @@ function CrmDash() {
       accent: STATUS_COLORS.retard,
       tint: "rgba(226,92,92,0.12)",
       icon: Clock,
-      to: "/dashboard/paiements",
+      to: "/dashboard/familles",
+      search: { statut: "retard" },
     },
     {
       k: "04",
@@ -288,7 +345,8 @@ function CrmDash() {
       accent: STATUS_COLORS.impaye,
       tint: "rgba(232,161,60,0.14)",
       icon: AlertCircle,
-      to: "/dashboard/paiements",
+      to: "/dashboard/familles",
+      search: { statut: "impaye" },
     },
   ] as const;
 
@@ -352,6 +410,7 @@ function CrmDash() {
           <Link
             key={card.k}
             to={card.to}
+            search={card.search}
             aria-label={interpolate(t.home.cardOpenAria, { label: card.label, value: card.value })}
             className={cn(softCardHover, "relative block overflow-hidden p-5 text-left text-inherit no-underline outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2")}
           >
@@ -389,88 +448,164 @@ function CrmDash() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className={softSelectContent}>
-                    <SelectItem value="annee">Année</SelectItem>
-                    <SelectItem value="semestre">Semestre</SelectItem>
+                    <SelectItem value="mensuel">Mensuel</SelectItem>
+                    <SelectItem value="annuel">Annuel</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={year} onValueChange={setYear}>
-                  <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[6.5rem] rounded-xl")} aria-label="Année">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className={softSelectContent}>
-                    <SelectItem value="2026">2026</SelectItem>
-                    <SelectItem value="2025">2025</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* In annual mode every year is already on screen, so the year picker is moot. */}
+                {grain === "mensuel" ? (
+                  <Select value={year} onValueChange={setYear}>
+                    <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[6.5rem] rounded-xl")} aria-label="Année">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className={softSelectContent}>
+                      {years.map((y) => (
+                        <SelectItem key={y} value={y}>
+                          {y}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : null}
               </div>
             </div>
 
             <div className="mt-6 h-[20rem] w-full min-w-0 sm:h-[24rem]">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -14, bottom: 0 }}>
+                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.08)" vertical={false} />
                   <XAxis
-                    dataKey="mois"
+                    dataKey="bucket"
                     stroke="var(--muted-foreground)"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                     dy={6}
                   />
+                  {/* Width fits 4-digit MAD ticks   a tighter axis clips the leading digit. */}
                   <YAxis
                     stroke="var(--muted-foreground)"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
-                    width={44}
+                    width={64}
+                    tickFormatter={(v: number) => v.toLocaleString("fr-FR")}
                   />
                   <Tooltip
                     contentStyle={dashTooltip}
                     cursor={{ fill: "rgba(181,225,139,0.16)" }}
-                    formatter={(v: number, n) =>
-                      n === "Encaissé" ? [`${v}k MAD`, n] : [`${v} paiements`, n]
-                    }
+                    formatter={(v: number, n) => [`${Number(v).toLocaleString("fr-FR")} MAD`, n]}
                   />
-                  <Bar dataKey="encaisse" name="Encaissé" fill="#C9DCF2" radius={[8, 8, 0, 0]} maxBarSize={38} />
-                  <Line
-                    type="monotone"
-                    dataKey="paiements"
-                    name="Paiements"
-                    stroke="#28396C"
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 5, fill: "#6BA53A", stroke: "#fff", strokeWidth: 2 }}
-                  />
-                </ComposedChart>
+                  {/* Thin fully-rounded columns   the bar-forward shape from the reference. */}
+                  {SERIES_META.filter((s) => series[s.key]).map((s) => (
+                    <Bar
+                      key={s.key}
+                      dataKey={s.key}
+                      name={s.label}
+                      fill={s.color}
+                      radius={[999, 999, 999, 999]}
+                      maxBarSize={12}
+                    />
+                  ))}
+                </BarChart>
               </ResponsiveContainer>
             </div>
 
-            <ul className="mt-4 flex flex-wrap gap-3">
-              <li className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <span className="h-2.5 w-3.5 rounded-sm bg-[#C9DCF2]" /> Encaissé (k MAD)
-              </li>
-              <li className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <span className="h-0.5 w-4 rounded-full bg-[#28396C]" /> Paiements reçus
+            {/* Clickable legend: each chip toggles its series on the chart. */}
+            <ul className="mt-4 flex flex-wrap items-center gap-2">
+              {SERIES_META.map((s) => {
+                const on = series[s.key];
+                return (
+                  <li key={s.key}>
+                    <button
+                      type="button"
+                      onClick={() => toggleSeries(s.key)}
+                      aria-pressed={on}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+                        on
+                          ? "border-[#28396C]/15 bg-card text-foreground shadow-sm"
+                          : "border-transparent bg-muted/60 text-muted-foreground/70 hover:text-foreground",
+                      )}
+                    >
+                      <span
+                        className="h-3 w-1.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: on ? s.color : "currentColor" }}
+                        aria-hidden
+                      />
+                      {s.label}
+                    </button>
+                  </li>
+                );
+              })}
+              <li className="ml-1 text-xs text-muted-foreground">
+                {grain === "mensuel" ? `Par mois · ${year}` : "Par année"} · MAD
               </li>
             </ul>
           </div>
 
-          {/* Colonne d'indicateurs   comme la maquette : une ligne par KPI, séparateurs fins */}
+          {/* Colonne d'indicateurs   impayé / retard sont cliquables : ils ouvrent la liste filtrée. */}
           <div className="border-t border-[#28396C]/10 lg:border-l lg:border-t-0">
             <ul className="divide-y divide-[#28396C]/10">
-              {[
-                { label: "Total encaissé", value: `${(stats?.total_revenue ?? 0).toLocaleString("fr-FR")} MAD`, delta: "", up: true },
-                { label: "Encaissé ce mois", value: `${(stats?.paid_this_month ?? 0).toLocaleString("fr-FR")} MAD`, delta: "", up: true },
-                { label: "Dette totale", value: `${(stats?.total_debt ?? 0).toLocaleString("fr-FR")} MAD`, delta: "", up: false },
-                { label: "Familles actives", value: String(stats?.active_clients ?? 0), delta: "", up: true },
-              ].map((k) => (
-                <li key={k.label} className="px-5 py-5 sm:px-6">
-                  <p className="text-xs text-muted-foreground">{k.label}</p>
-                  <div className="mt-1.5 flex items-end justify-between gap-2">
-                    <p className="font-display text-2xl font-semibold tabular-nums text-foreground">{k.value}</p>
-                  </div>
-                </li>
-              ))}
+              <li className="px-5 py-5 sm:px-6">
+                <p className="text-xs text-muted-foreground">Total encaissé</p>
+                <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
+                  {(stats?.total_revenue ?? 0).toLocaleString("fr-FR")} MAD
+                </p>
+              </li>
+              <li className="px-5 py-5 sm:px-6">
+                <p className="text-xs text-muted-foreground">Encaissé ce mois</p>
+                <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
+                  {(stats?.paid_this_month ?? 0).toLocaleString("fr-FR")} MAD
+                </p>
+              </li>
+
+              <li>
+                <Link
+                  to="/dashboard/familles"
+                  search={{ statut: "impaye" }}
+                  className="block px-5 py-5 transition-colors hover:bg-[#F4E3C0]/40 sm:px-6"
+                >
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.impaye }} />
+                    Impayé
+                    <ArrowRight className="ml-auto h-3.5 w-3.5" />
+                  </p>
+                  <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
+                    {(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {outstanding?.impayeCount ?? 0} facture(s) en attente
+                  </p>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/dashboard/familles"
+                  search={{ statut: "retard" }}
+                  className="block px-5 py-5 transition-colors hover:bg-[#F6D8D8]/40 sm:px-6"
+                >
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.retard }} />
+                    En retard
+                    <ArrowRight className="ml-auto h-3.5 w-3.5" />
+                  </p>
+                  <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
+                    {(outstanding?.retardTotal ?? 0).toLocaleString("fr-FR")} MAD
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {outstanding?.retardCount ?? 0} facture(s) en retard
+                  </p>
+                </Link>
+              </li>
+
+              <li className="px-5 py-5 sm:px-6">
+                <p className="text-xs text-muted-foreground">Familles actives</p>
+                <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
+                  {stats?.active_clients ?? 0}
+                </p>
+              </li>
             </ul>
           </div>
         </div>
@@ -486,8 +621,9 @@ function CrmDash() {
             </h2>
               <div className="mt-2 flex items-end gap-2">
                 <p className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                  {(totalRevenue ?? 0).toLocaleString("fr-FR")} <span className="text-sm font-normal text-muted-foreground">MAD</span>
+                  {rangeTotal.toLocaleString("fr-FR")} <span className="text-sm font-normal text-muted-foreground">MAD</span>
                 </p>
+                <span className="pb-1 text-xs text-muted-foreground">encaissé sur {range}</span>
               </div>
           </div>
           <div className="flex items-center gap-1 rounded-full border border-[#28396C]/10 bg-muted/60 p-1">
@@ -508,30 +644,44 @@ function CrmDash() {
         </div>
         <div className="mt-4 h-56 w-full min-w-0 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData.map((d) => ({ x: d.mois, v: d.encaisse }))} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+            <AreaChart data={areaData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6BA53A" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#6BA53A" stopOpacity={0} />
-                </linearGradient>
+                {SERIES_META.map((s) => (
+                  <linearGradient key={s.key} id={`fill-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={s.color} stopOpacity={0.18} />
+                    <stop offset="100%" stopColor={s.color} stopOpacity={0.03} />
+                  </linearGradient>
+                ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
-              <XAxis dataKey="x" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={40} />
+              <XAxis dataKey="bucket" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                width={64}
+                tickFormatter={(v: number) => v.toLocaleString("fr-FR")}
+              />
               <Tooltip
                 contentStyle={dashTooltip}
                 cursor={{ stroke: "rgba(40,57,108,0.25)", strokeWidth: 1 }}
-                formatter={(v: number) => [`${v}k MAD`, "Encaissé"]}
+                formatter={(v: number, n) => [`${Number(v).toLocaleString("fr-FR")} MAD`, n]}
               />
-              <Area
-                type="monotone"
-                dataKey="v"
-                stroke="#28396C"
-                strokeWidth={2.5}
-                fill="url(#activityFill)"
-                dot={{ r: 3, fill: "#28396C", strokeWidth: 0 }}
-                activeDot={{ r: 5, fill: "#6BA53A", stroke: "#fff", strokeWidth: 2 }}
-              />
+              {/* `linear` keeps the angular, ticker-like profile of the reference   `monotone` rounds it off. */}
+              {SERIES_META.filter((s) => series[s.key]).map((s) => (
+                <Area
+                  key={s.key}
+                  type="linear"
+                  dataKey={s.key}
+                  name={s.label}
+                  stroke={s.color}
+                  strokeWidth={2}
+                  fill={`url(#fill-${s.key})`}
+                  dot={false}
+                  activeDot={{ r: 4, fill: s.color, stroke: "#fff", strokeWidth: 2 }}
+                />
+              ))}
             </AreaChart>
           </ResponsiveContainer>
         </div>

@@ -118,14 +118,44 @@ export function useDashboardNav() {
 
   const topNav: NavItem[] = useMemo(
     () => [
-      { to: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
-      { to: "/dashboard/calendar", label: t.nav.calendar, icon: Calendar },
-      { to: "/dashboard/familles", label: t.nav.familles, icon: Users },
-      { to: "/dashboard/paiements", label: t.nav.paiements, icon: CreditCard },
-      { to: "/dashboard/affiches", label: t.nav.affiches, icon: Images },
-      { to: "/dashboard/settings", label: t.nav.settings, icon: Settings },
+      {
+        to: "/dashboard",
+        label: t.nav.dashboard,
+        shortLabel: t.navShort.dashboard,
+        icon: LayoutDashboard,
+      },
+      {
+        to: "/dashboard/calendar",
+        label: t.nav.calendar,
+        shortLabel: t.navShort.calendar,
+        icon: Calendar,
+      },
+      {
+        to: "/dashboard/familles",
+        label: t.nav.familles,
+        shortLabel: t.navShort.familles,
+        icon: Users,
+      },
+      {
+        to: "/dashboard/paiements",
+        label: t.nav.paiements,
+        shortLabel: t.navShort.paiements,
+        icon: CreditCard,
+      },
+      {
+        to: "/dashboard/affiches",
+        label: t.nav.affiches,
+        shortLabel: t.navShort.affiches,
+        icon: Images,
+      },
+      {
+        to: "/dashboard/settings",
+        label: t.nav.settings,
+        shortLabel: t.navShort.settings,
+        icon: Settings,
+      },
     ],
-    [t.nav],
+    [t.nav, t.navShort],
   );
 
   const secondaryNav: NavItem[] = useMemo(() => [], []);

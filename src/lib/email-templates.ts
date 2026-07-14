@@ -233,6 +233,125 @@ export function renderVisitorConfirmationEmail(data: DemoRequest): RenderedEmail
   };
 }
 
+// ── School → parent notification ────────────────
+
+/**
+ * Wraps a free-text message from the dashboard message centre in the same branded
+ * shell as the demo emails. Without this, those notifications go out as bare
+ * `<br>`-joined text with none of the site's identity.
+ */
+export function renderSchoolNotificationEmail(opts: {
+  message: string;
+  /** Shown above the title, e.g. the school name. */
+  eyebrow?: string;
+  title?: string;
+  parentName?: string;
+}): RenderedEmail {
+  const { message, eyebrow = "Message de l'école", title = "Vous avez un nouveau message" } = opts;
+  const greeting = opts.parentName?.trim()
+    ? `Bonjour ${escapeHtml(opts.parentName.trim())},`
+    : "Bonjour,";
+
+  // Preserve the author's line breaks without letting raw HTML through.
+  const paragraphs = message
+    .trim()
+    .split(/\n{2,}/)
+    .map(
+      (block) =>
+        `<p style="margin:0 0 16px;font:400 15px/1.7 -apple-system,Arial,sans-serif;color:${C.ink};">${escapeHtml(
+          block,
+        ).replace(/\n/g, "<br />")}</p>`,
+    )
+    .join("");
+
+  const body = `
+    <p style="margin:0 0 20px;font:400 15px/1.65 -apple-system,Arial,sans-serif;color:${C.ink};">${greeting}</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid ${C.emerald};background-color:${C.white};">
+      <tr><td style="padding:20px 22px;">${paragraphs}</td></tr>
+    </table>
+
+    <p style="margin:26px 0 0;font:400 13px/1.6 -apple-system,Arial,sans-serif;color:${C.muted};">
+      Vous pouvez répondre directement à cet email.<br />L'équipe pédagogique
+    </p>`;
+
+  const text = [greeting.replace(/<[^>]*>/g, ""), "", message.trim(), "", `${WEBSITE} · ${ADMIN_EMAIL}`].join("\n");
+
+  return {
+    subject: title,
+    html: shell({
+      preheader: message.trim().slice(0, 120),
+      eyebrow,
+      title,
+      body,
+    }),
+    text,
+  };
+}
+
+// ── Payment receipt ─────────────────────────────
+
+const MODE_LABEL: Record<string, string> = {
+  especes: "Espèces",
+  virement: "Virement",
+  carte: "Carte",
+  cheque: "Chèque",
+};
+
+/** Branded payment receipt, replacing the bare `<table>` the dashboard used to send. */
+export function renderPaymentReceiptEmail(opts: {
+  parentName: string;
+  receipt: string;
+  amount: number;
+  date: string;
+  mode: string;
+  period: string;
+}): RenderedEmail {
+  const amountLabel = `${opts.amount.toLocaleString("fr-FR")} MAD`;
+  const modeLabel = MODE_LABEL[opts.mode] ?? opts.mode;
+  const rows = [
+    { label: "Reçu n°", value: opts.receipt || " " },
+    { label: "Montant", value: amountLabel },
+    { label: "Date", value: opts.date },
+    { label: "Mode de paiement", value: modeLabel },
+    { label: "Période", value: opts.period || " " },
+  ];
+
+  const body = `
+    <p style="margin:0 0 22px;font:400 15px/1.65 -apple-system,Arial,sans-serif;color:${C.ink};">
+      Bonjour ${escapeHtml(opts.parentName)},<br /><br />
+      Nous confirmons la réception de votre paiement de <strong>${escapeHtml(amountLabel)}</strong>. Merci pour votre confiance.
+    </p>
+
+    ${detailTable(rows)}
+
+    <p style="margin:26px 0 0;font:400 13px/1.6 -apple-system,Arial,sans-serif;color:${C.muted};">
+      Ce reçu fait foi de paiement. Conservez-le pour vos archives.<br />L'équipe pédagogique
+    </p>`;
+
+  const text = [
+    `Reçu de paiement ${opts.receipt}`,
+    ``,
+    `Bonjour ${opts.parentName},`,
+    `Nous confirmons la réception de votre paiement de ${amountLabel}.`,
+    ``,
+    ...rows.map((r) => `${r.label} : ${r.value}`),
+    ``,
+    `${WEBSITE} · ${ADMIN_EMAIL}`,
+  ].join("\n");
+
+  return {
+    subject: `Reçu de paiement ${opts.receipt}`.trim(),
+    html: shell({
+      preheader: `Paiement de ${amountLabel} bien reçu.`,
+      eyebrow: "Reçu de paiement",
+      title: "Votre paiement est confirmé.",
+      body,
+    }),
+    text,
+  };
+}
+
 // ── Admin notification ("receipt") ──────────────
 
 export function renderAdminNotificationEmail(data: DemoRequest): RenderedEmail {

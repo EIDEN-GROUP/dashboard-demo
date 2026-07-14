@@ -214,14 +214,14 @@ function DetailEmployeDialog({
         <DialogDescription className="sr-only">
           {interpolate(a.detailModal.srDesc, { name: employe.nomComplet })}
         </DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-primary">
+          <div className="shrink-0 border-b border-border px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.team}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               {a.detailModal.title}
             </DialogTitle>
           </div>
-          <div className="grid max-h-[60vh] grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto scroll-touch px-6 py-5 sm:grid-cols-2">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto scroll-touch px-6 py-5 sm:grid-cols-2">
             <Field id="emp-nom" label={f.fullName}>
               <p className="text-sm font-semibold text-foreground">{employe.nomComplet}</p>
             </Field>
@@ -322,15 +322,15 @@ function EditEmployeDialog({
         <DialogDescription className="sr-only">
           {interpolate(a.editModal.srDesc, { name: employe.nomComplet })}
         </DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-primary">
+          <div className="shrink-0 border-b border-border px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.editModal.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               {a.editModal.title}
             </DialogTitle>
           </div>
           <form
-            className="max-h-[65vh] space-y-4 overflow-y-auto scroll-touch px-6 py-5"
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto scroll-touch px-6 py-5"
             onSubmit={(e) => {
               e.preventDefault();
               const fd = new FormData(e.currentTarget);
@@ -476,15 +476,15 @@ function AddEmployeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
         <DialogDescription className="sr-only">Ajouter un nouvel employé à l'équipe</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-primary">
+          <div className="shrink-0 border-b border-border px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Équipe</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
               Ajouter un employé
             </DialogTitle>
           </div>
           <form
-            className="max-h-[65vh] space-y-4 overflow-y-auto scroll-touch px-6 py-5"
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto scroll-touch px-6 py-5"
             onSubmit={(e) => {
               e.preventDefault();
               const fd = new FormData(e.currentTarget);

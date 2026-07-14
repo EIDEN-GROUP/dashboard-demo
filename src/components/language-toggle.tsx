@@ -43,12 +43,18 @@ export function LanguageToggleFloating() {
 
   const langLabel = i18n.t.a11y.switchLanguage;
 
+  // The dashboard has a fixed bottom nav below `lg`; sit above it so the button
+  // never covers the last tab.
+  const onDashboard = pathname.startsWith("/dashboard");
+
   return (
     <div
       className={cn(
         "fixed z-[60] flex flex-col items-center",
         "end-[max(1rem,env(safe-area-inset-right))]",
-        "bottom-[max(1rem,env(safe-area-inset-bottom))]",
+        onDashboard
+          ? "bottom-[calc(5rem+max(0.5rem,env(safe-area-inset-bottom)))] lg:bottom-[max(1rem,env(safe-area-inset-bottom))]"
+          : "bottom-[max(1rem,env(safe-area-inset-bottom))]",
       )}
     >
       <LanguageToggleButton locale={i18n.locale} onToggle={i18n.toggleLocale} label={langLabel} />
