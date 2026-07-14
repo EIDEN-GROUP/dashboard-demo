@@ -542,9 +542,10 @@ export function DashShell({
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 flex-col">
-                <span className="font-display text-xl leading-none tracking-tight text-foreground">{t.shell.platform}</span>
-                <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
+              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 items-center">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#28396C]">
+                  <img src="/favicon.png" alt={t.shell.platform} width={22} height={22} className="h-[22px] w-[22px]" decoding="async" />
+                </span>
               </Link>
               {switchTo && switchLabel ? (
                 <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-[#B5E18B]/15">
@@ -567,9 +568,10 @@ export function DashShell({
           {/* Desktop: full header */}
           <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
-              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex flex-col">
-                <span className="font-display text-4xl leading-none text-foreground">{t.shell.platform}</span>
-                <span className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">{brand}</span>
+              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex items-center">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#28396C] shadow-[0_10px_24px_-12px_rgba(40,57,108,0.6)]">
+                  <img src="/favicon.png" alt={t.shell.platform} width={30} height={30} className="h-[30px] w-[30px]" decoding="async" />
+                </span>
               </Link>
               {switchTo && switchLabel ? (
                 <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-[#B5E18B]/15 w-fit" >
@@ -605,7 +607,6 @@ export function DashShell({
               <div className="flex items-center gap-2">
                 <div className="hidden text-right sm:block">
                   <p className="text-sm font-medium leading-none text-foreground">{user?.name || "admin"}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{brand}</p>
                 </div>
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
                   {(user?.name || "A").slice(0, 1).toUpperCase()}
@@ -656,8 +657,9 @@ export function DashShell({
       <aside className="hidden h-full min-h-0 w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
         <div className="px-6 py-5 border-b border-border space-y-3">
           <div>
-            <p className="font-display text-lg leading-none text-foreground">LOGO</p>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{brand}</p>
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#28396C] shadow-[0_8px_20px_-10px_rgba(40,57,108,0.5)]">
+              <img src="/favicon.png" alt={t.shell.platform} width={24} height={24} className="h-[24px] w-[24px]" decoding="async" />
+            </span>
           </div>
           {switchTo && switchLabel ? (
             <Link to={switchTo} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-border text-foreground/90 hover:bg-muted/80" >
@@ -705,7 +707,6 @@ export function DashShell({
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium leading-none text-foreground">{user?.name || "Admin"}</p>
-                <p className="text-[11px] text-muted-foreground mt-1">{brand}</p>
               </div>
               <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
                 {(user?.name || "A").slice(0, 1).toUpperCase()}
