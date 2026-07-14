@@ -1,12 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listLevels, createLevel, updateLevel, deleteLevel,
   getSettings, updateSetting,
 } from "@/lib/server-settings";
+import { cn } from "@/lib/utils";
+import {
+  softCard, softInput, labelClass, eyebrowClass,
+  primaryPill, ghostPill, iconButton,
+} from "@/lib/dash-ui";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Bus, Percent, Calendar, Package } from "lucide-react";
+import { Plus, Trash2, Save, Percent, Calendar, Package } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "Paramètres - CRM" }] }),
@@ -15,15 +20,19 @@ export const Route = createFileRoute("/dashboard/settings")({
 
 function SettingsPage() {
   return (
-    <div className="mx-auto max-w-4xl space-y-10 p-6">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Configuration</p>
-        <h1 className="mt-1 font-display text-2xl font-semibold text-foreground">Paramètres</h1>
+    <div className="space-y-6 px-4 pb-8 sm:space-y-8 sm:px-6 lg:px-8">
+      <header>
+        <p className={eyebrowClass}>Configuration</p>
+        <h1 className="mt-1.5 font-display text-2xl tracking-tight text-foreground sm:text-3xl md:text-4xl">
+          Paramètres
+        </h1>
+      </header>
+      <div className="space-y-4 sm:space-y-6">
+        <LevelsSection />
+        <ServicesSection />
+        <SiblingDiscountSection />
+        <PaymentDueSection />
       </div>
-      <LevelsSection />
-      <ServicesSection />
-      <SiblingDiscountSection />
-      <PaymentDueSection />
     </div>
   );
 }
@@ -56,35 +65,75 @@ function LevelsSection() {
   });
 
   return (
-    <section className="rounded-none border border-border bg-card">
-      <div className="border-b border-border px-6 py-4">
+    <section className={cn(softCard, "overflow-hidden")}>
+      <div className="border-b border-[#28396C]/10 px-4 py-4 sm:px-6">
         <h2 className="font-display text-lg font-semibold text-foreground">Niveaux scolaires</h2>
-        <p className="text-xs text-muted-foreground">Définissez les niveaux et leurs frais mensuels</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">Définissez les niveaux et leurs frais mensuels</p>
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-[#28396C]/8">
         {levels?.map((l) => (
-          <div key={l.id} className="flex items-center gap-3 px-6 py-3">
+          <div key={l.id}>
             {editId === l.id ? (
-              <>
-                <input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 w-40 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
-                <input value={editFee} onChange={(e) => setEditFee(e.target.value)} type="number" className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
-                <button onClick={() => update.mutate({ id: l.id, name: editName, monthly_fee: Number(editFee) })} className="ml-auto grid h-8 w-8 place-items-center border border-border bg-primary text-primary-foreground hover:bg-primary/90"><Save className="h-4 w-4" /></button>
-              </>
+              <div className="grid grid-cols-1 gap-2 px-4 py-3 sm:flex sm:items-center sm:gap-3 sm:px-6">
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-40")}
+                />
+                <input
+                  value={editFee}
+                  onChange={(e) => setEditFee(e.target.value)}
+                  type="number"
+                  className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-24")}
+                />
+                <button
+                  onClick={() => update.mutate({ id: l.id, name: editName, monthly_fee: Number(editFee) })}
+                  className="grid h-9 w-full place-items-center rounded-xl bg-[#28396C] text-white transition hover:bg-[#1B2A55] sm:w-9"
+                >
+                  <Save className="h-4 w-4" />
+                </button>
+              </div>
             ) : (
-              <>
-                <span className="min-w-0 flex-1 text-sm text-foreground">{l.name}</span>
-                <span className="text-sm font-medium tabular-nums text-foreground">{l.monthly_fee} MAD</span>
-                <button onClick={() => { setEditId(l.id); setEditName(l.name); setEditFee(String(l.monthly_fee)); }} className="text-xs text-muted-foreground underline hover:text-foreground">Modifier</button>
-                <button onClick={() => { if (confirm("Supprimer ce niveau ?")) remove.mutate(l.id); }} className="grid h-8 w-8 place-items-center text-red-500 hover:bg-red-50"><Trash2 className="h-4 w-4" /></button>
-              </>
+              <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 px-4 py-3 sm:flex sm:items-center sm:gap-3 sm:px-6">
+                <span className="text-sm text-foreground">{l.name}</span>
+                <span className="justify-self-end text-sm font-medium tabular-nums text-foreground sm:justify-self-auto">{l.monthly_fee} MAD</span>
+                <button
+                  onClick={() => { setEditId(l.id); setEditName(l.name); setEditFee(String(l.monthly_fee)); }}
+                  className="justify-self-end text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground sm:justify-self-auto"
+                >
+                  Modifier
+                </button>
+                <button
+                  onClick={() => { if (confirm("Supprimer ce niveau ?")) remove.mutate(l.id); }}
+                  className={cn(iconButton, "justify-self-end text-red-500 hover:bg-red-50 hover:text-red-600 sm:justify-self-auto")}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             )}
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-3 border-t border-border px-6 py-3">
-        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nom du niveau" className="h-8 w-40 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
-        <input value={newFee} onChange={(e) => setNewFee(e.target.value)} type="number" placeholder="Frais mensuels" className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
-        <button onClick={() => { if (newName && newFee) create.mutate({ name: newName, monthly_fee: Number(newFee) }); }} className="flex items-center gap-1 border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"><Plus className="h-3.5 w-3.5" /> Ajouter</button>
+      <div className="grid grid-cols-1 gap-3 border-t border-[#28396C]/10 px-4 py-4 sm:flex sm:items-center sm:gap-3 sm:px-6">
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Nom du niveau"
+          className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-44")}
+        />
+        <input
+          value={newFee}
+          onChange={(e) => setNewFee(e.target.value)}
+          type="number"
+          placeholder="Frais mensuels"
+          className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-28")}
+        />
+        <button
+          onClick={() => { if (newName && newFee) create.mutate({ name: newName, monthly_fee: Number(newFee) }); }}
+          className={cn(primaryPill, "justify-center")}
+        >
+          <Plus className="h-4 w-4" /> Ajouter
+        </button>
       </div>
     </section>
   );
@@ -133,65 +182,65 @@ function ServicesSection() {
   if (!settings) return null;
 
   return (
-    <section className="rounded-none border border-border bg-card">
-      <div className="border-b border-border px-6 py-4">
+    <section className={cn(softCard, "overflow-hidden")}>
+      <div className="border-b border-[#28396C]/10 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <h2 className="font-display text-lg font-semibold text-foreground">Services</h2>
         </div>
-        <p className="text-xs text-muted-foreground">Gérez les services proposés et leurs tarifs mensuels</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">Gérez les services proposés et leurs tarifs mensuels</p>
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-[#28396C]/8">
         {services.map((svc, i) => (
-          <div key={i} className="flex items-center gap-3 px-6 py-3">
+          <div key={i} className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 px-4 py-3 sm:flex sm:items-center sm:gap-3 sm:px-6">
             <input
               type="checkbox"
               checked={svc.enabled}
               onChange={() => toggleEnabled(i)}
-              className="h-4 w-4"
+              className="mt-1 h-4 w-4 self-start accent-[#6BA53A] sm:mt-0 sm:self-auto"
               title="Activer / désactiver"
             />
             <input
               value={svc.name}
               onChange={(e) => updateName(i, e.target.value)}
-              className="h-8 min-w-0 flex-1 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+              className={cn(softInput, "h-9 min-w-0 px-3 text-sm outline-none")}
             />
             <input
               value={svc.price}
               onChange={(e) => updatePrice(i, Number(e.target.value))}
               type="number"
-              className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+              className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-24")}
             />
-            <span className="text-xs text-muted-foreground shrink-0">MAD</span>
+            <span className="self-center text-xs text-muted-foreground">MAD</span>
             <button
               onClick={() => removeService(i)}
-              className="grid h-8 w-8 shrink-0 place-items-center text-red-500 hover:bg-red-50"
+              className={cn(iconButton, "justify-self-end text-red-500 hover:bg-red-50 hover:text-red-600 sm:justify-self-auto")}
             >
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-3 border-t border-border px-6 py-3">
+      <div className="grid grid-cols-1 gap-3 border-t border-[#28396C]/10 px-4 py-4 sm:flex sm:items-center sm:gap-3 sm:px-6">
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Nom du service"
-          className="h-8 w-48 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+          className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-52")}
         />
         <input
           value={newPrice}
           onChange={(e) => setNewPrice(e.target.value)}
           type="number"
           placeholder="Prix"
-          className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+          className={cn(softInput, "h-9 px-3 text-sm outline-none sm:w-24")}
         />
         <span className="text-xs text-muted-foreground">MAD</span>
         <button
           onClick={addService}
-          className="flex items-center gap-1 border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          className={cn(primaryPill, "justify-center")}
         >
-          <Plus className="h-3.5 w-3.5" /> Ajouter
+          <Plus className="h-4 w-4" /> Ajouter
         </button>
       </div>
     </section>
@@ -206,6 +255,14 @@ function SiblingDiscountSection() {
   const [value, setValue] = useState("10");
   const [maxKids, setMaxKids] = useState("99");
 
+  useEffect(() => {
+    if (settings?.sibling_discount) {
+      setEnabled(settings.sibling_discount.enabled ?? false);
+      setValue(String(settings.sibling_discount.value ?? 10));
+      setMaxKids(String(settings.sibling_discount.max_kids ?? 99));
+    }
+  }, [settings?.sibling_discount?.enabled, settings?.sibling_discount?.value, settings?.sibling_discount?.max_kids]);
+
   const save = useMutation({
     mutationFn: (val: any) => updateSetting({ data: { key: "sibling_discount", value: val } }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["settings"] }); toast.success("Réduction mise à jour"); },
@@ -215,24 +272,46 @@ function SiblingDiscountSection() {
   if (!settings) return null;
 
   return (
-    <section className="rounded-none border border-border bg-card">
-      <div className="border-b border-border px-6 py-4">
+    <section className={cn(softCard, "overflow-hidden")}>
+      <div className="border-b border-[#28396C]/10 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-2">
           <Percent className="h-4 w-4 text-muted-foreground" />
           <h2 className="font-display text-lg font-semibold text-foreground">Réduction fratrie</h2>
         </div>
-        <p className="text-xs text-muted-foreground">Réduction pour les parents avec plusieurs enfants</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">Réduction pour les parents avec plusieurs enfants</p>
       </div>
-      <div className="flex flex-wrap items-center gap-4 px-6 py-4">
+      <div className="grid grid-cols-1 gap-4 px-4 py-5 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-6">
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4" />
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+            className="h-4 w-4 accent-[#6BA53A]"
+          />
           Activer la réduction
         </label>
-        <input value={value} onChange={(e) => setValue(e.target.value)} type="number" placeholder="% réduction" className="h-8 w-20 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
-        <span className="text-xs text-muted-foreground">% de réduction par enfant supplémentaire</span>
-        <input value={maxKids} onChange={(e) => setMaxKids(e.target.value)} type="number" placeholder="Max" className="h-8 w-16 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
-        <span className="text-xs text-muted-foreground">max enfants</span>
-        <button onClick={() => save.mutate({ enabled, type: "percentage", value: Number(value), max_kids: Number(maxKids) })} className="ml-auto flex items-center gap-1 border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"><Save className="h-3.5 w-3.5" /> Enregistrer</button>
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          type="number"
+          placeholder="%"
+          className={cn(softInput, "h-9 w-20 px-3 text-sm outline-none")}
+        />
+        <span className="text-sm text-muted-foreground">% de réduction par enfant supplémentaire</span>
+        <input
+          value={maxKids}
+          onChange={(e) => setMaxKids(e.target.value)}
+          type="number"
+          placeholder="Max"
+          className={cn(softInput, "h-9 w-16 px-3 text-sm outline-none")}
+        />
+        <span className="text-sm text-muted-foreground">max enfants</span>
+        <button
+          onClick={() => save.mutate({ enabled, type: "percentage", value: Number(value), max_kids: Number(maxKids) })}
+          className={cn(primaryPill, "w-full justify-center sm:ml-auto sm:w-auto")}
+        >
+          <Save className="h-4 w-4" /> Enregistrer
+        </button>
       </div>
     </section>
   );
@@ -241,9 +320,15 @@ function SiblingDiscountSection() {
 function PaymentDueSection() {
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
-  const due = settings?.payment_due ?? { day: 5, grace_days: 5 };
   const [day, setDay] = useState("5");
   const [graceDays, setGraceDays] = useState("5");
+
+  useEffect(() => {
+    if (settings?.payment_due) {
+      setDay(String(settings.payment_due.day ?? 5));
+      setGraceDays(String(settings.payment_due.grace_days ?? 5));
+    }
+  }, [settings?.payment_due?.day, settings?.payment_due?.grace_days]);
 
   const save = useMutation({
     mutationFn: (val: any) => updateSetting({ data: { key: "payment_due", value: val } }),
@@ -254,25 +339,43 @@ function PaymentDueSection() {
   if (!settings) return null;
 
   return (
-    <section className="rounded-none border border-border bg-card">
-      <div className="border-b border-border px-6 py-4">
+    <section className={cn(softCard, "overflow-hidden")}>
+      <div className="border-b border-[#28396C]/10 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <h2 className="font-display text-lg font-semibold text-foreground">Échéance des paiements</h2>
         </div>
-        <p className="text-xs text-muted-foreground">Jour d'échéance et délai de grâce avant passage en impayé</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">Jour d'échéance et délai de grâce avant passage en impayé</p>
       </div>
-      <div className="flex flex-wrap items-center gap-4 px-6 py-4">
-        <span className="text-sm text-foreground">Paiement dû le jour</span>
-        <input value={day} onChange={(e) => setDay(e.target.value)} type="number" min="1" max="28" className="h-8 w-16 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
+      <div className="grid grid-cols-1 gap-4 px-4 py-5 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:px-6">
+        <span className={labelClass}>Paiement dû le jour</span>
+        <input
+          value={day}
+          onChange={(e) => setDay(e.target.value)}
+          type="number"
+          min="1"
+          max="28"
+          className={cn(softInput, "h-9 w-16 px-3 text-sm outline-none")}
+        />
         <span className="text-sm text-foreground">du mois</span>
-        <span className="text-sm text-foreground ml-4">Délai de grâce</span>
-        <input value={graceDays} onChange={(e) => setGraceDays(e.target.value)} type="number" min="0" className="h-8 w-16 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
+        <span className={cn(labelClass, "sm:ml-4")}>Délai de grâce</span>
+        <input
+          value={graceDays}
+          onChange={(e) => setGraceDays(e.target.value)}
+          type="number"
+          min="0"
+          className={cn(softInput, "h-9 w-16 px-3 text-sm outline-none")}
+        />
         <span className="text-sm text-foreground">jours</span>
-        <button onClick={() => save.mutate({ day: Number(day), grace_days: Number(graceDays) })} className="ml-auto flex items-center gap-1 border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"><Save className="h-3.5 w-3.5" /> Enregistrer</button>
+        <button
+          onClick={() => save.mutate({ day: Number(day), grace_days: Number(graceDays) })}
+          className={cn(primaryPill, "w-full justify-center sm:ml-auto sm:w-auto")}
+        >
+          <Save className="h-4 w-4" /> Enregistrer
+        </button>
       </div>
-      <div className="border-t border-border bg-muted/30 px-6 py-3">
-        <p className="text-xs text-muted-foreground">Un client sera marqué <strong>impayé</strong> si son dernier paiement date d'avant le jour d'échéance + délai de grâce.</p>
+      <div className="border-t border-[#28396C]/10 bg-muted/40 px-4 py-3 sm:px-6">
+        <p className="text-xs text-muted-foreground">Un client sera marqué <strong className="text-foreground">impayé</strong> si son dernier paiement date d'avant le jour d'échéance + délai de grâce.</p>
       </div>
     </section>
   );

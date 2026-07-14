@@ -41,6 +41,7 @@ import {
   ExternalLink,
   RefreshCw,
   Send,
+  GraduationCap,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -544,7 +545,7 @@ export function DashShell({
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 items-center">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#28396C]">
-                  <img src="/favicon.png" alt={t.shell.platform} width={22} height={22} className="h-[22px] w-[22px]" decoding="async" />
+                  <GraduationCap className="h-[18px] w-[18px] text-[#B5E18B]" />
                 </span>
               </Link>
               {switchTo && switchLabel ? (
@@ -570,7 +571,7 @@ export function DashShell({
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex items-center">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#28396C] shadow-[0_10px_24px_-12px_rgba(40,57,108,0.6)]">
-                  <img src="/favicon.png" alt={t.shell.platform} width={30} height={30} className="h-[30px] w-[30px]" decoding="async" />
+                  <GraduationCap className="h-[24px] w-[24px] text-[#B5E18B]" />
                 </span>
               </Link>
               {switchTo && switchLabel ? (
@@ -658,7 +659,7 @@ export function DashShell({
         <div className="px-6 py-5 border-b border-border space-y-3">
           <div>
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#28396C] shadow-[0_8px_20px_-10px_rgba(40,57,108,0.5)]">
-              <img src="/favicon.png" alt={t.shell.platform} width={24} height={24} className="h-[24px] w-[24px]" decoding="async" />
+              <GraduationCap className="h-[20px] w-[20px] text-[#B5E18B]" />
             </span>
           </div>
           {switchTo && switchLabel ? (
