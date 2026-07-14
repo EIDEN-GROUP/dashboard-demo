@@ -101,19 +101,19 @@ type Client = {
   remise: number;
 };
 
-/** Remise fratrie suggérée : 10 % dès le 3ᵉ enfant, 15 % dès le 4ᵉ. */
+/** Remise fratrie suggérée : 10 % dès le 2ᵉ enfant, 15 % dès le 4ᵉ. */
 function remiseAuto(fratrie: number) {
   if (fratrie >= 4) return 15;
-  if (fratrie >= 3) return 10;
+  if (fratrie >= 2) return 10;
   return 0;
 }
 
-/** La remise fratrie n'est ouverte qu'au-delà de 2 enfants scolarisés. */
+/** La remise fratrie s'ouvre dès le 2ᵉ enfant scolarisé. */
 function remiseEligible(fratrie: number) {
-  return fratrie > 2;
+  return fratrie >= 2;
 }
 
-/** Interrupteur de remise fratrie   désactivé tant que la famille n'a pas 3 enfants. */
+/** Interrupteur de remise fratrie   désactivé tant que la famille n'a pas 2 enfants. */
 function RemiseToggle({
   id,
   fratrie,
@@ -135,7 +135,7 @@ function RemiseToggle({
         <p className="mt-1 text-xs text-muted-foreground">
           {eligible
             ? `${fratrie} enfants scolarisés   remise de ${remiseAuto(fratrie)} % suggérée.`
-            : "Disponible à partir de 3 enfants scolarisés."}
+            : "Disponible à partir de 2 enfants scolarisés."}
         </p>
       </div>
       <Switch
@@ -974,7 +974,7 @@ function AddClientDialog({
 
   const setFratrieCount = (n: number) => {
     setFratrie(n);
-    // La remise s'active d'office dès le 3ᵉ enfant, et retombe sous le seuil.
+    // La remise s'active d'office dès le 2ᵉ enfant, et retombe sous le seuil.
     setRemiseOn(remiseEligible(n));
   };
 
