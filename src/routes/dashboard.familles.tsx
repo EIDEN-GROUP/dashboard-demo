@@ -1,7 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Eye, Pencil, Plus, Search, MessageSquare, Send, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  Plus,
+  Search,
+  GraduationCap,
+  CalendarDays,
+  MapPin,
+  Phone,
+  HeartPulse,
+  Utensils,
+  ShieldAlert,
+  Percent,
+  Bus,
+  Package,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,84 +34,242 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
+import {
+  softCard,
+  softInput as inputClass,
+  softSelectTrigger as selectTriggerClass,
+  softSelectContent,
+  dialogSurface,
+  labelClass,
+  primaryPill,
+  iconButton,
+  statusPill,
+  STATUS_COLORS,
+} from "@/lib/dash-ui";
 import { listClients, createClient, updateClient, deleteClient, type ClientInput } from "@/lib/server-clients";
+import { getSettings } from "@/lib/server-settings";
 import { createPayment, updatePaymentInvoice } from "@/lib/server-payments";
 import { sendClientMessage, sendBroadcast, sendEmailNotification } from "@/lib/server-whatsapp";
-import { listLevels } from "@/lib/server-settings";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/familles")({
-  head: () => ({ meta: [{ title: "Parents CRM" }] }),
+  head: () => ({ meta: [{ title: "Parents   CRM" }] }),
   component: CrmParentsPage,
 });
 
-const inputClass = "rounded-none border-border bg-card shadow-none focus-visible:border-primary focus-visible:ring-0";
-const selectTriggerClass = "h-10 rounded-none border-border bg-card shadow-none focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-muted-foreground/70";
-const labelClass = "text-[10px] font-medium uppercase tracking-wider text-muted-foreground";
-const dialogSurface = "gap-0 overflow-hidden border border-border bg-card p-0 shadow-none sm:rounded-none rounded-none max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-none [&>button]:border [&>button]:border-border [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0";
+type PaymentStatus = "paye" | "impaye" | "retard";
+
+const PAYMENT_LABEL: Record<PaymentStatus, string> = {
+  paye: "Payé",
+  impaye: "Impayé",
+  retard: "En retard",
+};
+
+type DbClient = {
+  id: string;
+  parent_name: string;
+  child_name: string;
+  child_age: string;
+  email: string;
+  email2: string;
+  phone: string;
+  phone2: string;
+  cin: string;
+  father_name: string;
+  mother_name: string;
+  dob: string;
+  level: string;
+  crm_stage: string;
+  monthly_fee: number;
+  debt: number;
+  payment_status: PaymentStatus;
+  payment_day: number;
+  notes: string;
+  whatsapp_optin: boolean;
+  transport: boolean;
+  cantine: boolean;
+  garderie: boolean;
+  activites: boolean;
+  fratrie: number;
+  remise: number;
+  subscribed_services: string[];
+  created_at: string;
+};
+
+function remiseAuto(fratrie: number) {
+  if (fratrie >= 4) return 15;
+  if (fratrie >= 3) return 10;
+  return 0;
+}
+
+function servicesOf(c: DbClient, svcNames: string[]) {
+  return (c.subscribed_services ?? []).filter((s) => svcNames.includes(s));
+}
 
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className={labelClass}>{label}</Label>
+      <Label htmlFor={id} className={labelClass}>
+        {label}
+      </Label>
       {children}
     </div>
   );
 }
 
-function Badge({ children, variant }: { children: ReactNode; variant: "neutral" | "dark" }) {
+/** Puces des services souscrits. */
+function ServiceChips({ services }: { services: string[] }) {
+  if (services.length === 0) return <span className="text-xs text-muted-foreground">Aucun service</span>;
   return (
-    <span className={cn("inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-      variant === "dark" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted text-foreground/90")}>
-      <span className="h-1 w-1 shrink-0 bg-current" aria-hidden />
-      {children}
+    <span className="flex flex-wrap gap-1">
+      {services.map((s) => (
+        <span
+          key={s}
+          className="inline-flex items-center gap-1 rounded-full bg-[#28396C]/8 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#28396C]"
+        >
+          {s}
+        </span>
+      ))}
     </span>
   );
 }
 
-function dash(v: string) { return v.trim() === "" ? "—" : v; }
+/** Badge de remise fratrie (masqué quand la famille n'a pas de remise). */
+function RemiseBadge({ client }: { client: FlatClient }) {
+  if (!client.remise || client.remise <= 0) return <span className="text-xs text-muted-foreground"> </span>;
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-[#B5E18B]/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#3E6420]">
+      <Percent className="h-3 w-3" />
+      {client.remise}%   {client.fratrie} enfants
+    </span>
+  );
+}
+
+/** Petit sélecteur de statut de paiement, coloré selon la valeur. */
+function StatusSelect({
+  value,
+  onChange,
+  className,
+}: {
+  value: PaymentStatus;
+  onChange: (v: PaymentStatus) => void;
+  className?: string;
+}) {
+  const tone =
+    value === "paye"
+      ? "bg-[#B5E18B]/30 text-[#3E6420]"
+      : value === "retard"
+        ? "bg-[#F6D8D8] text-[#9A2F2F]"
+        : "bg-[#F4E3C0] text-[#8A5A16]";
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as PaymentStatus)}>
+      <SelectTrigger
+        className={cn(
+          "h-8 w-[8.5rem] gap-1.5 rounded-full border-0 px-3 text-[11px] font-semibold uppercase tracking-wide shadow-none focus:ring-0 focus:ring-offset-0",
+          tone,
+          className,
+        )}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className={softSelectContent}>
+        <SelectItem value="paye">{PAYMENT_LABEL.paye}</SelectItem>
+        <SelectItem value="impaye">{PAYMENT_LABEL.impaye}</SelectItem>
+        <SelectItem value="retard">{PAYMENT_LABEL.retard}</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+/** Sélecteur Oui / Non pour les services de l'école. */
+function OuiNonSelect({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: OuiNon;
+  onChange: (v: OuiNon) => void;
+}) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as OuiNon)}>
+      <SelectTrigger id={id} className={selectTriggerClass}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className={softSelectContent}>
+        <SelectItem value="Oui">Oui</SelectItem>
+        <SelectItem value="Non">Non</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function dash(v: string) {
+  return v.trim() === "" ? " " : v;
+}
+
+type FlatClient = DbClient & { child_subtitle?: string; has_transport: boolean; has_cantine: boolean; has_garderie: boolean; has_activites: boolean };
 
 function CrmParentsPage() {
   const { t } = useDashboardI18n();
   const queryClient = useQueryClient();
+  const { data: rawClients = [] } = useQuery({ queryKey: ["clients"], queryFn: listClients });
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
+  const svcNames = services.filter((s) => s.enabled).map((s) => s.name);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("tous");
-  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [serviceFilter, setServiceFilter] = useState<string>("tous");
+
   const [addOpen, setAddOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [whatsappId, setWhatsappId] = useState<string | null>(null);
-  const [broadcastOpen, setBroadcastOpen] = useState(false);
 
-  const { data: clients = [], isLoading } = useQuery({
-    queryKey: ["clients"],
-    queryFn: listClients,
-  });
+  const clients: FlatClient[] = useMemo(() => {
+    return (rawClients as any[] ?? []).map((r: any) => ({
+      ...r,
+      child_subtitle: r.child_age ? `Enfant de ${r.child_age} ans` : undefined,
+      has_transport: (r.subscribed_services ?? []).includes("Transport scolaire"),
+      has_cantine: (r.subscribed_services ?? []).includes("Cantine"),
+      has_garderie: (r.subscribed_services ?? []).includes("Garderie"),
+      has_activites: (r.subscribed_services ?? []).some((s: string) => s.toLowerCase().includes("activit")),
+    }));
+  }, [rawClients]);
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteClient,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-      toast.success("Client supprimé");
-    },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
-  });
-
-  const filtered = useMemo(() => {
+  // Base = recherche + service (sert au graphique) ; filtered ajoute le statut (sert au tableau)
+  const base = useMemo(() => {
     const q = search.trim().toLowerCase();
+    if (svcNames.length === 0) return [];
     return clients.filter((c) => {
-      if (overdueOnly && !c.overdue) return false;
-      if (statusFilter === "nouveau" && c.crm_stage !== "nouveau") return false;
-      if (statusFilter === "converti" && c.crm_stage !== "converti") return false;
-      if (statusFilter === "impaye" && c.payment_status !== "impaye") return false;
-      if (statusFilter === "paye" && c.payment_status !== "paye") return false;
+      if (serviceFilter === "transport" && !c.has_transport) return false;
+      if (serviceFilter === "cantine" && !c.has_cantine) return false;
+      if (serviceFilter === "garderie" && !c.has_garderie) return false;
+      if (serviceFilter === "activites" && !c.has_activites) return false;
+      if (serviceFilter === "remise" && (c.remise ?? 0) <= 0) return false;
       if (!q) return true;
-      const blob = `${c.parent_name} ${c.child_name} ${c.email} ${c.phone}`.toLowerCase();
+      const blob = `${c.parent_name} ${c.child_name} ${c.email} ${c.email2} ${c.phone} ${c.level}`.toLowerCase();
       return blob.includes(q);
     });
-  }, [clients, search, statusFilter, overdueOnly]);
+  }, [clients, search, serviceFilter, svcNames]);
+
+  const filtered = useMemo(
+    () => base.filter((c) => statusFilter === "tous" || c.payment_status === statusFilter),
+    [base, statusFilter],
+  );
+
+  // Répartition pour le graphique circulaire
+  const donut = useMemo(() => {
+    const counts = { paye: 0, impaye: 0, retard: 0 };
+    base.forEach((c) => { counts[c.payment_status ?? "impaye"] += 1; });
+    return [
+      { name: "Payé", value: counts.paye, color: STATUS_COLORS.paye },
+      { name: "Impayé", value: counts.impaye, color: STATUS_COLORS.impaye },
+      { name: "En retard", value: counts.retard, color: STATUS_COLORS.retard },
+    ];
+  }, [base]);
+  const donutTotal = donut.reduce((s, d) => s + d.value, 0);
 
   const detail = detailId ? clients.find((c) => c.id === detailId) : null;
   const edit = editId ? clients.find((c) => c.id === editId) : null;
@@ -105,9 +277,6 @@ function CrmParentsPage() {
 
   return (
     <div className="space-y-6">
-      <BroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />
-      <WhatsAppDialog clientId={whatsappId} onClose={() => setWhatsappId(null)} />
-
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.familles.eyebrow}</p>
@@ -115,297 +284,415 @@ function CrmParentsPage() {
             {t.familles.titleBold}{" "}
             {t.familles.titleItalic ? <span className="italic text-muted-foreground">{t.familles.titleItalic}</span> : null}
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-muted-foreground">{t.familles.subtitle}</p>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            Fiches élèves complètes   scolarité, contacts, santé et suivi des paiements mensuels.
+          </p>
         </div>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setBroadcastOpen(true)} className="inline-flex items-center gap-2 border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
-            <Send className="h-4 w-4" />
-            Message à tous
-          </button>
-          <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4" />
-            {t.familles.addClient}
-          </button>
-        </div>
+        <button type="button" onClick={() => setAddOpen(true)} className={primaryPill}>
+          <Plus className="h-4 w-4" />
+          {t.familles.addClient}
+        </button>
       </header>
 
-      <section className="border border-border bg-card p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">— {t.common.filtersSearch}</p>
-        <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-end">
-          <div className="relative min-w-0">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.familles.searchPlaceholder} className={cn(inputClass, "pl-10")} aria-label={t.familles.searchAria} />
+      {/* Filtres */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <section className={cn(softCard, "p-5 lg:col-span-2")}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="relative min-w-0 sm:col-span-2">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t.familles.searchPlaceholder}
+                className={cn(inputClass, "pl-10")}
+                aria-label={t.familles.searchAria}
+              />
+            </div>
+            <div>
+              <Label className={labelClass}>Statut de paiement</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par statut">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={softSelectContent}>
+                  <SelectItem value="tous">Tous les statuts</SelectItem>
+                  <SelectItem value="paye">{PAYMENT_LABEL.paye}</SelectItem>
+                  <SelectItem value="impaye">{PAYMENT_LABEL.impaye}</SelectItem>
+                  <SelectItem value="retard">{PAYMENT_LABEL.retard}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="sm:col-span-2">
+              <Label className={labelClass}>Service souscrit</Label>
+              <Select value={serviceFilter} onValueChange={setServiceFilter}>
+                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={softSelectContent}>
+                  <SelectItem value="tous">Tous les services</SelectItem>
+                  <SelectItem value="transport">Transport scolaire</SelectItem>
+                  <SelectItem value="cantine">Cantine</SelectItem>
+                  <SelectItem value="garderie">Garderie</SelectItem>
+                  <SelectItem value="activites">Activités périscolaires</SelectItem>
+                  <SelectItem value="remise">Avec remise fratrie</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="w-full min-w-[11rem] lg:w-52">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className={selectTriggerClass} aria-label={t.familles.filterStatusAria}>
-                <SelectValue placeholder={t.common.allStatuses} />
-              </SelectTrigger>
-              <SelectContent className="rounded-none border-border">
-                <SelectItem value="tous">{t.common.allStatuses}</SelectItem>
-                <SelectItem value="nouveau">{t.status.stageNouveau}</SelectItem>
-                <SelectItem value="converti">{t.status.stageConverti}</SelectItem>
-                <SelectItem value="impaye">{t.status.paymentImpaye}</SelectItem>
-                <SelectItem value="paye">{t.status.paymentPaye}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <label className="flex cursor-pointer items-center gap-2 border border-border bg-muted px-3 py-2.5 text-sm text-foreground/90">
-            <Checkbox checked={overdueOnly} onCheckedChange={(v) => setOverdueOnly(v === true)}
-              className="rounded-none border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary" />
-            <span className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 shrink-0 bg-primary" aria-hidden />
-              {t.status.overdue}
-            </span>
-          </label>
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          {isLoading ? "Chargement..." : filtered.length === 1
-            ? t.familles.clientsFoundOne
-            : interpolate(t.familles.clientsFoundMany, { count: filtered.length })}
-        </p>
-      </section>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {filtered.length === 1
+              ? t.familles.clientsFoundOne
+              : interpolate(t.familles.clientsFoundMany, { count: filtered.length })}
+          </p>
+        </section>
 
-      <section className="border border-border bg-card">
-        <div className="border-b border-border px-5 py-4">
+        {/* Graphique circulaire */}
+        <section className={cn(softCard, "flex flex-col p-5")}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Analyse</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <p className="font-display text-3xl font-semibold tabular-nums text-foreground">{donutTotal}</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {donut.map((d) => {
+              const share = donutTotal > 0 ? Math.round((d.value / donutTotal) * 100) : 0;
+              return (
+                <li key={d.name} className="rounded-2xl bg-muted/50 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="flex items-center gap-2 font-medium text-foreground">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      {d.name}
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-foreground">
+                      {d.value}
+                      <span className="ml-1.5 font-normal text-muted-foreground">{share}%</span>
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#28396C]/10">
+                    <div
+                      className="h-full rounded-full transition-[width] duration-700 ease-out"
+                      style={{ width: `${share}%`, backgroundColor: d.color }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      </div>
+
+      {/* Tableau   cliquer une ligne ouvre la fiche complète */}
+      <section className={cn(softCard, "overflow-hidden")}>
+        <div className="border-b border-[#28396C]/10 px-5 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.familles.clientList}</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-left text-sm">
+          <table className="w-full min-w-[1080px] text-left text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-[#28396C]/10 bg-muted/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">{t.familles.table.parent}</th>
-                <th className="px-4 py-3">{t.familles.table.child}</th>
+                <th className="px-4 py-3">Niveau</th>
+                <th className="px-4 py-3">Emails des parents</th>
                 <th className="px-4 py-3">{t.familles.table.contact}</th>
-                <th className="px-4 py-3">{t.familles.table.crmStage}</th>
-                <th className="px-4 py-3">{t.familles.table.status}</th>
+                <th className="px-4 py-3">Services</th>
+                <th className="px-4 py-3">Remise fratrie</th>
+                <th className="px-4 py-3">Statut</th>
                 <th className="px-4 py-3">{t.familles.table.monthly}</th>
-                <th className="px-4 py-3">{t.familles.table.debt}</th>
-                <th className="px-4 py-3 w-32">{t.familles.table.actions}</th>
+                <th className="px-4 py-3 w-16">{t.familles.table.actions}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-[#28396C]/8">
               {filtered.map((c) => (
-                <tr key={c.id} className="hover:bg-muted/80">
-                  <td className="px-4 py-3 font-medium text-foreground">{c.parent_name}</td>
-                  <td className="px-4 py-3 text-foreground/90">
-                    <span className="block">{c.child_name}</span>
-                    {c.child_age ? <span className="mt-0.5 block text-xs text-muted-foreground">{c.child_age}</span> : null}
+                <tr
+                  key={c.id}
+                  onClick={() => setDetailId(c.id)}
+                  className="cursor-pointer transition-colors hover:bg-[#B5E18B]/10"
+                >
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <span className="block">{c.parent_name}</span>
+                    <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                      {c.child_name}
+                      {c.child_subtitle ? `   ${c.child_subtitle}` : ""}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{dash(c.level)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    <span className="block">{dash(c.email)}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.email2)}</span>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    <span className="block">{c.email}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{c.phone}</span>
+                    <span className="block">{c.phone}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.phone2)}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={c.crm_stage === "converti" ? "dark" : "neutral"}>
-                      {c.crm_stage === "nouveau" ? t.status.nouveau : t.status.converti}
-                    </Badge>
+                    <ServiceChips services={servicesOf(c, svcNames)} />
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={c.payment_status === "paye" ? "dark" : "neutral"}>
-                      {c.payment_status === "impaye" ? t.status.impaye : t.status.paye}
-                    </Badge>
+                    <RemiseBadge client={c} />
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-foreground/90">{c.monthly_fee} {t.common.mad}</td>
-                  <td className="px-4 py-3 tabular-nums text-foreground/90">{c.debt} {t.common.mad}</td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <button type="button" onClick={() => setDetailId(c.id)} className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted" aria-label={interpolate(t.familles.viewAria, { name: c.child_name })}>
-                        <Eye className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
-                      <button type="button" onClick={() => setEditId(c.id)} className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted" aria-label={interpolate(t.familles.editAria, { name: c.child_name })}>
-                        <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
-                      <button type="button" onClick={() => setWhatsappId(c.id)} className="grid h-9 w-9 place-items-center border border-border bg-card text-muted-foreground hover:bg-muted" aria-label={`WhatsApp ${c.parent_name}`}>
-                        <MessageSquare className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
-                      <button type="button" onClick={() => { if (confirm("Supprimer ce client ?")) deleteMutation.mutate({ data: c.id }); }} className="grid h-9 w-9 place-items-center border border-border bg-card text-red-500 hover:bg-red-50">
-                        <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
-                    </div>
+                    <span className={cn("inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide", c.payment_status === "paye" ? "bg-[#B5E18B]/30 text-[#3E6420]" : c.payment_status === "retard" ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]")}>
+                      {PAYMENT_LABEL[c.payment_status ?? "impaye"]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-foreground/90">
+                    <span className="block font-semibold text-foreground">
+                      {(c.monthly_fee ?? 0)} {t.common.mad}
+                    </span>
+                    {(c.remise ?? 0) > 0 ? (
+                      <span className="mt-0.5 block text-xs text-muted-foreground line-through">
+                        {Math.round((c.monthly_fee ?? 0) / (1 - (c.remise ?? 0) / 100))} {t.common.mad}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => setEditId(c.id)}
+                      className={iconButton}
+                      aria-label={interpolate(t.familles.editAria, { name: c.child })}
+                    >
+                      <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {filtered.length === 0 && !isLoading ? (
+        {filtered.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-muted-foreground">{t.familles.noMatch}</p>
         ) : null}
-        {isLoading ? <p className="px-5 py-8 text-center text-sm text-muted-foreground">Chargement...</p> : null}
       </section>
 
       <AddClientDialog open={addOpen} onOpenChange={setAddOpen} />
-      {detail ? <DetailClientDialog client={detail} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} onPayment={() => { setPaymentId(detail.id); setDetailId(null); }} /> : null}
-      {paymentClient ? <PaymentDialog clientId={paymentClient.id} clientLabel={paymentClient.parent_name} clientEmail={paymentClient.email} open={!!paymentId} onOpenChange={(o) => { if (!o) setPaymentId(null); }} /> : null}
-      {edit ? <EditClientDialog key={edit.id} client={edit} open={!!editId} onOpenChange={(o) => !o && setEditId(null)} /> : null}
+
+      {detail ? (
+        <DetailClientDialog
+          client={detail}
+          open={!!detailId}
+          onOpenChange={(o) => !o && setDetailId(null)}
+          onEdit={() => {
+            setEditId(detail.id);
+            setDetailId(null);
+          }}
+          onPayment={() => {
+            setPaymentId(detail.id);
+            setDetailId(null);
+          }}
+        />
+      ) : null}
+
+      {paymentClient ? (
+        <PaymentDialog
+          clientId={paymentClient.id}
+          clientLabel={paymentClient.parent_name}
+          clientEmail={paymentClient.email}
+          open={!!paymentId}
+          onOpenChange={(o) => {
+            if (!o) setPaymentId(null);
+          }}
+        />
+      ) : null}
+
+      {edit ? (
+        <EditClientDialog
+          key={edit.id}
+          client={edit}
+          open={!!editId}
+          onOpenChange={(o) => !o && setEditId(null)}
+        />
+      ) : null}
     </div>
   );
 }
 
-function BroadcastDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [content, setContent] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ total: number; success: number; failed: number } | null>(null);
-
-  const handleSend = async () => {
-    if (!content.trim()) return;
-    setBusy(true);
-    setResult(null);
-    try {
-      const res = await sendBroadcast({ data: { content: content.trim() } });
-      if (res.ok) {
-        setResult({ total: res.total, success: res.success, failed: res.failed });
-        toast.success(`Message envoyé à ${res.success} client(s)`);
-      } else {
-        toast.error(res.error || "Échec de l'envoi");
-      }
-    } catch {
-      toast.error("Erreur lors de l'envoi");
-    } finally {
-      setBusy(false);
-    }
-  };
-
+// ── Fiche complète (lecture) ───────────────────────────────
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { setResult(null); setContent(""); } onOpenChange(o); }}>
-      <DialogContent className={cn(dialogSurface, "max-w-[520px]")}>
-        <DialogDescription className="sr-only">Envoyer un message WhatsApp à tous les clients</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">WhatsApp</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">Message à tous les clients</DialogTitle>
-          </div>
-          <div className="px-6 py-5 space-y-4">
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Votre message pour tous les clients..." rows={5}
-              className="w-full resize-y border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-input" />
-            {result ? <div className="border border-border bg-muted p-3 text-sm"><p className="font-medium text-foreground">Résultat</p><p className="text-muted-foreground">Total: {result.total} · Succès: {result.success} · Échecs: {result.failed}</p></div> : null}
-            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-4">
-              <button type="button" onClick={() => onOpenChange(false)} className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">Annuler</button>
-              <button type="button" onClick={handleSend} disabled={busy || !content.trim()} className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
-                <Send className="h-4 w-4" />
-                {busy ? "Envoi..." : "Envoyer à tous"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <div className="space-y-0.5">
+      <p className={labelClass}>{label}</p>
+      <p className="text-sm font-semibold text-foreground">{value}</p>
+    </div>
   );
 }
 
-function WhatsAppDialog({ clientId, onClose }: { clientId: string | null; onClose: () => void }) {
-  const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: listClients });
-  const client = clientId ? clients.find((c) => c.id === clientId) : null;
-  const [content, setContent] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const handleSend = async () => {
-    if (!client || !content.trim()) return;
-    setBusy(true);
-    try {
-      const res = await sendClientMessage({ data: { clientId: client.id, content: content.trim() } });
-      if (res.ok) {
-        toast.success("Message envoyé");
-        onClose();
-      } else {
-        toast.error(res.error || "Échec de l'envoi");
-      }
-    } catch {
-      toast.error("Erreur");
-    } finally {
-      setBusy(false);
-    }
-  };
-
+function SectionTitle({ icon: Icon, children }: { icon: typeof GraduationCap; children: ReactNode }) {
   return (
-    <Dialog open={!!clientId} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className={cn(dialogSurface, "max-w-[480px]")}>
-        <DialogDescription className="sr-only">Envoyer un message WhatsApp</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">WhatsApp</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
-              Message à {client?.parent_name || "..."}
-            </DialogTitle>
-            <p className="mt-1 text-xs text-muted-foreground">{client?.phone}</p>
-          </div>
-          <div className="px-6 py-5 space-y-4">
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Votre message..." rows={4}
-              className="w-full resize-y border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-input" />
-            <div className="flex justify-end gap-3">
-              <button type="button" onClick={onClose} className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">Annuler</button>
-              <button type="button" onClick={handleSend} disabled={busy || !content.trim()} className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
-                <Send className="h-4 w-4" />
-                {busy ? "Envoi..." : "Envoyer"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <p className="col-span-full mt-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="grid h-6 w-6 place-items-center rounded-lg bg-[#28396C]/8 text-[#28396C]">
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      {children}
+    </p>
   );
 }
 
-function AddClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function DetailClientDialog({
+  client,
+  open,
+  onOpenChange,
+  onEdit,
+  onPayment,
+}: {
+  client: FlatClient;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: () => void;
+  onPayment: () => void;
+}) {
   const { t } = useDashboardI18n();
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
+  const subscribed = client.subscribed_services ?? [];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,680px)] max-w-[680px]")}>
+        <DialogDescription className="sr-only">Fiche complète de {client.child_name}</DialogDescription>
+        <div className="border-t-4 border-t-[#B5E18B]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Fiche élève</p>
+              <DialogTitle className="mt-1 text-left font-display text-xl font-semibold tracking-tight text-foreground">
+                {client.child_name} <span className="font-normal text-muted-foreground">· {client.parent_name}</span>
+              </DialogTitle>
+            </div>
+            <div className="text-right">
+              <p className={labelClass}>Statut</p>
+              <span className={cn("mt-1 inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide", client.payment_status === "paye" ? "bg-[#B5E18B]/30 text-[#3E6420]" : client.payment_status === "retard" ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]")}>
+                {PAYMENT_LABEL[client.payment_status ?? "impaye"]}
+              </span>
+            </div>
+          </div>
+
+          <div className="max-h-[62vh] overflow-y-auto scroll-touch px-6 py-5">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+              <SectionTitle icon={GraduationCap}>Scolarité</SectionTitle>
+              <InfoRow label="Nom de l'élève" value={client.child_name} />
+              <InfoRow label="Âge" value={dash(client.child_age)} />
+              <InfoRow label="Date de naissance" value={dash(client.dob)} />
+              <InfoRow label="Niveau / Classe" value={dash(client.level)} />
+              <InfoRow label="Date d'inscription" value={dash(new Date(client.created_at).toLocaleDateString("fr-FR"))} />
+              <InfoRow label="Enfants scolarisés" value={`${client.fratrie ?? 1}`} />
+
+              <SectionTitle icon={CalendarDays}>Parents & identité</SectionTitle>
+              <InfoRow label="Nom du père" value={dash(client.father_name)} />
+              <InfoRow label="Nom de la mère" value={dash(client.mother_name)} />
+              <InfoRow label="CIN / Passeport" value={dash(client.cin)} />
+
+              <SectionTitle icon={Phone}>Contact</SectionTitle>
+              <InfoRow label="Email du père" value={dash(client.email)} />
+              <InfoRow label="Email de la mère" value={dash(client.email2)} />
+              <InfoRow label="Téléphone du père" value={dash(client.phone)} />
+              <InfoRow label="Téléphone de la mère" value={dash(client.phone2)} />
+
+              <SectionTitle icon={ShieldAlert}>Contact d'urgence</SectionTitle>
+              <InfoRow label="Notes" value={dash(client.notes)} />
+
+              <SectionTitle icon={Bus}>Services souscrits</SectionTitle>
+              {services.filter((s) => s.enabled).map((s) => (
+                <InfoRow key={s.name} label={s.name} value={subscribed.includes(s.name) ? "Oui" : "Non"} />
+              ))}
+
+              <SectionTitle icon={Utensils}>Paiement & remise</SectionTitle>
+              <InfoRow label="Frais mensuels" value={`${client.monthly_fee ?? 0} ${t.common.mad}`} />
+              <InfoRow
+                label="Remise fratrie"
+                value={(client.remise ?? 0) > 0 ? `${client.remise}%   ${client.fratrie ?? 1} enfants` : "Aucune"}
+              />
+              <InfoRow label="Jour de paiement" value={client.payment_day ? `Le ${client.payment_day}` : " "} />
+              <InfoRow label="Dette totale" value={`${client.debt ?? 0} ${t.common.mad}`} />
+            </div>
+          </div>
+
+          <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-[#28396C]/10 px-6 py-4">
+            <button type="button" onClick={onPayment} className={primaryPill}>
+              <Plus className="h-4 w-4" />
+              Enregistrer un paiement
+            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onEdit}
+                className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                <Pencil className="h-4 w-4" />
+                Modifier
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t.common.close}
+              </button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AddClientDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const { t } = useDashboardI18n();
+  const queryClient = useQueryClient();
   const f = t.form;
   const a = t.familles.addModal;
-  const queryClient = useQueryClient();
-  const { data: levels } = useQuery({ queryKey: ["levels"], queryFn: listLevels });
-  const [selLevel, setSelLevel] = useState("");
-  const [monthlyFee, setMonthlyFee] = useState(0);
-  const [error, setError] = useState("");
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
   const [busy, setBusy] = useState(false);
-
-  const levelMap = useMemo(() => {
-    const m: Record<string, number> = {};
-    for (const l of levels ?? []) m[l.name] = l.monthly_fee;
-    return m;
-  }, [levels]);
-
-  const handleLevelChange = (v: string) => {
-    setSelLevel(v);
-    setMonthlyFee(levelMap[v] ?? 0);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-    setBusy(true);
-    const fd = new FormData(e.currentTarget);
-    try {
-      await createClient({
-        data: {
-          parent_name: String(fd.get("parent") || "").trim() || "Nouveau parent",
-          child_name: String(fd.get("child") || "").trim() || "Enfant",
-          email: String(fd.get("email1") || "").trim(),
-          phone: String(fd.get("tel1") || "").trim(),
-          level: selLevel,
-          monthly_fee: monthlyFee,
-        },
-      });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-      toast.success("Client créé");
-      onOpenChange(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[640px]")}>
         <DialogDescription className="sr-only">{a.srDesc}</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+        <div className="border-t-4 border-t-[#B5E18B]">
+          <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{a.title}</DialogTitle>
           </div>
-          <form className="max-h-[calc(90vh-10rem)] overflow-y-auto px-6 py-5" onSubmit={handleSubmit}>
+          <form
+            className="max-h-[calc(90vh-10rem)] overflow-y-auto px-6 py-5"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              const fd = new FormData(e.currentTarget);
+              const subscribed = services.filter((s) => fd.get(`svc_${s.name}`)).map((s) => s.name);
+              try {
+                await createClient({
+                  data: {
+                    parent_name: String(fd.get("parent") || ""),
+                    child_name: String(fd.get("child") || ""),
+                    email: String(fd.get("email1") || ""),
+                    email2: String(fd.get("email2") || ""),
+                    phone: String(fd.get("tel1") || ""),
+                    level: String(fd.get("niveau") || ""),
+                    monthly_fee: Number(fd.get("mensuel") || 0),
+                    fratrie: Number(fd.get("fratrie") || 1),
+                    remise: remiseAuto(Number(fd.get("fratrie") || 1)),
+                    subscribed_services: subscribed,
+                    payment_day: 1,
+                  },
+                });
+                queryClient.invalidateQueries({ queryKey: ["clients"] });
+                toast.success("Client créé");
+                onOpenChange(false);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Erreur");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field id="nc-parent" label={f.parentDisplayName}>
                 <Input id="nc-parent" name="parent" required className={inputClass} placeholder={f.parentDisplayPlaceholder} />
@@ -413,30 +700,54 @@ function AddClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
               <Field id="nc-child" label={f.studentName}>
                 <Input id="nc-child" name="child" required className={inputClass} />
               </Field>
-              <Field id="nc-email" label={f.email1}>
+              <Field id="nc-email" label="Email du père">
                 <Input id="nc-email" name="email1" type="email" className={inputClass} />
+              </Field>
+              <Field id="nc-email2" label="Email de la mère">
+                <Input id="nc-email2" name="email2" type="email" className={inputClass} />
               </Field>
               <Field id="nc-tel" label={f.phone1}>
                 <Input id="nc-tel" name="tel1" type="tel" className={inputClass} />
               </Field>
               <Field id="nc-niveau" label={f.level}>
-                <Select value={selLevel} onValueChange={handleLevelChange}>
-                  <SelectTrigger id="nc-niveau" className={selectTriggerClass}><SelectValue placeholder={t.common.selectLevel} /></SelectTrigger>
-                  <SelectContent className="rounded-none border-border">
-                    {(levels ?? []).map((l) => (
-                      <SelectItem key={l.id} value={l.name}>{l.name} — {l.monthly_fee} MAD</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input id="nc-niveau" name="niveau" className={inputClass} placeholder={f.levelExample} />
               </Field>
               <Field id="nc-mensuel" label={f.monthlyFeesMad}>
-                <input name="mensuel" type="number" value={monthlyFee} onChange={(e) => setMonthlyFee(Number(e.target.value))} className={inputClass} />
+                <Input id="nc-mensuel" name="mensuel" type="number" min={0} defaultValue={0} className={inputClass} />
               </Field>
+              <Field id="nc-fratrie" label="Enfants scolarisés">
+                <Input id="nc-fratrie" name="fratrie" type="number" min={1} max={10} defaultValue={1} className={inputClass} />
+              </Field>
+              <div className="sm:col-span-2">
+                <Label className={labelClass}>Services souscrits</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Une remise fratrie de 10 % est appliquée dès le 3ᵉ enfant, 15 % dès le 4ᵉ.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {services.filter((s) => s.enabled).map((s) => (
+                    <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="checkbox"
+                        name={`svc_${s.name}`}
+                        className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
+                      />
+                      {s.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
-            {error ? <p className="mt-4 text-xs text-red-600">{error}</p> : null}
-            <div className="mt-6 flex justify-end gap-3 border-t border-border pt-5">
-              <button type="button" onClick={() => onOpenChange(false)} className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">{t.common.cancel}</button>
-              <button type="submit" disabled={busy} className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">{busy ? "..." : a.submit}</button>
+            <div className="mt-6 flex justify-end gap-3 border-t border-[#28396C]/10 pt-5">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t.common.cancel}
+              </button>
+              <button type="submit" className={cn(primaryPill, "px-5 py-2")}>
+                {a.submit}
+              </button>
             </div>
           </form>
         </div>
@@ -445,47 +756,19 @@ function AddClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
   );
 }
 
-function DetailClientDialog({ client, open, onOpenChange, onPayment }: { client: any; open: boolean; onOpenChange: (open: boolean) => void; onPayment: () => void }) {
-  const { t } = useDashboardI18n();
-  const f = t.form;
-  const d = t.familles.detailModal;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={dialogSurface}>
-        <DialogDescription className="sr-only">{interpolate(d.srDesc, { name: client.child_name })}</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.common.crm}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{d.title}</DialogTitle>
-          </div>
-          <div className="grid max-h-[60vh] grid-cols-1 gap-x-6 gap-y-4 overflow-y-auto px-6 py-5 sm:grid-cols-2">
-            <Field id="d-eleve" label={f.studentName}><p className="text-sm font-semibold text-foreground">{client.child_name}</p></Field>
-            <Field id="d-dob" label={f.birthDate}><p className="text-sm font-semibold text-foreground">{dash(client.dob)}</p></Field>
-            <Field id="d-pere" label={f.fatherName}><p className="text-sm font-semibold text-foreground">{dash(client.father_name)}</p></Field>
-            <Field id="d-mere" label={f.motherName}><p className="text-sm font-semibold text-foreground">{dash(client.mother_name)}</p></Field>
-            <Field id="d-cin" label={f.cinPassport}><p className="text-sm font-semibold text-foreground">{dash(client.cin)}</p></Field>
-            <Field id="d-email1" label={f.email1}><p className="text-sm font-semibold text-foreground">{dash(client.email)}</p></Field>
-            <Field id="d-email2" label={f.email2}><p className="text-sm font-semibold text-foreground">{dash(client.email2)}</p></Field>
-            <Field id="d-tel1" label={f.phone1}><p className="text-sm font-semibold text-foreground">{dash(client.phone)}</p></Field>
-            <Field id="d-tel2" label={f.phone2}><p className="text-sm font-semibold text-foreground">{dash(client.phone2)}</p></Field>
-            <Field id="d-niveau" label={f.level}><p className="text-sm font-semibold text-foreground">{dash(client.level)}</p></Field>
-            <Field id="d-frais" label={f.monthlyFees}><p className="text-sm font-semibold text-foreground">{client.monthly_fee} {t.common.mad}</p></Field>
-          </div>
-          <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-border px-6 py-4">
-            <button type="button" onClick={() => { onPayment(); onOpenChange(false); }} className="inline-flex items-center gap-2 border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4" />
-              {d.recordPayment}
-            </button>
-            <button type="button" onClick={() => onOpenChange(false)} className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">{t.common.close}</button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function PaymentDialog({ clientId, clientLabel, clientEmail, open, onOpenChange }: { clientId: string; clientLabel: string; clientEmail?: string; open: boolean; onOpenChange: (open: boolean) => void }) {
+function PaymentDialog({
+  clientId,
+  clientLabel,
+  clientEmail,
+  open,
+  onOpenChange,
+}: {
+  clientId: string;
+  clientLabel: string;
+  clientEmail?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { t } = useDashboardI18n();
   const f = t.form;
   const p = t.familles.paymentModal;
@@ -507,7 +790,6 @@ function PaymentDialog({ clientId, clientLabel, clientEmail, open, onOpenChange 
           mode: String(fd.get("mode") || "especes") as any,
         },
       });
-
       if (clientEmail) {
         await sendEmailNotification({
           data: {
@@ -547,11 +829,9 @@ function PaymentDialog({ clientId, clientLabel, clientEmail, open, onOpenChange 
           },
         });
       }
-
       if (payment.id) {
         await updatePaymentInvoice({ data: { id: payment.id, invoice_sent: true } }).catch(() => {});
       }
-
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
@@ -568,18 +848,24 @@ function PaymentDialog({ clientId, clientLabel, clientEmail, open, onOpenChange 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[480px]")}>
         <DialogDescription className="sr-only">{interpolate(p.srDesc, { name: clientLabel })}</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+        <div className="border-t-4 border-t-[#B5E18B]">
+          <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{p.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{p.title}</DialogTitle>
           </div>
           <form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
-            <Field id="pay-montant" label={f.amountMad}><Input id="pay-montant" name="montant" type="number" defaultValue={0} min={0} className={inputClass} /></Field>
-            <Field id="pay-date" label={f.paymentDate}><Input id="pay-date" name="date" type="date" className={inputClass} /></Field>
+            <Field id="pay-montant" label={f.amountMad}>
+              <Input id="pay-montant" name="montant" type="number" defaultValue={0} min={0} className={inputClass} />
+            </Field>
+            <Field id="pay-date" label={f.paymentDate}>
+              <Input id="pay-date" name="date" type="date" className={inputClass} />
+            </Field>
             <Field id="pay-mode" label={f.paymentMode}>
               <Select name="mode" defaultValue="especes">
-                <SelectTrigger id="pay-mode" className={selectTriggerClass}><SelectValue placeholder={t.common.mode} /></SelectTrigger>
-                <SelectContent className="rounded-none border-border">
+                <SelectTrigger id="pay-mode" className={selectTriggerClass}>
+                  <SelectValue placeholder={t.common.mode} />
+                </SelectTrigger>
+                <SelectContent className={softSelectContent}>
                   <SelectItem value="especes">{f.paymentModes.cash}</SelectItem>
                   <SelectItem value="virement">{f.paymentModes.transfer}</SelectItem>
                   <SelectItem value="carte">{f.paymentModes.card}</SelectItem>
@@ -588,9 +874,17 @@ function PaymentDialog({ clientId, clientLabel, clientEmail, open, onOpenChange 
               </Select>
             </Field>
             {error ? <p className="text-xs text-red-600">{error}</p> : null}
-            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
-              <button type="button" onClick={() => onOpenChange(false)} className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">{t.common.cancel}</button>
-              <button type="submit" disabled={busy} className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">{busy ? "..." : p.confirm}</button>
+            <div className="flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t.common.cancel}
+              </button>
+              <button type="submit" disabled={busy} className={cn(primaryPill, "px-5 py-2 disabled:opacity-60")}>
+                {busy ? "..." : p.confirm}
+              </button>
             </div>
           </form>
         </div>
@@ -599,98 +893,183 @@ function PaymentDialog({ clientId, clientLabel, clientEmail, open, onOpenChange 
   );
 }
 
-function EditClientDialog({ client, open, onOpenChange }: { client: any; open: boolean; onOpenChange: (open: boolean) => void }) {
+function EditClientDialog({
+  client,
+  open,
+  onOpenChange,
+}: {
+  client: FlatClient;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const queryClient = useQueryClient();
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
+  const initialSubscribed = client.subscribed_services ?? [];
+  const [subscribed, setSubscribed] = useState<string[]>(initialSubscribed);
+  const [fratrie, setFratrie] = useState<number>(client.fratrie ?? 1);
+  const [remise, setRemise] = useState<number>(client.remise ?? 0);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setSubscribed(client.subscribed_services ?? []);
+    setFratrie(client.fratrie ?? 1);
+    setRemise(client.remise ?? 0);
+  }, [client]);
+
   const { t } = useDashboardI18n();
   const f = t.form;
   const e = t.familles.editModal;
-  const queryClient = useQueryClient();
-  const { data: levels } = useQuery({ queryKey: ["levels"], queryFn: listLevels });
-  const [stade, setStade] = useState(client.crm_stage);
-  const [editLevel, setEditLevel] = useState(client.level ?? "");
-  const [editFee, setEditFee] = useState(client.monthly_fee ?? 0);
-  const [busy, setBusy] = useState(false);
 
-  useEffect(() => { setStade(client.crm_stage); }, [client.id, client.crm_stage]);
-
-  const levelMap = useMemo(() => {
-    const m: Record<string, number> = {};
-    for (const l of levels ?? []) m[l.name] = l.monthly_fee;
-    return m;
-  }, [levels]);
-
-  const handleLevelChange = (v: string) => {
-    setEditLevel(v);
-    if (levelMap[v]) setEditFee(levelMap[v]);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setBusy(true);
-    const fd = new FormData(e.currentTarget);
-    try {
-      await updateClient({
-        data: {
-          id: client.id,
-          parent_name: String(fd.get("parent") || client.parent_name),
-          child_name: String(fd.get("child") || client.child_name),
-          email: String(fd.get("email") || client.email),
-          phone: String(fd.get("phone") || client.phone),
-          level: editLevel,
-          crm_stage: stade,
-          monthly_fee: editFee,
-          payment_day: Number(fd.get("jour") ?? client.payment_day ?? 1),
-        },
-      });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast.success("Client mis à jour");
-      onOpenChange(false);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur");
-    } finally {
-      setBusy(false);
-    }
+  const toggleSvc = (name: string) => {
+    setSubscribed((prev) =>
+      prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name],
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(dialogSurface, "max-w-[560px]")}>
+      <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,640px)] max-w-[640px]")}>
         <DialogDescription className="sr-only">{interpolate(e.srDesc, { name: client.child_name })}</DialogDescription>
-        <div className="border-t-4 border-t-primary">
-          <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
+        <div className="border-t-4 border-t-[#B5E18B]">
+          <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{e.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{e.title}</DialogTitle>
           </div>
-          <form className="max-h-[65vh] space-y-4 overflow-y-auto px-6 py-5" onSubmit={handleSubmit}>
+          <form
+            className="max-h-[65vh] space-y-4 overflow-y-auto scroll-touch px-6 py-5"
+            onSubmit={async (ev) => {
+              ev.preventDefault();
+              setBusy(true);
+              const fd = new FormData(ev.currentTarget);
+              try {
+                await updateClient({
+                  data: {
+                    id: client.id,
+                    parent_name: String(fd.get("parent_name") ?? client.parent_name),
+                    child_name: String(fd.get("child_name") ?? client.child_name),
+                    email: String(fd.get("email") ?? client.email),
+                    email2: String(fd.get("email2") ?? client.email2),
+                    phone: String(fd.get("phone") ?? client.phone),
+                    phone2: String(fd.get("phone2") ?? client.phone2),
+                    father_name: String(fd.get("father_name") ?? client.father_name),
+                    mother_name: String(fd.get("mother_name") ?? client.mother_name),
+                    cin: String(fd.get("cin") ?? client.cin),
+                    dob: String(fd.get("dob") ?? client.dob),
+                    level: String(fd.get("level") ?? client.level),
+                    notes: String(fd.get("notes") ?? client.notes),
+                    fratrie,
+                    remise,
+                    subscribed_services: subscribed,
+                    payment_day: Number(fd.get("payment_day") ?? client.payment_day ?? 1),
+                  },
+                });
+                queryClient.invalidateQueries({ queryKey: ["clients"] });
+                toast.success("Client modifié");
+                onOpenChange(false);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Erreur");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="e-parent" label={t.common.parent}><Input id="e-parent" name="parent" defaultValue={client.parent_name} className={inputClass} /></Field>
-              <Field id="e-child" label={t.common.child}><Input id="e-child" name="child" defaultValue={client.child_name} className={inputClass} /></Field>
-              <Field id="e-email" label={t.common.email}><Input id="e-email" name="email" type="email" defaultValue={client.email} className={inputClass} /></Field>
-              <Field id="e-phone" label={t.common.phone}><Input id="e-phone" name="phone" type="tel" defaultValue={client.phone} className={inputClass} /></Field>
-              <Field id="e-niveau" label={f.level}>
-                <Select value={editLevel} onValueChange={handleLevelChange}>
-                  <SelectTrigger id="e-niveau" className={selectTriggerClass}><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-none border-border">
-                    {(levels ?? []).map((l) => (
-                      <SelectItem key={l.id} value={l.name}>{l.name} — {l.monthly_fee} MAD</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Field id="e-parent" label={t.common.parent}>
+                <Input id="e-parent" name="parent_name" defaultValue={client.parent_name} className={inputClass} />
               </Field>
-              <Field id="e-stade" label={f.crmStage}>
-                <Select value={stade} onValueChange={(v) => setStade(v as "nouveau" | "converti")}>
-                  <SelectTrigger id="e-stade" className={selectTriggerClass}><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-none border-border">
-                    <SelectItem value="nouveau">{t.status.nouveau}</SelectItem>
-                    <SelectItem value="converti">{t.status.converti}</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Field id="e-child" label={t.common.child}>
+                <Input id="e-child" name="child_name" defaultValue={client.child_name} className={inputClass} />
               </Field>
-              <Field id="e-mensuel" label={f.monthlyFeesMad}><Input id="e-mensuel" name="mensuel" type="number" min={0} value={editFee} onChange={(e) => setEditFee(Number(e.target.value))} className={inputClass} /></Field>
-              <Field id="e-jour" label={f.paymentDay}><Input id="e-jour" name="jour" type="number" min={1} max={31} defaultValue={client.payment_day ?? 1} className={inputClass} /></Field>
+              <Field id="e-dob" label={f.birthDate}>
+                <Input id="e-dob" name="dob" defaultValue={client.dob} className={inputClass} />
+              </Field>
+              <Field id="e-level" label={f.level}>
+                <Input id="e-level" name="level" defaultValue={client.level} className={inputClass} />
+              </Field>
+              <Field id="e-father" label={f.fatherName}>
+                <Input id="e-father" name="father_name" defaultValue={client.father_name} className={inputClass} />
+              </Field>
+              <Field id="e-mother" label={f.motherName}>
+                <Input id="e-mother" name="mother_name" defaultValue={client.mother_name} className={inputClass} />
+              </Field>
+              <Field id="e-cin" label={f.cinPassport}>
+                <Input id="e-cin" name="cin" defaultValue={client.cin} className={inputClass} />
+              </Field>
+              <Field id="e-email" label="Email du père">
+                <Input id="e-email" name="email" type="email" defaultValue={client.email} className={inputClass} />
+              </Field>
+              <Field id="e-email2" label="Email de la mère">
+                <Input id="e-email2" name="email2" type="email" defaultValue={client.email2} className={inputClass} />
+              </Field>
+              <Field id="e-phone" label="Téléphone du père">
+                <Input id="e-phone" name="phone" type="tel" defaultValue={client.phone} className={inputClass} />
+              </Field>
+              <Field id="e-phone2" label="Téléphone de la mère">
+                <Input id="e-phone2" name="phone2" type="tel" defaultValue={client.phone2} className={inputClass} />
+              </Field>
+              <div className="sm:col-span-2">
+                <Field id="e-notes" label="Notes">
+                  <Input id="e-notes" name="notes" defaultValue={client.notes} className={inputClass} />
+                </Field>
+              </div>
+              <Field id="e-fratrie" label="Enfants scolarisés">
+                <Input
+                  id="e-fratrie"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={fratrie}
+                  onChange={(ev) => {
+                    const n = Number(ev.target.value || 1);
+                    setFratrie(n);
+                    setRemise(remiseAuto(n));
+                  }}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="e-remise" label="Remise fratrie (%)">
+                <Input
+                  id="e-remise"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={remise}
+                  onChange={(ev) => setRemise(Number(ev.target.value || 0))}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="e-jour" label={f.paymentDay}>
+                <Input id="e-jour" name="payment_day" type="number" min={1} max={31} defaultValue={client.payment_day ?? 1} className={inputClass} />
+              </Field>
+              <div className="sm:col-span-2">
+                <Label className={labelClass}>Services souscrits</Label>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {services.filter((s) => s.enabled).map((s) => (
+                    <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={subscribed.includes(s.name)}
+                        onChange={() => toggleSvc(s.name)}
+                        className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
+                      />
+                      {s.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">
-              <button type="button" onClick={() => onOpenChange(false)} className="border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">{t.common.cancel}</button>
-              <button type="submit" disabled={busy} className="border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">{busy ? "..." : t.common.saveChanges}</button>
+            <div className="flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t.common.cancel}
+              </button>
+              <button type="submit" disabled={busy} className={cn(primaryPill, "px-5 py-2 disabled:opacity-60")}>
+                {busy ? "..." : t.common.saveChanges}
+              </button>
             </div>
           </form>
         </div>

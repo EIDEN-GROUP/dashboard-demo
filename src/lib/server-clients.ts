@@ -19,6 +19,13 @@ export type ClientInput = {
   payment_day?: number;
   notes?: string;
   whatsapp_optin?: boolean;
+  transport?: boolean;
+  cantine?: boolean;
+  garderie?: boolean;
+  activites?: boolean;
+  fratrie?: number;
+  remise?: number;
+  subscribed_services?: string[];
 };
 
 export const listClients = createServerFn({ method: "GET" })
@@ -66,6 +73,13 @@ export const createClient = createServerFn({ method: "POST" })
         payment_day: data.payment_day ?? 1,
         notes: data.notes ?? "",
         whatsapp_optin: data.whatsapp_optin ?? true,
+        transport: data.transport ?? false,
+        cantine: data.cantine ?? false,
+        garderie: data.garderie ?? false,
+        activites: data.activites ?? false,
+        fratrie: data.fratrie ?? 1,
+        remise: data.remise ?? 0,
+        subscribed_services: data.subscribed_services ?? [],
       })
       .select()
       .single();

@@ -14,8 +14,6 @@ import {
   Users,
   CreditCard,
   Images,
-  BarChart3,
-  MessageSquare,
   Settings,
 } from "lucide-react";
 import { fr as dateFnsFr, ar as dateFnsAr } from "date-fns/locale";
@@ -121,22 +119,16 @@ export function useDashboardNav() {
   const topNav: NavItem[] = useMemo(
     () => [
       { to: "/dashboard", label: t.nav.dashboard, icon: LayoutDashboard },
-      { to: "/dashboard/rendez-vous", label: t.nav.rendezVous, icon: Calendar },
+      { to: "/dashboard/calendar", label: t.nav.calendar, icon: Calendar },
       { to: "/dashboard/familles", label: t.nav.familles, icon: Users },
       { to: "/dashboard/paiements", label: t.nav.paiements, icon: CreditCard },
-    ],
-    [t.nav],
-  );
-
-  const secondaryNav: NavItem[] = useMemo(
-    () => [
       { to: "/dashboard/affiches", label: t.nav.affiches, icon: Images },
-      { to: "/dashboard/rapports", label: t.nav.rapports, icon: BarChart3 },
-      { to: "/dashboard/messagerie", label: t.nav.messagerie, icon: MessageSquare },
       { to: "/dashboard/settings", label: t.nav.settings, icon: Settings },
     ],
     [t.nav],
   );
+
+  const secondaryNav: NavItem[] = useMemo(() => [], []);
 
   return { topNav, secondaryNav, brand: t.shell.brand };
 }

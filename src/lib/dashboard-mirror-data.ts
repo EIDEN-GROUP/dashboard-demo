@@ -1,5 +1,5 @@
 /**
- * Snapshot of demo data used on real dashboard routes — kept in sync for the landing miniature.
+ * Snapshot of demo data used on real dashboard routes   kept in sync for the landing miniature.
  * Source routes: dashboard.index, dashboard.familles, dashboard.paiements, dashboard.rendez-vous,
  * dashboard.affiches, dashboard.rapports.
  */
@@ -13,61 +13,6 @@ export type DashboardMiniaturePageId =
   | "rendez-vous"
   | "affiches"
   | "rapports";
-
-export type MirrorPlanTone = "violet" | "emerald" | "amber" | "zinc";
-
-export type MirrorPlanificationEntry = {
-  id: string;
-  date: string;
-  time: string;
-  title: string;
-  detail: string;
-  tone: MirrorPlanTone;
-};
-
-/** Demo planifications — same list as `dashboard.planifications`. */
-export const mirrorPlanificationEntries: readonly MirrorPlanificationEntry[] = [
-  {
-    id: "1",
-    date: "2026-05-12",
-    time: "09:00",
-    title: "Conseil pédagogique",
-    detail: "Salle direction · équipe cycle 1",
-    tone: "violet",
-  },
-  {
-    id: "2",
-    date: "2026-05-13",
-    time: "14:30",
-    title: "Atelier parents",
-    detail: "Salle polyvalente · bienveillance",
-    tone: "emerald",
-  },
-  {
-    id: "3",
-    date: "2026-05-14",
-    time: "10:00",
-    title: "Réunion facturation",
-    detail: "Visioconférence · clôture mai",
-    tone: "zinc",
-  },
-  {
-    id: "4",
-    date: "2026-05-14",
-    time: "15:00",
-    title: "Sortie pédagogique",
-    detail: "Musée des sciences · GS–CP",
-    tone: "amber",
-  },
-  {
-    id: "5",
-    date: "2026-05-15",
-    time: "11:00",
-    title: "Formation interne",
-    detail: "TDAH & classe flexible",
-    tone: "violet",
-  },
-];
 
 export const mirrorFilterTags = ["CLIENTS", "PAIEMENTS", "DETTE", "COLLECTE"] as const;
 

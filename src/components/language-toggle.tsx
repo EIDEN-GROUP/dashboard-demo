@@ -33,7 +33,7 @@ function LanguageToggleButton({
   );
 }
 
-/** Fixed language control — always visible on landing and dashboard (no scroll required). */
+/** Fixed language control   always visible on landing and dashboard (no scroll required). */
 export function LanguageToggleFloating() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const i18n = useLandingI18nOptional();

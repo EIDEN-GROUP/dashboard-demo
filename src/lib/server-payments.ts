@@ -14,7 +14,7 @@ export const listPayments = createServerFn({ method: "GET" })
   .handler(async () => {
     const { data, error } = await supabaseAdmin
       .from("payments")
-      .select("*, clients!inner(parent_name, child_name, phone)")
+      .select("*, clients!inner(parent_name, child_name, phone, email, level, monthly_fee, fratrie, remise, subscribed_services, payment_status)")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];

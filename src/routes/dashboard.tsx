@@ -4,7 +4,7 @@ import { useDashboardI18n, useDashboardNav } from "@/lib/landing-i18n";
 
 function DashboardLayout() {
   const { dir } = useDashboardI18n();
-  const { topNav, secondaryNav, brand } = useDashboardNav();
+  const { topNav, brand } = useDashboardNav();
 
   return (
     <DashShell
@@ -12,7 +12,6 @@ function DashboardLayout() {
       brandColor="primary"
       variant="topnav"
       topNav={topNav}
-      secondaryNav={secondaryNav}
       dir={dir}
     >
       <Outlet />

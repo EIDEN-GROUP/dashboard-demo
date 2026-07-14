@@ -11,13 +11,7 @@ import { HeroPreviewPageBody } from "@/components/hero-preview-page-body";
 import type { DashboardMiniaturePageId } from "@/lib/dashboard-mirror-data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
-import {
-  useLandingI18n,
-  getDateFnsLocale,
-  DEMO_STEP_PAGES,
-  PREVIEW_TOP_NAV_IDS,
-  PREVIEW_SECONDARY_NAV_IDS,
-} from "@/lib/landing-i18n";
+import { useLandingI18n, getDateFnsLocale, DEMO_STEP_PAGES, PREVIEW_TOP_NAV_IDS, PREVIEW_SECONDARY_NAV_IDS, } from "@/lib/landing-i18n";
 import { submitDemoRequest } from "@/lib/contact-demo";
 
 const MotionLink = motion.create(Link);
@@ -32,9 +26,9 @@ const PREVIEW_NAV_ICONS = {
 } as const;
 
 const PAIN_ACCENT = [
-  { accent: "border-t-[#0c5752]", bg: "bg-[color-mix(in_srgb,#0c5752_7%,#f8f3e8)]" },
-  { accent: "border-t-[#b8a876]", bg: "bg-[color-mix(in_srgb,#cfc292_22%,#fefdfb)]" },
-  { accent: "border-t-[#122620]", bg: "bg-[color-mix(in_srgb,#122620_6%,#f4ebd0)]" },
+  { accent: "border-t-[#6BA53A]", bg: "bg-[color-mix(in_srgb,#6BA53A_5%,#FBFDF2_95%)]" },
+  { accent: "border-t-[#5C6B94]", bg: "bg-[color-mix(in_srgb,#5C6B94_8%,#FBFDF2_92%)]" },
+  { accent: "border-t-[#28396C]", bg: "bg-[color-mix(in_srgb,#28396C_5%,#FBFDF2_95%)]" },
 ] as const;
 
 const PAIN_ICONS = [FileSpreadsheet, CreditCard, UserPlus] as const;
@@ -159,68 +153,43 @@ function Header() {
           className={cn(
             "border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 ease-out",
             isScrolled
-              ? "border-border/60 bg-background/90 shadow-sm"
-              : "border-white/10 bg-[#0a0f0c] shadow-[0_1px_0_rgba(255,255,255,0.04)]",
+              ? "border-[#28396C]/10 bg-white/85 shadow-[0_10px_35px_-15px_rgba(40,57,108,0.25)]"
+              : "border-transparent bg-white/60",
           )}
         >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <Link
             to="/"
-            className={cn(
-              "flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors hover:text-[#10b981]",
-              isScrolled ? "text-foreground" : "text-[#f8f3e8]",
-            )}
+            className="flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors text-[#28396C] hover:text-[#28396C]/80"
           >
             <motion.div
               whileHover={{ rotate: -8, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
-              className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center sm:h-10 sm:w-10",
-                isScrolled ? "text-[#122620]" : "text-emerald-400",
-              )}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#28396C] shadow-[0_8px_20px_-8px_rgba(40,57,108,0.5)] sm:h-10 sm:w-10"
             >
-              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
+              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-[#B5E18B]" />
             </motion.div>
             <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
-            <button
-              onClick={() => scrollToId("demo")}
-              className={cn(
-                "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
-              )}
-            >
-              {t.nav.demo}
-            </button>
-            <button
-              onClick={() => scrollToId("modules")}
-              className={cn(
-                "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
-              )}
-            >
-              {t.nav.modules}
-            </button>
-            <button
-              onClick={() => scrollToId("tarifs")}
-              className={cn(
-                "px-2 py-2 text-sm font-medium transition md:px-4",
-                isScrolled ? "text-foreground/70 hover:text-[#10b981]" : "text-white/90 hover:text-[#10b981]",
-              )}
-            >
-              {t.nav.pricing}
-            </button>
+            {[
+              { label: t.nav.demo, id: "demo" },
+              { label: t.nav.modules, id: "modules" },
+              { label: t.nav.pricing, id: "tarifs" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollToId(item.id)}
+                className="relative rounded-full px-3 py-2 text-sm font-medium text-[#28396C]/70 transition hover:bg-[#28396C]/5 hover:text-[#28396C] md:px-4"
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
-              className={cn(
-                "grid h-10 w-10 place-items-center border transition sm:hidden",
-                isScrolled
-                  ? "border-border/80 text-foreground/80 hover:bg-muted"
-                  : "border-white/15 text-white/85 hover:bg-white/10",
-              )}
+              className="grid h-10 w-10 place-items-center rounded-full border border-[#28396C]/15 text-[#28396C] transition hover:bg-[#28396C]/5 sm:hidden"
               aria-expanded={menuOpen}
               aria-controls="landing-nav-sheet"
               aria-label={t.a11y.openMenu}
@@ -232,7 +201,7 @@ function Header() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => scrollToId("contact")}
-              className="landing-cta-primary inline-flex max-w-[11rem] items-center justify-center gap-1.5 rounded-none px-3 py-2.5 text-xs font-semibold transition sm:max-w-none sm:gap-2 sm:px-5 sm:text-sm"
+              className="inline-flex max-w-[11rem] items-center justify-center gap-1.5 rounded-full bg-[#28396C] px-4 py-2.5 text-xs font-bold text-white shadow-[0_14px_30px_-12px_rgba(40,57,108,0.55)] transition hover:bg-[#1B2A55] sm:max-w-none sm:gap-2 sm:px-6 sm:text-sm"
             >
               <span className="truncate sm:whitespace-normal">{t.nav.bookDemo}</span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
@@ -243,11 +212,11 @@ function Header() {
       </header>
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="right" id="landing-nav-sheet" className="flex w-[min(100%,20rem)] flex-col sm:max-w-sm">
+        <SheetContent side="right" id="landing-nav-sheet" className="flex w-[min(100%,20rem)] flex-col border-l border-[#28396C]/10 bg-white sm:max-w-sm">
           <SheetHeader className="text-left">
-            <SheetTitle>{t.nav.navigation}</SheetTitle>
+            <SheetTitle className="text-[#28396C]">{t.nav.navigation}</SheetTitle>
           </SheetHeader>
-          <nav className="mt-6 flex flex-col gap-1 border-t border-border pt-4" aria-label="Menu mobile">
+          <nav className="mt-6 flex flex-col gap-1 border-t border-[#28396C]/10 pt-4" aria-label="Menu mobile">
             {[
               { label: t.nav.demoInteractive, id: "demo" },
               { label: t.nav.modules, id: "modules" },
@@ -259,17 +228,17 @@ function Header() {
                 key={item.id}
                 type="button"
                 onClick={() => navScroll(item.id)}
-                className="rounded-md px-3 py-3 text-left text-base font-medium text-foreground transition hover:bg-muted hover:text-[#10b981]"
+                className="rounded-xl px-3 py-3 text-left text-base font-medium text-[#28396C]/75 transition hover:bg-[#B5E18B]/20 hover:text-[#28396C]"
               >
                 {item.label}
               </button>
             ))}
           </nav>
-          <div className="mt-auto border-t border-border pt-4">
+          <div className="mt-auto border-t border-[#28396C]/10 pt-4">
             <button
               type="button"
               onClick={() => { scrollToId("contact"); setMenuOpen(false); }}
-              className="landing-cta-primary flex w-full items-center justify-center gap-2 rounded-none px-4 py-3.5 text-sm font-black transition"
+              className="landing-cta-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-sm font-black uppercase tracking-wide transition"
             >
               {t.nav.bookDemo20}
               <ArrowRight className="h-4 w-4" />
@@ -304,39 +273,39 @@ function HeroDashboardPreview() {
 
   return (
     <div className="relative w-full">
-      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-transparent to-amber-500/10 blur-2xl" />
+      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-[#B5E18B]/20 via-transparent to-[#5C6B94]/10 blur-2xl" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.9, ease, delay: 0.25 }}
-        className="relative min-w-0 overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl ring-1 ring-black/[0.06]"
+        className="relative min-w-0 overflow-hidden rounded-2xl border border-white/15 bg-[#FBFDF2] shadow-[0_20px_50px_-25px_rgba(10,16,40,0.7)]"
       >
-        <div className="flex items-center gap-1.5 border-b border-border bg-muted px-3 py-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
-          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
-          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/25" />
-          <span className="ml-2 flex-1 truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-[9px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 border-b border-[#B5E18B]/30 bg-[#28396C] px-3 py-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#6BA53A]/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#5C6B94]/50" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#B5E18B]/40" />
+          <span className="ml-2 flex-1 truncate rounded border border-[#B5E18B]/20 bg-[#FBFDF2]/10 px-2 py-0.5 font-mono text-[9px] text-[#B5E18B]">
             {t.hero.previewUrl}
           </span>
-          <span className="flex shrink-0 items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[#B5E18B]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#B5E18B]" />
             {t.hero.live}
           </span>
         </div>
 
-        <div className="flex flex-col bg-muted text-[10px] text-foreground">
-          <div className="shrink-0 border-b border-border bg-card px-2.5 py-2">
+        <div className="flex flex-col bg-[#FBFDF2] text-[10px] text-[#28396C]">
+          <div className="shrink-0 border-b border-[#B5E18B]/30 bg-white px-2.5 py-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold tracking-tight text-foreground sm:text-xs">Gestio</p>
-                <p className="text-[8px] uppercase tracking-widest text-muted-foreground sm:text-[9px]">{t.hero.specializedCenter}</p>
+                <p className="text-[11px] font-bold tracking-tight text-[#28396C] sm:text-xs">Gestio</p>
+                <p className="text-[8px] uppercase tracking-widest text-[#5C6B94] sm:text-[9px]">{t.hero.specializedCenter}</p>
               </div>
               <div className="flex items-center gap-1">
-                <div className="grid h-5 w-5 place-items-center bg-primary text-[8px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[9px]">A</div>
+                <div className="grid h-5 w-5 place-items-center bg-[#6BA53A] text-[8px] font-bold text-[#FBFDF2] sm:h-6 sm:w-6 sm:text-[9px]">A</div>
                 <button
                   type="button"
-                  className="grid h-5 w-5 place-items-center rounded border border-border text-muted-foreground transition hover:bg-muted sm:h-6 sm:w-6"
+                  className="grid h-5 w-5 place-items-center border border-[#B5E18B]/40 text-[#5C6B94] transition hover:bg-[#B5E18B]/20 sm:h-6 sm:w-6"
                   onClick={() => showLocked(t.hero.loginToAccess)}
                 >
                   <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -354,8 +323,8 @@ function HeroDashboardPreview() {
                     className={cn(
                       "flex shrink-0 items-center gap-1 border px-1.5 py-1 transition",
                       active
-                        ? "border-border bg-muted font-semibold text-foreground shadow-sm"
-                        : "border-transparent text-muted-foreground hover:bg-muted/80",
+                        ? "border-[#28396C] bg-[#28396C] font-semibold text-[#FBFDF2]"
+                        : "border-transparent text-[#5C6B94] hover:bg-[#B5E18B]/20",
                     )}
                   >
                     <Icon className="h-2.5 w-2.5 opacity-70" />
@@ -366,7 +335,7 @@ function HeroDashboardPreview() {
             </nav>
           </div>
 
-          <main className="relative flex h-[240px] flex-col overflow-hidden bg-background sm:h-[300px]">
+          <main className="relative flex h-[240px] flex-col overflow-hidden bg-white sm:h-[300px]">
             <AnimatePresence mode="wait">
               {notice && (
                 <motion.div
@@ -375,13 +344,13 @@ function HeroDashboardPreview() {
                   exit={{ opacity: 0, y: -6 }}
                   className="absolute left-2 right-2 top-2 z-20 flex justify-center"
                 >
-                  <p className="max-w-xs rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-[10px] text-muted-foreground shadow-md backdrop-blur-sm">
+                  <p className="max-w-xs rounded-full border border-[#28396C]/15 bg-[#FBFDF2]/95 px-3 py-1.5 text-center text-[10px] text-[#5C6B94] shadow-md backdrop-blur-sm">
                     {notice}
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 text-foreground">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 text-[#28396C]">
                <HeroPreviewPageBody page={page} previewBtn={previewBtn} showLocked={showLocked} />
             </div>
           </main>
@@ -403,24 +372,42 @@ function Hero() {
     { icon: Check, text: t.hero.trustNoCommit },
   ];
   return (
-    <section className="relative overflow-hidden bg-[#0a0f0c] py-12 lg:py-20">
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_60%,#ECF5D8_100%)] py-12 lg:py-20">
       {/* Dynamic Background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(52,211,153,0.15)_0%,_transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,_rgba(214,173,96,0.1)_0%,_transparent_50%)]" />
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-        
-        {/* Floating Blobs */}
-        <motion.div 
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,_rgba(181,225,139,0.35)_0%,_transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_75%,_rgba(40,57,108,0.08)_0%,_transparent_50%)]" />
+        {/* Grid overlay */}
+        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(to right, #28396C 1px, transparent 1px), linear-gradient(to bottom, #28396C 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)" }} />
+
+        <motion.div
           animate={!reduceMotion ? { scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] } : {}}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-emerald-500/20 blur-[120px]" 
+          className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-[#B5E18B]/40 blur-[120px]"
         />
-        <motion.div 
-          animate={!reduceMotion ? { scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] } : {}}
+        <motion.div
+          animate={!reduceMotion ? { scale: [1.2, 1, 1.2], opacity: [0.1, 0.2, 0.1] } : {}}
           transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-amber-500/10 blur-[120px]" 
+          className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-[#28396C]/15 blur-[120px]"
         />
+
+        {/* Floating glass tiles */}
+        <motion.div
+          animate={!reduceMotion ? { y: [0, -14, 0], rotate: [6, 10, 6] } : {}}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          className="glass-tile absolute right-[6%] top-16 hidden h-20 w-20 rotate-6 lg:block"
+        >
+          <span className="absolute left-4 top-4 h-3.5 w-3.5 rounded-md bg-[#B5E18B]" />
+          <span className="absolute bottom-4 right-4 h-3.5 w-6 rounded-md bg-[#28396C]/70" />
+        </motion.div>
+        <motion.div
+          animate={!reduceMotion ? { y: [0, 12, 0], rotate: [-8, -12, -8] } : {}}
+          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+          className="glass-tile absolute left-[42%] top-28 hidden h-16 w-16 -rotate-8 xl:block"
+        >
+          <span className="absolute left-3.5 top-3.5 h-3 w-3 rounded-full bg-[#EAE6BC]" />
+          <span className="absolute bottom-3.5 right-3.5 h-3 w-3 rounded-sm bg-[#B5E18B]" />
+        </motion.div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -431,43 +418,43 @@ function Hero() {
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
-              <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#28396C] shadow-sm backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5 animate-pulse text-[#6BA53A]" />
               {t.hero.badge}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#f8f3e8] sm:text-6xl lg:text-7xl">
+            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl lg:text-7xl">
               {t.hero.titleLine1} <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
+              <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
               {t.hero.titleLine2}
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-white sm:text-xl">
+            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-[#28396C]/70 sm:text-xl">
               {t.hero.subtitle}
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
                <div className="flex -space-x-3">
                   {[1,2,3,4].map(i => (
-                    <div key={i} className="h-10 w-10 rounded-full border-2 border-[#122620] bg-emerald-900 grid place-items-center text-[10px] font-bold text-emerald-100 shadow-xl">
+                    <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-[#28396C] grid place-items-center text-[10px] font-bold text-[#FBFDF2] shadow-lg">
                        {["FB", "KM", "SR", "AM"][i-1]}
                     </div>
                   ))}
                </div>
                <div className="text-sm">
-                  <div className="flex items-center gap-0.5 text-amber-500">
+                  <div className="flex items-center gap-0.5 text-[#F0B429]">
                     {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                   </div>
-                  <p className="mt-1 text-white">{t.hero.socialProof}</p>
+                  <p className="mt-1 text-[#28396C]/75">{t.hero.socialProof}</p>
                </div>
             </motion.div>
 
             <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-4 sm:flex-row">
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(52, 211, 153, 0.3)" }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => scrollToId("contact")}
-                className="group inline-flex items-center justify-center gap-2 bg-emerald-500 px-8 py-4 text-md font-black text-white transition-all hover:bg-emerald-400"
+                className="group landing-cta-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-black uppercase tracking-wide transition-all"
               >
                 {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -477,7 +464,7 @@ function Hero() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => scrollToId("demo")}
-                className="inline-flex items-center justify-center gap-2 border border-white/20 bg-white px-8 py-4 text-sm font-bold text-[#0a0f0c] shadow-sm transition-colors hover:bg-neutral-100"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#28396C]/20 bg-white/80 px-8 py-4 text-sm font-bold text-[#28396C] shadow-sm backdrop-blur transition hover:border-[#28396C]/40 hover:bg-white"
               >
                 {t.hero.ctaSecondary}
                 <MousePointerClick className="h-4 w-4" />
@@ -486,8 +473,8 @@ function Hero() {
 
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
               {trustItems.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 text-xs font-medium text-white">
-                   <Icon className="h-3.5 w-3.5 text-emerald-500/70" />
+                <div key={text} className="flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/60 px-3 py-1.5 text-xs font-medium text-[#28396C]/75 backdrop-blur">
+                   <Icon className="h-3.5 w-3.5 text-[#6BA53A]" />
                    {text}
                 </div>
               ))}
@@ -501,18 +488,20 @@ function Hero() {
             transition={{ duration: 1, delay: 0.3 }}
             className="relative lg:ml-12"
           >
-            <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-transparent blur-sm" />
-            <HeroDashboardPreview />
-            
+            <div className="relative rounded-[2rem] bg-[#28396C] p-3 shadow-[0_45px_90px_-40px_rgba(40,57,108,0.65)] sm:p-4">
+              <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_20%_0%,_rgba(181,225,139,0.18)_0%,_transparent_55%)]" />
+              <HeroDashboardPreview />
+            </div>
+
             {/* Promotional Badge */}
             <motion.div
               animate={!reduceMotion ? { y: [0, -10, 0] } : {}}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -right-6 flex flex-col items-center justify-center rounded-2xl border-2 border-amber-500/30 bg-black/80 p-4 text-center shadow-2xl backdrop-blur-md"
+              className="absolute -bottom-6 -right-3 flex flex-col items-center justify-center rounded-2xl border border-[#28396C]/10 bg-white/90 p-4 text-center shadow-[0_24px_50px_-20px_rgba(40,57,108,0.4)] backdrop-blur sm:-right-6"
             >
-              <Gift className="h-6 w-6 text-amber-500 mb-1" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#d6ad60]">{t.hero.promoLabel}</p>
-              <p className="text-xs font-bold text-white">{t.hero.promoText}</p>
+              <Gift className="h-6 w-6 text-[#6BA53A] mb-1" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#5C6B94]">{t.hero.promoLabel}</p>
+              <p className="text-xs font-bold text-[#28396C]">{t.hero.promoText}</p>
             </motion.div>
           </motion.div>
         </div>
@@ -584,17 +573,17 @@ function DemoSection() {
   // Shared dashboard frame used in both layouts
   function DashboardFrame() {
     return (
-      <div className="relative overflow-hidden rounded-xl border-2 border-border bg-card shadow-[var(--shadow-elegant)]">
+      <div className="relative overflow-hidden rounded-3xl border border-[#28396C]/10 bg-white shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)]">
         {/* Browser bar */}
-        <div className="flex items-center gap-2 border-b border-border bg-muted px-3 py-2 sm:px-4 sm:py-2.5">
-          <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
-          <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
-          <span className="h-2 w-2 rounded-full bg-muted-foreground/25 sm:h-2.5 sm:w-2.5" />
-          <span className="ml-2 flex-1 truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground sm:ml-3 sm:px-3 sm:text-xs">
+        <div className="flex items-center gap-2 border-b border-[#B5E18B]/30 bg-[#28396C] px-3 py-2 sm:px-4 sm:py-2.5">
+          <span className="h-2 w-2 rounded-full bg-[#6BA53A]/70 sm:h-2.5 sm:w-2.5" />
+          <span className="h-2 w-2 rounded-full bg-[#5C6B94]/50 sm:h-2.5 sm:w-2.5" />
+          <span className="h-2 w-2 rounded-full bg-[#B5E18B]/40 sm:h-2.5 sm:w-2.5" />
+          <span className="ml-2 flex-1 truncate border border-[#B5E18B]/20 bg-[#FBFDF2]/10 px-2 py-0.5 font-mono text-[10px] text-[#B5E18B] sm:ml-3 sm:px-3 sm:text-xs">
             gestio.ma · {currentStep.label.toLowerCase()}
           </span>
-          <span className="flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary sm:px-2 sm:text-[11px]">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="flex items-center gap-1 border border-[#B5E18B]/30 bg-[#B5E18B]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#B5E18B] sm:px-2 sm:text-[11px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#B5E18B]" />
             <span className="hidden sm:inline">{t.demo.liveDemo}</span>
             <span className="sm:hidden">{t.hero.live}</span>
           </span>
@@ -602,26 +591,26 @@ function DemoSection() {
         {/* App shell */}
         <div className="flex flex-col bg-muted">
           {/* Top nav */}
-          <div className="border-b border-border bg-card px-3 py-2 sm:px-5 sm:py-3">
+          <div className="border-b border-[#B5E18B]/30 bg-white px-3 py-2 sm:px-5 sm:py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold tracking-tight text-foreground sm:text-base">Gestio</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground sm:text-[11px]">{t.hero.specializedCenter}</p>
+                <p className="text-sm font-bold tracking-tight text-[#28396C] sm:text-base">Gestio</p>
+                <p className="text-[10px] uppercase tracking-widest text-[#5C6B94] sm:text-[11px]">{t.hero.specializedCenter}</p>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="hidden items-center gap-1.5 text-[11px] text-muted-foreground sm:flex sm:text-xs">
-                  <span className="flex h-5 w-5 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground sm:h-6 sm:w-6 sm:text-[11px]">A</span>
+                <div className="hidden items-center gap-1.5 text-[11px] text-[#5C6B94] sm:flex sm:text-xs">
+                  <span className="flex h-5 w-5 items-center justify-center bg-[#6BA53A] text-[10px] font-bold text-[#FBFDF2] sm:h-6 sm:w-6 sm:text-[11px]">A</span>
                   {t.demo.adminRole}
                 </div>
                 <button
-                  className="rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted sm:px-2 sm:py-1 sm:text-xs"
+                  className="border border-[#B5E18B]/40 px-1.5 py-0.5 text-[10px] font-medium text-[#5C6B94] hover:bg-[#B5E18B]/20 sm:px-2 sm:py-1 sm:text-xs"
                   onClick={() => showLocked(t.hero.loginToAccessReal)}
                 >
                   <LogOut className="inline h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 </button>
               </div>
             </div>
-            <nav className="mt-1.5 flex flex-wrap gap-0.5 border-t border-border/70 pt-1.5 sm:mt-2 sm:gap-1 sm:pt-2">
+            <nav className="mt-1.5 flex flex-wrap gap-0.5 border-t border-[#B5E18B]/30 pt-1.5 sm:mt-2 sm:gap-1 sm:pt-2">
               {[...previewTopNav, ...previewSecondaryNav].map((n) => {
                 const Icon = n.icon;
                 const active = page === n.id;
@@ -633,7 +622,7 @@ function DemoSection() {
                     whileTap={{ scale: 0.97 }}
                     className={cn(
                       "flex items-center gap-0.5 border px-1.5 py-0.5 text-[10px] font-medium transition sm:px-2 sm:py-1 sm:text-xs",
-                      active ? "border-border bg-muted font-semibold text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:bg-muted/80",
+                      active ? "border-[#28396C] bg-[#28396C] font-semibold text-[#FBFDF2]" : "border-transparent text-[#5C6B94] hover:bg-[#B5E18B]/20",
                     )}
                   >
                     <Icon className="h-2.5 w-2.5 opacity-70 sm:h-3 sm:w-3" />
@@ -655,7 +644,7 @@ function DemoSection() {
                   transition={{ duration: 0.25, ease }}
                   className="pointer-events-none absolute left-2 right-2 top-2 z-20 flex justify-center sm:left-4 sm:right-4 sm:top-3"
                 >
-                  <p className="max-w-xs rounded-full border border-foreground/15 bg-background/95 px-3 py-1.5 text-center text-xs text-muted-foreground shadow-md backdrop-blur-sm sm:max-w-md sm:px-4 sm:py-2 sm:text-sm">
+                  <p className="max-w-xs border border-[#28396C]/15 bg-[#FBFDF2]/95 px-3 py-1.5 text-center text-xs text-[#5C6B94] shadow-md backdrop-blur-sm sm:max-w-md sm:px-4 sm:py-2 sm:text-sm">
                     {notice}
                   </p>
                 </motion.div>
@@ -690,8 +679,8 @@ function DemoSection() {
   }, []);
 
   return (
-    <section id="demo" className="relative overflow-hidden border-t border-border/60 bg-secondary/20 py-12 sm:py-16">
-      <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-30" />
+    <section id="demo" className="relative overflow-hidden border-t border-[#B5E18B]/20 bg-[color-mix(in_srgb,#B5E18B_8%,#FBFDF2_92%)] py-12 sm:py-16">
+      <div className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, rgba(40,57,108,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.05) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -703,7 +692,7 @@ function DemoSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary sm:px-5 sm:text-base">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-2 text-sm font-bold uppercase tracking-wider text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)] sm:px-5 sm:text-base">
             <MousePointerClick className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
             {t.demo.badge}
           </motion.div>
@@ -735,23 +724,23 @@ function DemoSection() {
                   onClick={() => goToStep(i)}
                   whileTap={{ scale: 0.98 }}
                   className={cn(
-                    "group flex items-center gap-3 border-2 p-3.5 text-left transition-all",
+                    "group flex items-center gap-3 rounded-2xl border p-3.5 text-left transition-all",
                     active
-                      ? "border-foreground bg-foreground text-background shadow-[4px_4px_0_0_var(--foreground)]"
-                      : "border-foreground/10 bg-card text-foreground hover:border-foreground/30",
+                      ? "border-[#28396C] bg-[#28396C] text-[#FBFDF2] shadow-[0_20px_45px_-20px_rgba(40,57,108,0.6)]"
+                      : "border-[#28396C]/10 bg-white text-[#28396C] shadow-sm hover:border-[#6BA53A]/40 hover:shadow-md",
                   )}
                 >
                   <span className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center border-2 transition",
-                    active ? "border-background/30 bg-background/10" : "border-foreground/15 bg-foreground/5 group-hover:border-foreground/30",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition",
+                    active ? "border-[#B5E18B]/40 bg-[#B5E18B]/15" : "border-[#28396C]/10 bg-[#28396C]/5 group-hover:border-[#6BA53A]/30",
                   )}>
                     <Icon className="h-4 w-4" strokeWidth={1.5} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("text-base font-bold leading-tight", active ? "text-background" : "text-foreground")}>{s.label}</p>
-                    <p className={cn("mt-0.5 text-sm", active ? "text-background/65" : "text-muted-foreground")}>{s.tag}</p>
+                    <p className={cn("text-base font-bold leading-tight", active ? "text-[#FBFDF2]" : "text-[#28396C]")}>{s.label}</p>
+                    <p className={cn("mt-0.5 text-sm", active ? "text-[#FBFDF2]/65" : "text-[#5C6B94]")}>{s.tag}</p>
                   </div>
-                  {active && <span className="shrink-0 text-background/50 text-sm">→</span>}
+                  {active && <span className="shrink-0 text-[#B5E18B] text-sm">→</span>}
                 </motion.button>
               );
             })}
@@ -767,23 +756,23 @@ function DemoSection() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35, ease }}
-                className="relative border-2 border-foreground bg-foreground p-5 text-background shadow-[6px_6px_0_0_oklch(0_0_0/0.15)]"
+                className="relative rounded-2xl bg-[#28396C] p-5 text-[#FBFDF2] shadow-[0_25px_60px_-25px_rgba(40,57,108,0.65)]"
               >
                 <div className="flex items-start gap-4">
-                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center border-2 border-background/20 bg-background/10">
-                    <StepIcon className="h-5 w-5" strokeWidth={1.5} />
+                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#B5E18B]/30 bg-[#B5E18B]/10">
+                    <StepIcon className="h-5 w-5 text-[#B5E18B]" strokeWidth={1.5} />
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs text-background/50 uppercase tracking-widest">
+                      <span className="font-mono text-xs text-[#B5E18B]/70 uppercase tracking-widest">
                         {t.demo.moduleOf} {step + 1} / {tourSteps.length}
                       </span>
-                      <span className="rounded-full border border-background/20 bg-background/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-background/70">
+                      <span className="rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#B5E18B]">
                         {currentStep.tag}
                       </span>
                     </div>
                     <h3 className="mt-1.5 text-2xl font-black">{currentStep.headline}</h3>
-                    <p className="mt-2 text-base leading-relaxed text-background/75">{currentStep.description}</p>
+                    <p className="mt-2 text-base leading-relaxed text-[#FBFDF2]/75">{currentStep.description}</p>
                   </div>
                 </div>
                 {/* Controls */}
@@ -791,17 +780,17 @@ function DemoSection() {
                   <div className="flex items-center gap-1.5">
                     {tourSteps.map((_, i) => (
                       <button key={i} onClick={() => goToStep(i)}
-                        className={cn("h-1.5 rounded-full transition-all", i === step ? "w-6 bg-background" : "w-1.5 bg-background/30 hover:bg-background/60")}
+                        className={cn("h-1.5 rounded-full transition-all", i === step ? "w-6 bg-[#B5E18B]" : "w-1.5 bg-[#FBFDF2]/30 hover:bg-[#FBFDF2]/60")}
                         aria-label={`${t.a11y.module} ${i + 1}`}
                       />
                     ))}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-8 w-8 items-center justify-center border border-background/30 text-background/70 transition hover:border-background hover:text-background">←</button>
-                    <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-8 w-8 items-center justify-center border border-background/30 bg-background/10 text-background/70 transition hover:border-background hover:bg-background/20 hover:text-background">→</button>
+                    <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B5E18B]/40 text-[#B5E18B]/70 transition hover:border-[#B5E18B] hover:text-[#B5E18B]">←</button>
+                    <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 text-[#B5E18B]/70 transition hover:border-[#B5E18B] hover:bg-[#B5E18B]/20 hover:text-[#B5E18B]">→</button>
                   </div>
                 </div>
-                <div className="absolute -bottom-[10px] left-10 h-0 w-0 border-l-[10px] border-r-[10px] border-t-[10px] border-l-transparent border-r-transparent border-t-foreground" />
+                <div className="absolute -bottom-[10px] left-10 h-0 w-0 border-l-[10px] border-r-[10px] border-t-[10px] border-l-transparent border-r-transparent border-t-[#28396C]" />
               </motion.div>
             </AnimatePresence>
             <DashboardFrame />
@@ -828,14 +817,14 @@ function DemoSection() {
                   onClick={() => goToStep(i)}
                   whileTap={{ scale: 0.96 }}
                   className={cn(
-                    "flex shrink-0 snap-start flex-col items-center gap-1.5 border-2 px-4 py-3 text-center transition-all",
+                    "flex shrink-0 snap-start flex-col items-center gap-1.5 rounded-2xl border px-4 py-3 text-center transition-all",
                     active
-                      ? "border-foreground bg-foreground text-background shadow-[3px_3px_0_0_var(--foreground)]"
-                      : "border-foreground/10 bg-card text-foreground",
+                      ? "border-[#28396C] bg-[#28396C] text-[#FBFDF2] shadow-[0_16px_35px_-16px_rgba(40,57,108,0.6)]"
+                      : "border-[#28396C]/10 bg-white text-[#28396C] shadow-sm",
                   )}
                 >
-                  <Icon className={cn("h-5 w-5", active ? "text-background" : "text-foreground/60")} strokeWidth={1.5} />
-                  <span className={cn("text-xs font-bold whitespace-nowrap sm:text-sm", active ? "text-background" : "text-foreground/70")}>{s.label}</span>
+                  <Icon className={cn("h-5 w-5", active ? "text-[#B5E18B]" : "text-[#5C6B94]/70")} strokeWidth={1.5} />
+                  <span className={cn("text-xs font-bold whitespace-nowrap sm:text-sm", active ? "text-[#FBFDF2]" : "text-[#5C6B94]")}>{s.label}</span>
                 </motion.button>
               );
             })}
@@ -849,31 +838,31 @@ function DemoSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.3, ease }}
-              className="border-2 border-foreground bg-foreground p-4 text-background"
+              className="rounded-2xl bg-[#28396C] p-4 text-[#FBFDF2] shadow-[0_25px_60px_-25px_rgba(40,57,108,0.65)]"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-background/20 bg-background/10">
-                  <StepIcon className="h-4 w-4" strokeWidth={1.5} />
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#B5E18B]/30 bg-[#B5E18B]/10">
+                  <StepIcon className="h-4 w-4 text-[#B5E18B]" strokeWidth={1.5} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-mono text-background/50 uppercase tracking-widest">Module {step + 1} / {tourSteps.length} · {currentStep.tag}</p>
+                  <p className="text-sm font-mono text-[#B5E18B]/60 uppercase tracking-widest">Module {step + 1} / {tourSteps.length} · {currentStep.tag}</p>
                   <h3 className="mt-0.5 text-lg font-black leading-tight sm:text-xl">{currentStep.headline}</h3>
                 </div>
               </div>
-              <p className="mt-2.5 text-base leading-relaxed text-background/75">{currentStep.description}</p>
+              <p className="mt-2.5 text-base leading-relaxed text-[#FBFDF2]/75">{currentStep.description}</p>
               {/* Progress dots + arrows */}
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   {tourSteps.map((_, i) => (
                     <button key={i} onClick={() => goToStep(i)}
-                      className={cn("h-1.5 rounded-full transition-all", i === step ? "w-5 bg-background" : "w-1.5 bg-background/30")}
+                      className={cn("h-1.5 rounded-full transition-all", i === step ? "w-5 bg-[#B5E18B]" : "w-1.5 bg-[#FBFDF2]/30")}
                       aria-label={`Module ${i + 1}`}
                     />
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-7 w-7 items-center justify-center border border-background/30 text-background/70 text-sm transition hover:border-background hover:text-background">←</button>
-                  <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-7 w-7 items-center justify-center border border-background/30 bg-background/10 text-background/70 text-sm transition hover:border-background hover:bg-background/20 hover:text-background">→</button>
+                  <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B5E18B]/40 text-[#B5E18B]/70 text-sm transition hover:border-[#B5E18B] hover:text-[#B5E18B]">←</button>
+                  <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 text-[#B5E18B]/70 text-sm transition hover:border-[#B5E18B] hover:bg-[#B5E18B]/20 hover:text-[#B5E18B]">→</button>
                 </div>
               </div>
             </motion.div>
@@ -898,7 +887,7 @@ function DemoSection() {
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
-            className="landing-cta-primary inline-flex items-center gap-2 rounded-none px-8 py-4 text-md font-black transition"
+            className="landing-cta-primary inline-flex items-center gap-2 px-8 py-4 text-md font-black transition"
           >
             {t.demo.ctaButton}
             <ArrowRight className="h-4 w-4" />
@@ -922,7 +911,7 @@ function PainPointsSection() {
   }));
 
   return (
-    <section className="relative py-14 sm:py-20">
+    <section className="relative bg-[#FBFDF2] py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -931,7 +920,7 @@ function PainPointsSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-[#0c5752]/25 bg-[color-mix(in_srgb,#0c5752_6%,#f4ebd0)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#0c5752]">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]">
             {t.pain.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
@@ -954,18 +943,18 @@ function PainPointsSection() {
               key={p.title}
               variants={fadeUp}
               whileHover={{ y: -6, transition: { type: "spring", stiffness: 280 } }}
-              className={cn("flex flex-col gap-4 border-t-4 border-2 border-foreground/10 p-6 transition-shadow hover:shadow-lg", p.accent, p.bg)}
+              className={cn("flex flex-col gap-4 rounded-3xl border-t-4 border border-[#28396C]/10 p-6 shadow-[0_18px_45px_-25px_rgba(40,57,108,0.35)] transition-shadow hover:shadow-[0_28px_60px_-25px_rgba(40,57,108,0.45)]", p.accent, p.bg)}
             >
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-12 w-12 items-center justify-center border-2 border-foreground/10 bg-white">
-                  <p.icon className="h-5 w-5 text-foreground/70" strokeWidth={1.5} />
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#5C6B94]/20 bg-white">
+                  <p.icon className="h-5 w-5 text-[#5C6B94]" strokeWidth={1.5} />
                 </span>
-                <h3 className="text-base font-bold text-foreground">{p.title}</h3>
+                <h3 className="text-base font-bold text-[#28396C]">{p.title}</h3>
               </div>
-              <blockquote className="border-l-2 border-foreground/20 pl-3 text-sm italic font-medium text-foreground/80">
+              <blockquote className="border-l-2 border-[#5C6B94]/30 pl-3 text-sm italic font-medium text-[#28396C]/80">
                 {p.quote}
               </blockquote>
-              <p className="text-sm leading-relaxed text-foreground/65">{p.text}</p>
+              <p className="text-sm leading-relaxed text-[#5C6B94]/80">{p.text}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -977,10 +966,10 @@ function PainPointsSection() {
           transition={{ duration: 0.6, ease, delay: 0.3 }}
           className="mt-8 text-center"
         >
-          <p className="text-base font-semibold text-foreground/60">
+          <p className="text-base font-semibold text-[#5C6B94]">
             {t.pain.solutionHint}
           </p>
-          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }} className="mt-3 text-foreground/30 text-xl">
+          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }} className="mt-3 text-[#6BA53A]/60 text-xl">
             ↓
           </motion.div>
         </motion.div>
@@ -996,34 +985,34 @@ function SolutionSection() {
   const { t } = useLandingI18n();
 
   return (
-    <section className="relative overflow-hidden border-y border-border bg-foreground py-14 text-background sm:py-20">
-      <div className="pointer-events-none absolute -left-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-background/[0.04] blur-3xl" />
-      <div className="pointer-events-none absolute -right-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-background/[0.04] blur-3xl" />
-
-      <div className="mx-auto grid min-w-0 max-w-7xl items-center gap-8 px-4 sm:gap-10 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8">
+    <section className="relative overflow-hidden bg-[#FBFDF2] py-10 sm:py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative grid min-w-0 items-center gap-8 overflow-hidden rounded-[2.5rem] bg-[#28396C] px-6 py-12 text-[#FBFDF2] shadow-[0_45px_100px_-45px_rgba(40,57,108,0.7)] sm:gap-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:gap-14 lg:px-14">
+      <div className="pointer-events-none absolute -left-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#B5E18B]/[0.14] blur-3xl" />
+      <div className="pointer-events-none absolute -right-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#B5E18B]/[0.08] blur-3xl" />
         <motion.div
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
           variants={{ show: { transition: { staggerChildren: 0.1 } } }}
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-background/20 bg-background/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#B5E18B]">
             {t.solution.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
             {t.solution.title}{" "}
-            <span style={{ color: "#34d399"}}>{t.solution.titleMuted}</span>
+            <span style={{ color: "#B5E18B"}}>{t.solution.titleMuted}</span>
           </motion.h2>
-          <motion.p variants={fadeUp} className="mt-6 text-lg text-background">
+          <motion.p variants={fadeUp} className="mt-6 text-lg text-[#FBFDF2]/80">
             {t.solution.subtitle}
           </motion.p>
           <motion.ul variants={fadeUp} className="mt-8 space-y-4">
             {t.solution.benefits.map((b) => (
               <li key={b} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center bg-background text-foreground">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#B5E18B] text-[#28396C]">
                   <Check className="h-3.5 w-3.5" strokeWidth={3} />
                 </span>
-                <span className="text-sm leading-relaxed text-background">{b}</span>
+                <span className="text-sm leading-relaxed text-[#FBFDF2]/85">{b}</span>
               </li>
             ))}
           </motion.ul>
@@ -1032,7 +1021,7 @@ function SolutionSection() {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
-            className="landing-cta-primary mt-10 inline-flex items-center gap-2 rounded-none px-7 py-4 text-md font-black transition"
+            className="landing-cta-primary mt-10 inline-flex items-center gap-2 px-7 py-4 text-md font-black transition"
           >
             {t.solution.cta}
             <ArrowRight className="h-4 w-4" />
@@ -1047,13 +1036,14 @@ function SolutionSection() {
           className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4"
         >
           {t.solution.stats.map((stat) => (
-            <div key={stat.label} className="min-w-0 border border-background/20 bg-background/[0.06] p-4 backdrop-blur-sm sm:p-6">
-              <p className="text-2xl font-black tracking-tight tabular-nums sm:text-3xl md:text-4xl">{stat.value}</p>
-              <p className="mt-1 text-xs font-semibold text-background/80 sm:text-sm">{stat.label}</p>
-              <p className="text-[10px] text-background/50 sm:text-xs">{stat.sub}</p>
+            <div key={stat.label} className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm sm:p-6">
+              <p className="text-2xl font-black tracking-tight tabular-nums text-[#FBFDF2] sm:text-3xl md:text-4xl">{stat.value}</p>
+              <p className="mt-1 text-xs font-semibold text-[#B5E18B] sm:text-sm">{stat.label}</p>
+              <p className="text-[10px] text-[#B5E18B]/60 sm:text-xs">{stat.sub}</p>
             </div>
           ))}
         </motion.div>
+      </div>
       </div>
     </section>
   );
@@ -1070,8 +1060,8 @@ function ModulesSection() {
   }));
 
   return (
-    <section id="modules" className="relative py-14 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-40" />
+    <section id="modules" className="relative bg-[color-mix(in_srgb,#B5E18B_6%,#FBFDF2_94%)] py-14 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, rgba(40,57,108,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.04) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -1080,7 +1070,7 @@ function ModulesSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)]">
             {t.modules.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
@@ -1103,18 +1093,18 @@ function ModulesSection() {
               key={mod.title}
               variants={fadeUp}
               whileHover={{ y: -5, transition: { type: "spring", stiffness: 280 } }}
-              className="group flex min-w-0 flex-col border-2 border-foreground/10 bg-card p-5 transition-all hover:border-foreground hover:shadow-[6px_6px_0_0_var(--foreground)] cursor-pointer sm:p-7"
+              className="group flex min-w-0 flex-col rounded-3xl border border-[#28396C]/10 bg-white p-5 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] transition-all hover:border-[#6BA53A]/50 hover:shadow-[0_30px_65px_-28px_rgba(40,57,108,0.45)] cursor-pointer sm:p-7"
               onClick={() => scrollToId("demo")}
             >
               <div className="flex items-start justify-between gap-3">
-                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center border-2 border-foreground/15 bg-foreground/5 transition group-hover:border-foreground group-hover:bg-foreground group-hover:text-background">
+                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#28396C]/10 bg-[#B5E18B]/15 transition group-hover:border-[#6BA53A] group-hover:bg-[#B5E18B] group-hover:text-[#28396C]">
                   <mod.icon className="h-5 w-5" strokeWidth={1.5} />
                 </span>
               </div>
-              <h3 className="mt-5 text-lg font-black">{mod.title}</h3>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-primary">{mod.benefit}</p>
+              <h3 className="mt-5 text-lg font-black text-[#28396C]">{mod.title}</h3>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[#6BA53A]">{mod.benefit}</p>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{mod.text}</p>
-              <p className="mt-5 text-[11px] font-semibold uppercase tracking-wider text-foreground/80 opacity-0 transition group-hover:opacity-100">
+              <p className="mt-5 text-[11px] font-semibold uppercase tracking-wider text-[#6BA53A] opacity-0 transition group-hover:opacity-100">
                 {t.modules.seeInDemo}
               </p>
             </motion.div>
@@ -1132,7 +1122,7 @@ function ModulesSection() {
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("demo")}
-            className="landing-cta-secondary-light inline-flex items-center gap-2 rounded-none border-2 px-8 py-4 text-sm font-black transition"
+            className="landing-cta-secondary-light inline-flex items-center gap-2 px-8 py-4 text-sm font-black transition"
           >
             {t.modules.exploreAll}
             <ArrowRight className="h-4 w-4" />
@@ -1161,10 +1151,10 @@ type TestimonialItem = {
 
 function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "rtl" }) {
   return (
-    <div dir={dir} className="flex h-full min-w-0 flex-col gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:p-6">
+    <div dir={dir} className="flex h-full min-w-0 flex-col gap-4 rounded-3xl border border-[#28396C]/10 bg-white p-4 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] sm:p-6">
       {/* Stars + date */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-0.5 text-amber-400">
+        <div className="flex items-center gap-0.5 text-[#F0B429]">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className={cn("h-3.5 w-3.5", i < item.stars ? "fill-current" : "fill-none opacity-30")} />
           ))}
@@ -1172,15 +1162,15 @@ function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "
         <span className="text-[10px] text-muted-foreground">{item.date}</span>
       </div>
       {/* Highlight badge */}
-      <span className="inline-flex w-fit items-center border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+      <span className="inline-flex w-fit items-center rounded-full border border-[#6BA53A]/20 bg-[#B5E18B]/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#4F7A2B]">
         {item.highlight}
       </span>
       {/* Quote */}
-      <blockquote className="flex-1 text-balance text-sm leading-relaxed text-foreground/75">
+      <blockquote className="flex-1 text-balance text-sm leading-relaxed text-[#28396C]/75">
         &ldquo;{item.quote}&rdquo;
       </blockquote>
       {/* Author */}
-      <div className="flex items-center gap-3 border-t border-foreground/8 pt-4">
+      <div className="flex items-center gap-3 border-t border-[#28396C]/8 pt-4">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black text-white ring-2 ring-foreground/10"
           style={{ backgroundColor: item.avatarColor }}
@@ -1189,9 +1179,9 @@ function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "
           {item.initials}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold">{item.name}</p>
-          <p className="truncate text-[11px] text-muted-foreground">{item.role} · {item.center}</p>
-          <p className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
+          <p className="truncate text-sm font-bold text-[#28396C]">{item.name}</p>
+          <p className="truncate text-[11px] text-[#5C6B94]">{item.role} · {item.center}</p>
+          <p className="flex items-center gap-0.5 text-[10px] text-[#5C6B94]/70">
             <MapPin className="h-2.5 w-2.5 shrink-0" />
             {item.city}
           </p>
@@ -1282,7 +1272,7 @@ function SocialProofSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-secondary/30 py-14 sm:py-20">
+    <section className="relative overflow-hidden bg-[#FBFDF2] py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -1292,7 +1282,7 @@ function SocialProofSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#6BA53A]/20 bg-[#B5E18B]/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#4F7A2B]">
             <Star className="h-3.5 w-3.5 fill-current" />
             {t.testimonials.badge}
           </motion.div>
@@ -1310,12 +1300,12 @@ function SocialProofSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease }}
-          className="mt-10 grid grid-cols-2 divide-x-2 divide-foreground/10 border-2 border-foreground/10 bg-card sm:grid-cols-4"
+          className="mt-10 grid grid-cols-2 divide-x divide-white/10 overflow-hidden rounded-3xl bg-[#28396C] text-[#FBFDF2] shadow-[0_35px_80px_-40px_rgba(40,57,108,0.65)] sm:grid-cols-4"
         >
           {t.testimonials.stats.map((s) => (
             <div key={s.label} className="py-6 text-center">
-              <p className="text-2xl font-black tracking-tight sm:text-3xl">{s.value}</p>
-              <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">{s.label}</p>
+              <p className="text-2xl font-black tracking-tight text-[#FBFDF2] sm:text-3xl">{s.value}</p>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-[#B5E18B] sm:text-xs">{s.label}</p>
             </div>
           ))}
         </motion.div>
@@ -1357,7 +1347,7 @@ function SocialProofSection() {
                   aria-label={`${t.a11y.review} ${i + 1}`}
                   className={cn(
                     "h-2 rounded-full transition-all duration-300",
-                    i === current ? "w-7 bg-foreground" : "w-2 bg-foreground/20 hover:bg-foreground/40",
+                    i === current ? "w-7 bg-[#28396C]" : "w-2 bg-[#28396C]/20 hover:bg-[#5C6B94]/40",
                   )}
                 />
               ))}
@@ -1370,7 +1360,7 @@ function SocialProofSection() {
                 onClick={prev}
                 disabled={current === 0}
                 aria-label={t.a11y.previous}
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/15 bg-card text-foreground/60 transition hover:border-foreground hover:text-foreground disabled:opacity-30"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#28396C]/20 bg-white text-[#28396C]/60 shadow-sm transition hover:border-[#28396C] hover:text-[#28396C] disabled:opacity-30"
               >
                 ←
               </motion.button>
@@ -1380,7 +1370,7 @@ function SocialProofSection() {
                 onClick={next}
                 disabled={current >= maxIndex}
                 aria-label={t.a11y.next}
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-foreground text-background transition hover:bg-foreground/80 disabled:opacity-30"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#28396C] text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)] transition hover:bg-[#1B2A55] disabled:opacity-30"
               >
                 →
               </motion.button>
@@ -1401,7 +1391,7 @@ function SocialProofSection() {
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => scrollToId("contact")}
-            className="landing-cta-primary inline-flex items-center gap-2 rounded-none px-8 py-4 text-md font-black transition"
+            className="landing-cta-primary inline-flex items-center gap-2 px-8 py-4 text-md font-black transition"
           >
             {t.testimonials.ctaButton}
             <ArrowRight className="h-4 w-4" />
@@ -1447,10 +1437,10 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
       whileHover={{ y: plan.popular ? -6 : -4 }}
       transition={{ type: "spring", stiffness: 260 }}
       className={cn(
-        "relative flex h-full min-h-0 flex-col border-2 transition-shadow rounded-none",
+        "relative flex h-full min-h-0 flex-col rounded-[2rem] border transition-shadow",
         plan.popular
-          ? "z-10 border-foreground bg-foreground p-6 text-background shadow-[10px_10px_0_0_oklch(0_0_0/0.18)] sm:p-8"
-          : "border-foreground/25 bg-background p-5 text-foreground shadow-[6px_6px_0_0_oklch(0_0_0/0.06)] hover:border-foreground/40 sm:p-7",
+          ? "z-10 border-[#28396C] bg-[#28396C] p-6 text-[#FBFDF2] shadow-[0_45px_90px_-40px_rgba(40,57,108,0.7)] sm:p-8"
+          : "border-[#28396C]/10 bg-white p-5 text-[#28396C] shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] hover:border-[#6BA53A]/40 sm:p-7",
       )}
     >
       {plan.popular && (
@@ -1460,7 +1450,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.35, ease, delay: 0.15 }}
-            className="absolute right-0 top-0 z-20 border-b-2 border-l-2 border-foreground bg-background px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-foreground sm:px-4 sm:text-[10px] rounded-none"
+            className="absolute -top-3 right-6 z-20 rounded-full bg-[#B5E18B] px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-[#28396C] shadow-[0_12px_25px_-10px_rgba(107,165,58,0.7)] sm:px-4 sm:text-[10px]"
           >
             <Star className="inline h-3 w-3 fill-current" /> {t.pricing.popular}
           </motion.div>
@@ -1469,19 +1459,19 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.35, ease, delay: 0.25 }}
-            className="mt-2 inline-flex items-center gap-1.5 border border-amber-400/40 bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold text-amber-300"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 px-2.5 py-1 text-[10px] font-bold text-[#B5E18B]"
           >
             <Gift className="h-3.5 w-3.5 shrink-0" /> {t.pricing.onboardingOffer}
           </motion.div>
         </>
       )}
       <div className="flex items-center justify-between gap-2">
-        <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-background/60" : "text-muted-foreground")}>0{idx + 1} / 03</span>
-        <span className={cn("h-2 w-2 shrink-0 rounded-none", plan.popular ? "bg-background" : "bg-foreground")} />
+        <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>{`0${idx + 1}`} / 03</span>
+        <span className={cn("h-2 w-2 shrink-0 rounded-full", plan.popular ? "bg-[#B5E18B]" : "bg-[#28396C]")} />
       </div>
       <h3 className={cn("mt-4 text-2xl font-black sm:text-3xl", plan.popular && "sm:text-4xl")}>{plan.name}</h3>
-      <p className={cn("mt-2 text-sm", plan.popular ? "text-background/70" : "text-muted-foreground")}>{plan.blurb}</p>
-      <div className={cn("my-6 h-px w-full rounded-none", plan.popular ? "bg-background/25" : "bg-foreground/15")} />
+      <p className={cn("mt-2 text-sm", plan.popular ? "text-[#FBFDF2]/70" : "text-[#5C6B94]")}>{plan.blurb}</p>
+      <div className={cn("my-6 h-px w-full rounded-none", plan.popular ? "bg-[#B5E18B]/25" : "bg-[#28396C]/15")} />
       <div>
         <AnimatePresence mode="wait">
           <motion.div
@@ -1497,12 +1487,12 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
               <>
                 <div className="flex min-w-0 flex-wrap items-baseline gap-1">
                   <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-4xl sm:text-5xl lg:text-6xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString(numberLocale) : plan.monthly?.toLocaleString(numberLocale)}</span>
-                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-background/60" : "text-muted-foreground")}>{yearly ? t.pricing.perYear : t.pricing.perMonth}</span>
+                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>{yearly ? t.pricing.perYear : t.pricing.perMonth}</span>
                 </div>
                 {yearly && (
-                  <p className={cn("mt-2 text-xs", plan.popular ? "text-background/60" : "text-muted-foreground")}>
+                  <p className={cn("mt-2 text-xs", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>
                     {t.pricing.yearlyEquiv}{" "}
-                    <span className={cn("font-semibold", plan.popular ? "text-background" : "text-foreground")}>{Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}{t.pricing.perMonthShort}</span> {t.pricing.yearlyEquivSuffix}
+                    <span className={cn("font-semibold", plan.popular ? "text-[#FBFDF2]" : "text-[#28396C]")}>{Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}{t.pricing.perMonthShort}</span> {t.pricing.yearlyEquivSuffix}
                   </p>
                 )}
               </>
@@ -1513,10 +1503,10 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
       <ul className="mt-8 flex-1 space-y-3">
         {plan.features.map((f) => (
           <motion.li key={f} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease }} className="flex items-start gap-3 text-sm">
-            <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none", plan.popular ? "bg-background text-foreground" : "bg-foreground text-background")}>
+            <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full", plan.popular ? "bg-[#B5E18B] text-[#28396C]" : "bg-[#28396C] text-[#FBFDF2]")}>
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
             </span>
-            <span className={plan.popular ? "text-background/90" : "text-foreground/80"}>{f}</span>
+            <span className={plan.popular ? "text-[#FBFDF2]/90" : "text-[#28396C]/80"}>{f}</span>
           </motion.li>
         ))}
       </ul>
@@ -1524,7 +1514,7 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => scrollToId("contact")}
-        className="landing-cta-primary mt-8 w-full rounded-none border-2 border-transparent py-4 text-sm font-black uppercase tracking-wider transition hover:brightness-110"
+        className="landing-cta-primary mt-8 w-full py-4 text-sm font-black uppercase tracking-wider transition hover:brightness-105"
       >
         {plan.cta}
       </motion.button>
@@ -1558,8 +1548,8 @@ function PricingSection() {
   }, [carouselApi]);
 
   return (
-    <section id="tarifs" className="relative overflow-hidden py-14 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10 hero-mesh-grid hero-mesh-fade opacity-60" />
+    <section id="tarifs" className="relative overflow-hidden bg-[#FBFDF2] py-14 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, rgba(40,57,108,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.04) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -1568,7 +1558,7 @@ function PricingSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-none">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)]">
             {t.pricing.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
@@ -1586,13 +1576,13 @@ function PricingSection() {
           transition={{ duration: 0.5, ease }}
           className="mt-8 flex flex-col items-center gap-4"
         >
-          <div className="flex w-full max-w-md border-2 border-foreground shadow-[6px_6px_0_0_var(--foreground)] rounded-none">
+          <div className="flex w-full max-w-md overflow-hidden rounded-full border border-[#28396C]/15 bg-white p-1 shadow-[0_18px_45px_-25px_rgba(40,57,108,0.4)]">
             <button
               type="button"
               onClick={() => setYearly(false)}
               className={cn(
-                "min-h-[3rem] flex-1 px-3 py-3 text-xs font-black uppercase tracking-wider transition-colors sm:px-6 sm:text-sm rounded-none",
-                !yearly ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-muted/50",
+                "min-h-[3rem] flex-1 rounded-full px-3 py-3 text-xs font-black uppercase tracking-wider transition-colors sm:px-6 sm:text-sm",
+                !yearly ? "bg-[#28396C] text-[#FBFDF2] shadow-md" : "bg-transparent text-[#28396C] hover:bg-[#B5E18B]/20",
               )}
             >
               {t.pricing.monthly}
@@ -1601,15 +1591,15 @@ function PricingSection() {
               type="button"
               onClick={() => setYearly(true)}
               className={cn(
-                "flex min-h-[3rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 border-l-2 border-foreground px-3 py-2 text-xs font-black uppercase tracking-wider transition-colors sm:flex-row sm:gap-2 sm:px-6 sm:py-3 sm:text-sm rounded-none",
-                yearly ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-muted/50",
+                "flex min-h-[3rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-full px-3 py-2 text-xs font-black uppercase tracking-wider transition-colors sm:flex-row sm:gap-2 sm:px-6 sm:py-3 sm:text-sm",
+                yearly ? "bg-[#28396C] text-[#FBFDF2] shadow-md" : "bg-transparent text-[#28396C] hover:bg-[#B5E18B]/20",
               )}
             >
               <span>{t.pricing.yearly}</span>
               <span
                 className={cn(
-                  "border px-1.5 py-0.5 text-[8px] font-black leading-none sm:text-[9px] rounded-none",
-                  yearly ? "border-background/50 text-background" : "border-foreground/40 text-foreground",
+                  "rounded-full border px-1.5 py-0.5 text-[8px] font-black leading-none sm:text-[9px]",
+                  yearly ? "border-[#B5E18B]/60 text-[#B5E18B]" : "border-[#28396C]/40 text-[#28396C]",
                 )}
               >
                 {t.pricing.yearlyDiscount}
@@ -1644,7 +1634,7 @@ function PricingSection() {
                 onClick={() => carouselApi?.scrollTo(i)}
                 className={cn(
                   "h-2 rounded-full transition-all duration-300",
-                  carouselIndex === i ? "w-8 bg-foreground" : "w-2 bg-foreground/25 hover:bg-foreground/40",
+                  carouselIndex === i ? "w-8 bg-[#28396C]" : "w-2 bg-[#28396C]/25 hover:bg-[#5C6B94]/40",
                 )}
               />
             ))}
@@ -1669,12 +1659,12 @@ function PricingSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease, delay: 0.2 }}
-          className="mt-8 grid gap-4 border-2 border-foreground/10 bg-card p-6 sm:grid-cols-3 sm:gap-6 sm:p-8"
+          className="mt-8 grid gap-4 rounded-3xl border border-[#28396C]/10 bg-white p-6 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] sm:grid-cols-3 sm:gap-6 sm:p-8"
         >
           {t.pricing.miniFaq.map(({ q, a }) => (
             <div key={q}>
-              <p className="text-sm font-bold text-foreground">{q}</p>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{a}</p>
+              <p className="text-sm font-bold text-[#28396C]">{q}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-[#5C6B94]">{a}</p>
             </div>
           ))}
         </motion.div>
@@ -1699,7 +1689,7 @@ function FaqSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]">
             {t.faq.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
@@ -1714,7 +1704,7 @@ function FaqSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.6, ease }}
-          className="mt-8 border-2 border-foreground/10 bg-card p-2 shadow-[var(--shadow-soft)]"
+          className="mt-8 rounded-3xl border border-foreground/10 bg-card p-2 shadow-[0_25px_60px_-30px_rgba(40,57,108,0.4)] sm:p-3"
         >
           <Accordion type="multiple" className="w-full">
             {t.faq.items.map((item, i) => (
@@ -1733,14 +1723,16 @@ function FaqSection() {
 // ─────────────────────────────────────────────
 // Scan-to-call QR card
 // ─────────────────────────────────────────────
+const PHONE_TEL = import.meta.env.PUBLIC_PHONE_TEL ?? "+212777777428";
+
 function CallQrCard() {
   const { t } = useLandingI18n();
   return (
-    <div className="flex min-w-0 items-center gap-4 border-2 border-foreground/10 bg-card p-4 shadow-[var(--shadow-soft)] sm:gap-5 sm:p-5">
+    <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-foreground/10 bg-card p-4 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] sm:gap-5 sm:p-5">
       <a
-        href="tel:+212777777428"
+        href={`tel:${PHONE_TEL}`}
         aria-label={t.contact.qr.callNow}
-        className="grid shrink-0 place-items-center border-2 border-foreground bg-white p-2 shadow-[4px_4px_0_0_var(--foreground)] transition hover:shadow-[2px_2px_0_0_var(--foreground)]"
+        className="grid shrink-0 place-items-center rounded-xl border border-foreground/15 bg-white p-2 shadow-md transition hover:shadow-lg"
       >
         <img src="/call-qr.svg" alt={t.contact.qr.subtitle} width={84} height={84} className="h-20 w-20" />
       </a>
@@ -1748,7 +1740,7 @@ function CallQrCard() {
         <p className="text-[10px] font-black uppercase tracking-widest text-primary">{t.contact.qr.title}</p>
         <p className="mt-1 text-sm font-semibold text-foreground">{t.contact.qr.subtitle}</p>
         <a
-          href="tel:+212777777428"
+          href={`tel:${PHONE_TEL}`}
           className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:text-primary hover:decoration-primary"
         >
           <Phone className="h-3.5 w-3.5 shrink-0" />
@@ -1780,7 +1772,7 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
   today.setHours(0, 0, 0, 0);
 
   const fieldBase =
-    "w-full border-2 border-foreground/10 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-primary";
+    "w-full rounded-xl border border-foreground/15 bg-background px-4 py-3 text-sm font-medium outline-none transition focus:border-[#6BA53A] focus:ring-2 focus:ring-[#B5E18B]/40";
   const labelBase = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground";
 
   const reset = () => {
@@ -1842,12 +1834,12 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
       transition={{ duration: 0.7, ease }}
       onSubmit={handleSubmit}
       noValidate
-      className="relative z-10 flex min-w-0 flex-col overflow-visible border-2 border-foreground/10 bg-card p-5 shadow-[var(--shadow-elegant)] sm:p-8 lg:p-9"
+      className="relative z-10 flex min-w-0 flex-col overflow-visible rounded-[2rem] border border-foreground/10 bg-card p-5 shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)] sm:p-8 lg:p-9"
     >
       <AnimatePresence mode="wait">
         {status === "sent" ? (
           <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
-            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="grid h-16 w-16 place-items-center border-2 border-foreground bg-foreground text-background">
+            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="grid h-16 w-16 place-items-center rounded-full bg-[#B5E18B] text-[#28396C] shadow-[0_18px_40px_-15px_rgba(107,165,58,0.6)]">
               <Check className="h-8 w-8" strokeWidth={2.5} />
             </motion.div>
             <h3 className="mt-6 text-2xl font-black">{t.contact.form.successTitle}</h3>
@@ -1931,7 +1923,7 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   role="alert"
-                  className="flex items-center gap-2 border-2 border-destructive/30 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive"
+                  className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive"
                 >
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   {errorMsg}
@@ -1944,7 +1936,7 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
               whileTap={status === "submitting" ? undefined : { scale: 0.97 }}
               type="submit"
               disabled={status === "submitting"}
-              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden rounded-none px-6 py-3.5 text-sm font-bold shadow-[var(--shadow-elegant)] transition disabled:cursor-not-allowed disabled:opacity-80 sm:py-4 landing-cta-primary"
+              className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden px-6 py-3.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-80 sm:py-4 landing-cta-primary"
             >
               {!reduceMotion && status !== "submitting" && (
                 <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
@@ -1992,7 +1984,7 @@ function ContactSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="min-w-0"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]">
             {t.contact.badge}
           </motion.div>
           <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
@@ -2014,7 +2006,7 @@ function ContactSection() {
               ] as const
             ).map(({ Icon, text, href }) => (
               <li key={text} className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center" style={{color: "#122620"}}>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center" style={{color: "var(--eiden-forest)"}}>
                   <Icon className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
                 </span>
                 <a
@@ -2060,7 +2052,7 @@ function Footer() {
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center bg-background/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background/10">
                 <GraduationCap className="h-5 w-5 text-background" />
               </div>
               <span className="text-lg font-black tracking-tight">Gestio</span>
@@ -2094,14 +2086,14 @@ function Footer() {
                 </a>
               </li>
               <li className="text-balance">{t.contact.address}</li>
-              <li><a href="tel:+212777777428" className="transition hover:text-background">{t.footer.phoneMorocco}</a></li>
+              <li><a href={`tel:${PHONE_TEL}`} className="transition hover:text-background">{t.footer.phoneMorocco}</a></li>
               <li><a href="https://eiden-group.com" target="_blank" rel="noopener noreferrer" className="transition hover:text-background">{t.footer.website}</a></li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => scrollToId("contact")}
-              className="landing-cta-primary mt-6 inline-flex items-center gap-2 rounded-none px-4 py-2 text-xs font-bold uppercase tracking-wider transition"
+              className="landing-cta-primary mt-6 inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition"
             >
               {t.footer.bookDemo}
               <ArrowRight className="h-3 w-3" />

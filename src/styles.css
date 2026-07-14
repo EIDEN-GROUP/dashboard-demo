@@ -47,39 +47,42 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  /* EIDEN Group — Brand Identity System v2 (Outfit / DM Serif / Cormorant / Inter) */
+  /* EIDEN Group   Brand Identity System v2 (Outfit / DM Serif / Cormorant / Inter) */
   --font-display: "Outfit", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
-  --animate-brand-mark-pulse: brand-mark-pulse 1.8s ease-in-out infinite;
+  --animate-brand-mark-pulse: brand-mark-pulse 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  --animate-brand-halo: brand-halo 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  --animate-brand-progress: brand-progress 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  --animate-brand-fade-in: brand-fade-in 0.45s ease-out both;
 }
 
 :root {
   --radius: 0.875rem;
 
-  /* Coolors palette — https://coolors.co/f4ebd0-122620-d6ad60-1a372f (accent #10b981) */
-  --eiden-brass: #10b981;
-  --eiden-canvas: color-mix(in srgb, #fefdfb 62%, #f4ebd0 38%);
-  --eiden-beige: #f4ebd0;
-  --eiden-beige-dk: color-mix(in srgb, #e8dcc8 70%, var(--eiden-brass) 30%);
-  --eiden-forest: #122620;
-  --eiden-forest-md: #1a372f;
-  --eiden-deep: #1a372f;
-  --eiden-teal: #1a372f;
-  --eiden-teal-lt: #2a4f45;
-  --eiden-gold: #d6ad60;
-  --eiden-gold-dk: color-mix(in srgb, var(--eiden-brass) 58%, #122620 42%);
-  --eiden-mint: #34d399;
-  --eiden-cream: #f8f3e8;
-  --eiden-ink: #0a0f0c;
+  /* Color Hunt palette   https://colorhunt.co/palette/b5e18bf0ffc2eae6bc28396c */
+  --eiden-brass: #b5e18b;
+  --eiden-canvas: color-mix(in srgb, #fefdfb 62%, #f0ffc2 38%);
+  --eiden-beige: #eae6bc;
+  --eiden-beige-dk: color-mix(in srgb, #ded9a8 70%, var(--eiden-brass) 30%);
+  --eiden-forest: #28396c;
+  --eiden-forest-md: #32467f;
+  --eiden-deep: #32467f;
+  --eiden-teal: #32467f;
+  --eiden-teal-lt: #46599b;
+  --eiden-gold: #cfc27a;
+  --eiden-gold-dk: color-mix(in srgb, var(--eiden-brass) 58%, #28396c 42%);
+  --eiden-mint: #cdeeae;
+  --eiden-cream: #f6ffdb;
+  --eiden-ink: #141d3a;
   --eiden-white: #ffffff;
   --eiden-red: #ef4444;
   --eiden-blue: #60a5fa;
 
-  /* Landing — match reference hero (flat dark green + emerald CTAs) */
+  /* Landing   match reference hero (flat dark green + emerald CTAs) */
   --landing-hero-bg: color-mix(in srgb, var(--eiden-forest) 22%, #060908 78%);
-  --landing-cta-primary: #10b981;
-  --landing-cta-primary-hover: #059669;
-  --landing-cta-on-primary: var(--eiden-white);
+  --landing-cta-primary: #b5e18b;
+  --landing-cta-primary-hover: #9ecf6e;
+  --landing-cta-on-primary: var(--eiden-forest);
 
   --background: var(--eiden-canvas);
   --foreground: var(--eiden-forest);
@@ -90,7 +93,7 @@
   --popover: var(--eiden-white);
   --popover-foreground: var(--eiden-forest);
 
-  /* Brand accent / CTA — brass + forest for strong contrast */
+  /* Brand accent / CTA   brass + forest for strong contrast */
   --primary: var(--eiden-brass);
   --primary-foreground: var(--eiden-forest);
 
@@ -275,7 +278,7 @@
     -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
   }
 
-  /* Landing hero — flat dark slab (reference screenshot) */
+  /* Landing hero   flat dark slab (reference screenshot) */
   .hero-promo-section {
     border-bottom: 1px solid rgb(255 255 255 / 0.08);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
@@ -297,11 +300,11 @@
   .text-shimmer-neon {
     background: linear-gradient(
       90deg,
-      #059669 0%,
+      #9ecf6e 0%,
       var(--landing-cta-primary) 35%,
-      #6ee7b7 52%,
+      #e2f7c4 52%,
       var(--landing-cta-primary) 70%,
-      #059669 100%
+      #9ecf6e 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -315,8 +318,9 @@
   .landing-cta-primary {
     background-color: var(--landing-cta-primary);
     color: var(--landing-cta-on-primary);
-    border: 2px solid color-mix(in srgb, var(--landing-cta-primary) 72%, #000 28%);
-    box-shadow: 0 12px 32px -14px color-mix(in srgb, var(--landing-cta-primary) 50%, transparent);
+    border: 1px solid color-mix(in srgb, var(--landing-cta-primary) 78%, #28396c 22%);
+    border-radius: 9999px !important;
+    box-shadow: 0 16px 36px -14px color-mix(in srgb, var(--landing-cta-primary) 65%, #28396c 35%);
   }
 
   .landing-cta-primary:hover {
@@ -324,7 +328,8 @@
   }
 
   .landing-cta-secondary-dark {
-    border: 2px solid rgb(255 255 255 / 0.38);
+    border: 1px solid rgb(255 255 255 / 0.38);
+    border-radius: 9999px !important;
     background-color: transparent;
     color: rgb(248 250 252);
   }
@@ -335,9 +340,22 @@
   }
 
   .landing-cta-secondary-light {
-    border: 2px solid color-mix(in srgb, var(--foreground) 28%, transparent);
-    background-color: transparent;
+    border: 1px solid color-mix(in srgb, var(--foreground) 28%, transparent);
+    border-radius: 9999px !important;
+    background-color: color-mix(in srgb, #ffffff 70%, transparent);
     color: var(--foreground);
+  }
+
+  /* Frosted-glass floating tile (reference-style hero decoration) */
+  .glass-tile {
+    background: linear-gradient(135deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.14));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgb(255 255 255 / 0.65);
+    border-radius: 1.4rem;
+    box-shadow:
+      0 24px 48px -20px rgb(40 57 108 / 0.28),
+      inset 0 1px 0 rgb(255 255 255 / 0.8);
   }
 
   .landing-cta-secondary-light:hover {
@@ -386,7 +404,7 @@
 }
 
 /**
- * CRM dashboard (topnav) — mobile / tablet < lg: slightly smaller, denser type
+ * CRM dashboard (topnav)   mobile / tablet < lg: slightly smaller, denser type
  * Scoped via [data-dashboard-main] on DashShell main (children only; modals in portal unchanged).
  */
 @media (max-width: 1023px) {
@@ -447,7 +465,7 @@
     font-size: max(0.875rem, 16px);
   }
 
-  /* Placeholders & select empty state — slightly smaller than field text on mobile */
+  /* Placeholders & select empty state   slightly smaller than field text on mobile */
   [data-dashboard-main] input::placeholder,
   [data-dashboard-main] textarea::placeholder {
     font-size: 0.75rem !important;
@@ -460,15 +478,51 @@
   }
 }
 
+/* Respiration douce du logo   amplitude réduite + easing sinusoïdal (pas de à-coup). */
 @keyframes brand-mark-pulse {
   0%,
   100% {
-    opacity: 1;
-    transform: scale(1);
+    opacity: 0.92;
+    transform: scale(0.985) translateZ(0);
   }
   50% {
-    opacity: 0.72;
-    transform: scale(0.94);
+    opacity: 1;
+    transform: scale(1.015) translateZ(0);
+  }
+}
+
+/* Halo qui se dilate lentement derrière le logo. */
+@keyframes brand-halo {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.12);
+  }
+}
+
+/* Barre de progression indéterminée   va-et-vient continu. */
+@keyframes brand-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+/* Apparition en fondu du loader (évite le "flash" au montage). */
+@keyframes brand-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

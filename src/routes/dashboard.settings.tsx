@@ -6,7 +6,7 @@ import {
   getSettings, updateSetting,
 } from "@/lib/server-settings";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Bus, Percent, Calendar } from "lucide-react";
+import { Plus, Trash2, Save, Bus, Percent, Calendar, Package } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "Paramètres - CRM" }] }),
@@ -21,7 +21,7 @@ function SettingsPage() {
         <h1 className="mt-1 font-display text-2xl font-semibold text-foreground">Paramètres</h1>
       </div>
       <LevelsSection />
-      <TransportSection />
+      <ServicesSection />
       <SiblingDiscountSection />
       <PaymentDueSection />
     </div>
@@ -90,18 +90,45 @@ function LevelsSection() {
   );
 }
 
-function TransportSection() {
+function ServicesSection() {
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
-  const transport = settings?.transportation ?? { enabled: false, price: 0 };
-  const [enabled, setEnabled] = useState(false);
-  const [price, setPrice] = useState("0");
+  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
+  const [newName, setNewName] = useState("");
+  const [newPrice, setNewPrice] = useState("");
 
   const save = useMutation({
-    mutationFn: (value: any) => updateSetting({ data: { key: "transportation", value } }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["settings"] }); toast.success("Transport mis à jour"); },
+    mutationFn: (value: any) => updateSetting({ data: { key: "services", value } }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["settings"] }); toast.success("Services mis à jour"); },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
   });
+
+  const addService = () => {
+    if (!newName.trim() || !newPrice) return;
+    save.mutate([...services, { name: newName.trim(), price: Number(newPrice), enabled: true }]);
+    setNewName("");
+    setNewPrice("");
+  };
+
+  const removeService = (i: number) => {
+    const next = services.filter((_, idx) => idx !== i);
+    save.mutate(next);
+  };
+
+  const toggleEnabled = (i: number) => {
+    const next = services.map((s, idx) => idx === i ? { ...s, enabled: !s.enabled } : s);
+    save.mutate(next);
+  };
+
+  const updatePrice = (i: number, price: number) => {
+    const next = services.map((s, idx) => idx === i ? { ...s, price } : s);
+    save.mutate(next);
+  };
+
+  const updateName = (i: number, name: string) => {
+    const next = services.map((s, idx) => idx === i ? { ...s, name } : s);
+    save.mutate(next);
+  };
 
   if (!settings) return null;
 
@@ -109,19 +136,63 @@ function TransportSection() {
     <section className="rounded-none border border-border bg-card">
       <div className="border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
-          <Bus className="h-4 w-4 text-muted-foreground" />
-          <h2 className="font-display text-lg font-semibold text-foreground">Transport scolaire</h2>
+          <Package className="h-4 w-4 text-muted-foreground" />
+          <h2 className="font-display text-lg font-semibold text-foreground">Services</h2>
         </div>
-        <p className="text-xs text-muted-foreground">Tarif mensuel du transport</p>
+        <p className="text-xs text-muted-foreground">Gérez les services proposés et leurs tarifs mensuels</p>
       </div>
-      <div className="flex items-center gap-4 px-6 py-4">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4" />
-          Activer le transport
-        </label>
-        <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" placeholder="Prix" className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary" />
+      <div className="divide-y divide-border">
+        {services.map((svc, i) => (
+          <div key={i} className="flex items-center gap-3 px-6 py-3">
+            <input
+              type="checkbox"
+              checked={svc.enabled}
+              onChange={() => toggleEnabled(i)}
+              className="h-4 w-4"
+              title="Activer / désactiver"
+            />
+            <input
+              value={svc.name}
+              onChange={(e) => updateName(i, e.target.value)}
+              className="h-8 min-w-0 flex-1 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              value={svc.price}
+              onChange={(e) => updatePrice(i, Number(e.target.value))}
+              type="number"
+              className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+            />
+            <span className="text-xs text-muted-foreground shrink-0">MAD</span>
+            <button
+              onClick={() => removeService(i)}
+              className="grid h-8 w-8 shrink-0 place-items-center text-red-500 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-3 border-t border-border px-6 py-3">
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Nom du service"
+          className="h-8 w-48 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+        />
+        <input
+          value={newPrice}
+          onChange={(e) => setNewPrice(e.target.value)}
+          type="number"
+          placeholder="Prix"
+          className="h-8 w-24 rounded-none border border-border bg-background px-2 text-sm outline-none focus:border-primary"
+        />
         <span className="text-xs text-muted-foreground">MAD</span>
-        <button onClick={() => save.mutate({ enabled, price: Number(price) })} className="ml-auto flex items-center gap-1 border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"><Save className="h-3.5 w-3.5" /> Enregistrer</button>
+        <button
+          onClick={addService}
+          className="flex items-center gap-1 border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          <Plus className="h-3.5 w-3.5" /> Ajouter
+        </button>
       </div>
     </section>
   );

@@ -14,6 +14,9 @@ export type EmployeeInput = {
   hire_date?: string;
   address?: string;
   contract_type?: string;
+  salary?: number;
+  leave_start?: string;
+  leave_end?: string;
   status?: "actif" | "inactif";
 };
 
@@ -45,6 +48,9 @@ export const createEmployee = createServerFn({ method: "POST" })
         hire_date: data.hire_date ?? "",
         address: data.address ?? "",
         contract_type: data.contract_type ?? "",
+        salary: data.salary ?? 0,
+        leave_start: data.leave_start ?? null,
+        leave_end: data.leave_end ?? null,
         status: data.status ?? "actif",
       })
       .select()
