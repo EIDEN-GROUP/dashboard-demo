@@ -1,17 +1,66 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { ArrowRight, BarChart3, Building2, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin, MessageSquare, Phone, Send, Sparkles, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Building2,
+  Calendar,
+  CalendarDays,
+  Check,
+  CreditCard,
+  Gift,
+  GraduationCap,
+  Globe,
+  Images,
+  LayoutDashboard,
+  Loader2,
+  LogOut,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Send,
+  Sparkles,
+  UserPlus,
+  Users,
+  AlertCircle,
+  FileSpreadsheet,
+  BadgeDollarSign,
+  Star,
+  Layers,
+  ClipboardList,
+  UsersRound,
+  Lock,
+  MousePointerClick,
+  Menu,
+} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { format } from "date-fns";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { HeroPreviewPageBody } from "@/components/hero-preview-page-body";
 import type { DashboardMiniaturePageId } from "@/lib/dashboard-mirror-data";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
-import { useLandingI18n, getDateFnsLocale, DEMO_STEP_PAGES, PREVIEW_TOP_NAV_IDS, PREVIEW_SECONDARY_NAV_IDS, } from "@/lib/landing-i18n";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import {
+  useLandingI18n,
+  getDateFnsLocale,
+  DEMO_STEP_PAGES,
+  PREVIEW_TOP_NAV_IDS,
+  PREVIEW_SECONDARY_NAV_IDS,
+} from "@/lib/landing-i18n";
 import { submitDemoRequest } from "@/lib/contact-demo";
 
 const MotionLink = motion.create(Link);
@@ -33,7 +82,14 @@ const PAIN_ACCENT = [
 
 const PAIN_ICONS = [FileSpreadsheet, CreditCard, UserPlus] as const;
 
-const MODULE_ICONS = [LayoutDashboard, CreditCard, Layers, Calendar, UsersRound, ClipboardList] as const;
+const MODULE_ICONS = [
+  LayoutDashboard,
+  CreditCard,
+  Layers,
+  Calendar,
+  UsersRound,
+  ClipboardList,
+] as const;
 
 const TESTIMONIAL_AVATARS = [
   { initials: "FB", avatarColor: "#1a4f8a", stars: 5 },
@@ -157,66 +213,73 @@ function Header() {
               : "border-transparent bg-white/60",
           )}
         >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
-          <Link
-            to="/"
-            className="flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors text-[#28396C] hover:text-[#28396C]/80"
-          >
-            <motion.div
-              whileHover={{ rotate: -8, scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#28396C] shadow-[0_8px_20px_-8px_rgba(40,57,108,0.5)] sm:h-10 sm:w-10"
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+            <Link
+              to="/"
+              className="flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors text-[#28396C] hover:text-[#28396C]/80"
             >
-              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-[#B5E18B]" />
-            </motion.div>
-            <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
-          </Link>
-          <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
-            {[
-              { label: t.nav.demo, id: "demo" },
-              { label: t.nav.modules, id: "modules" },
-              { label: t.nav.pricing, id: "tarifs" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToId(item.id)}
-                className="relative rounded-full px-3 py-2 text-sm font-medium text-[#28396C]/70 transition hover:bg-[#28396C]/5 hover:text-[#28396C] md:px-4"
+              <motion.div
+                whileHover={{ rotate: -8, scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#28396C] shadow-[0_8px_20px_-8px_rgba(40,57,108,0.5)] sm:h-10 sm:w-10"
               >
-                {item.label}
+                <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-[#B5E18B]" />
+              </motion.div>
+              <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
+            </Link>
+            <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
+              {[
+                { label: t.nav.demo, id: "demo" },
+                { label: t.nav.modules, id: "modules" },
+                { label: t.nav.pricing, id: "tarifs" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToId(item.id)}
+                  className="relative rounded-full px-3 py-2 text-sm font-medium text-[#28396C]/70 transition hover:bg-[#28396C]/5 hover:text-[#28396C] md:px-4"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                className="grid h-10 w-10 place-items-center rounded-full border border-[#28396C]/15 text-[#28396C] transition hover:bg-[#28396C]/5 sm:hidden"
+                aria-expanded={menuOpen}
+                aria-controls="landing-nav-sheet"
+                aria-label={t.a11y.openMenu}
+                onClick={() => setMenuOpen(true)}
+              >
+                <Menu className="h-5 w-5" strokeWidth={2} />
               </button>
-            ))}
-          </nav>
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              className="grid h-10 w-10 place-items-center rounded-full border border-[#28396C]/15 text-[#28396C] transition hover:bg-[#28396C]/5 sm:hidden"
-              aria-expanded={menuOpen}
-              aria-controls="landing-nav-sheet"
-              aria-label={t.a11y.openMenu}
-              onClick={() => setMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" strokeWidth={2} />
-            </button>
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => scrollToId("contact")}
-              className="inline-flex max-w-[11rem] items-center justify-center gap-1.5 rounded-full bg-[#28396C] px-4 py-2.5 text-xs font-bold text-white shadow-[0_14px_30px_-12px_rgba(40,57,108,0.55)] transition hover:bg-[#1B2A55] sm:max-w-none sm:gap-2 sm:px-6 sm:text-sm"
-            >
-              <span className="truncate sm:whitespace-normal">{t.nav.bookDemo}</span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-            </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => scrollToId("contact")}
+                className="inline-flex max-w-[11rem] items-center justify-center gap-1.5 rounded-full bg-[#28396C] px-4 py-2.5 text-xs font-bold text-white shadow-[0_14px_30px_-12px_rgba(40,57,108,0.55)] transition hover:bg-[#1B2A55] sm:max-w-none sm:gap-2 sm:px-6 sm:text-sm"
+              >
+                <span className="truncate sm:whitespace-normal">{t.nav.bookDemo}</span>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+              </motion.button>
+            </div>
           </div>
-        </div>
         </motion.div>
       </header>
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="right" id="landing-nav-sheet" className="flex w-[min(100%,20rem)] flex-col border-l border-[#28396C]/10 bg-white sm:max-w-sm">
+        <SheetContent
+          side="right"
+          id="landing-nav-sheet"
+          className="flex w-[min(100%,20rem)] flex-col border-l border-[#28396C]/10 bg-white sm:max-w-sm"
+        >
           <SheetHeader className="text-left">
             <SheetTitle className="text-[#28396C]">{t.nav.navigation}</SheetTitle>
           </SheetHeader>
-          <nav className="mt-6 flex flex-col gap-1 border-t border-[#28396C]/10 pt-4" aria-label="Menu mobile">
+          <nav
+            className="mt-6 flex flex-col gap-1 border-t border-[#28396C]/10 pt-4"
+            aria-label="Menu mobile"
+          >
             {[
               { label: t.nav.demoInteractive, id: "demo" },
               { label: t.nav.modules, id: "modules" },
@@ -237,7 +300,10 @@ function Header() {
           <div className="mt-auto border-t border-[#28396C]/10 pt-4">
             <button
               type="button"
-              onClick={() => { scrollToId("contact"); setMenuOpen(false); }}
+              onClick={() => {
+                scrollToId("contact");
+                setMenuOpen(false);
+              }}
               className="landing-cta-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-sm font-black uppercase tracking-wide transition"
             >
               {t.nav.bookDemo20}
@@ -251,110 +317,291 @@ function Header() {
 }
 
 // ─────────────────────────────────────────────
-// Hero miniature dashboard
+// Hero — collage du tableau de bord CRM
+// Carte principale inclinée + cartes flottantes, à la place de l'ancien
+// aperçu "navigateur". Purement décoratif : la démo cliquable vit en #demo.
 // ─────────────────────────────────────────────
-function HeroDashboardPreview() {
+
+/** Encaissé par mois (k MAD) — barres du mini graphique. */
+const HERO_BARS = [34, 41, 40, 33, 48, 44, 21, 12, 52, 47, 45, 38];
+const HERO_MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+
+/** Courbe "paiements reçus" superposée aux barres. */
+const HERO_LINE =
+  "M0,42 C18,38 30,30 48,29 C66,28 78,44 96,46 C114,48 126,20 144,16 C162,12 174,22 192,24";
+
+function HeroStatTile({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  tone: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-xl border border-[#28396C]/8 bg-white px-2.5 py-2 shadow-[0_2px_8px_-4px_rgba(40,57,108,0.15)]">
+      <p className="truncate text-[7px] font-bold uppercase tracking-wider text-[#28396C]/50">
+        {label}
+      </p>
+      <p className="mt-0.5 font-display text-lg font-semibold leading-none text-[#28396C]">
+        {value}
+      </p>
+      <p className="mt-1 truncate text-[7px] text-[#28396C]/50">{hint}</p>
+      <span className={cn("mt-1.5 block h-[3px] w-6 rounded-full", tone)} />
+    </div>
+  );
+}
+
+function HeroDashboardCollage() {
   const { t } = useLandingI18n();
-  const previewTopNav = usePreviewTopNav();
   const reduceMotion = useReducedMotion();
-  const [page, setPage] = useState<DashboardMiniaturePageId>("dashboard");
-  const [notice, setNotice] = useState<string | null>(null);
 
-  const showLocked = (msg: string) => {
-    setNotice(msg);
-    window.setTimeout(() => setNotice(null), 4000);
-  };
-
-  const previewBtn = "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-1.5 py-0.5 text-[9px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[10px]";
-
-  const panelTransition = reduceMotion
-    ? { duration: 0.15 }
-    : { duration: 0.42, ease: [0.22, 1, 0.36, 1] as const };
+  const float = (distance: number, duration: number) =>
+    !reduceMotion
+      ? {
+          animate: { y: [0, -distance, 0] },
+          transition: { duration, repeat: Infinity, ease: "easeInOut" as const },
+        }
+      : {};
 
   return (
-    <div className="relative w-full">
-      <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-[#B5E18B]/20 via-transparent to-[#5C6B94]/10 blur-2xl" />
+    <div className="relative w-full [perspective:1600px]">
+      {/* Halo derrière la composition */}
+      <div className="pointer-events-none absolute -inset-8 -z-10 rounded-[3rem] bg-gradient-to-br from-[#B5E18B]/30 via-transparent to-[#28396C]/10 blur-3xl" />
 
+      {/* Carte principale — le tableau de bord */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.9, ease, delay: 0.25 }}
-        className="relative min-w-0 overflow-hidden rounded-2xl border border-white/15 bg-[#FBFDF2] shadow-[0_20px_50px_-25px_rgba(10,16,40,0.7)]"
+        initial={{ opacity: 0, y: 30, rotateY: -12 }}
+        animate={{ opacity: 1, y: 0, rotateY: -6 }}
+        transition={{ duration: 1, ease, delay: 0.25 }}
+        className="relative overflow-hidden rounded-2xl border border-white/60 bg-[#FBFDF2] shadow-[0_45px_90px_-40px_rgba(40,57,108,0.55)] [transform-style:preserve-3d]"
       >
-        <div className="flex items-center gap-1.5 border-b border-[#B5E18B]/30 bg-[#28396C] px-3 py-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#6BA53A]/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#5C6B94]/50" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#B5E18B]/40" />
-          <span className="ml-2 flex-1 truncate rounded border border-[#B5E18B]/20 bg-[#FBFDF2]/10 px-2 py-0.5 font-mono text-[9px] text-[#B5E18B]">
-            {t.hero.previewUrl}
-          </span>
-          <span className="flex shrink-0 items-center gap-1 rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[#B5E18B]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#B5E18B]" />
-            {t.hero.live}
+        {/* En-tête */}
+        <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4">
+          <div className="min-w-0">
+            <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-[#28396C]/50">
+              {t.hero.collageEyebrow}
+            </p>
+            <p className="mt-1 font-display text-lg leading-none text-[#28396C]">
+              <span className="font-semibold">{t.hero.collageTitle}</span>{" "}
+              <span className="font-medium italic text-[#28396C]/60">
+                {t.hero.collageTitleItalic}
+              </span>
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-[#B5E18B] px-2.5 py-1 text-[8px] font-bold text-[#28396C] shadow-sm">
+            + {t.hero.collageCta}
           </span>
         </div>
 
-        <div className="flex flex-col bg-[#FBFDF2] text-[10px] text-[#28396C]">
-          <div className="shrink-0 border-b border-[#B5E18B]/30 bg-white px-2.5 py-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-bold tracking-tight text-[#28396C] sm:text-xs">Gestio</p>
-                <p className="text-[8px] uppercase tracking-widest text-[#5C6B94] sm:text-[9px]">{t.hero.specializedCenter}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="grid h-5 w-5 place-items-center bg-[#6BA53A] text-[8px] font-bold text-[#FBFDF2] sm:h-6 sm:w-6 sm:text-[9px]">A</div>
-                <button
-                  type="button"
-                  className="grid h-5 w-5 place-items-center border border-[#B5E18B]/40 text-[#5C6B94] transition hover:bg-[#B5E18B]/20 sm:h-6 sm:w-6"
-                  onClick={() => showLocked(t.hero.loginToAccess)}
-                >
-                  <LogOut className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                </button>
-              </div>
+        {/* Cartes KPI */}
+        <div className="grid grid-cols-4 gap-1.5 px-4">
+          <HeroStatTile
+            label={t.hero.kpiFamilies}
+            value="4"
+            hint={t.hero.kpiFamiliesHint}
+            tone="bg-[#28396C]"
+          />
+          <HeroStatTile
+            label={t.hero.kpiPaid}
+            value="2"
+            hint={t.hero.kpiPaidHint}
+            tone="bg-[#6BA53A]"
+          />
+          <HeroStatTile
+            label={t.hero.kpiLate}
+            value="1"
+            hint={t.hero.kpiLateHint}
+            tone="bg-[#E25C5C]"
+          />
+          <HeroStatTile
+            label={t.hero.kpiUnpaid}
+            value="1"
+            hint={t.hero.kpiUnpaidHint}
+            tone="bg-[#E9A23B]"
+          />
+        </div>
+
+        {/* Graphique barres + courbe */}
+        <div className="m-4 mt-3 rounded-2xl border border-[#28396C]/8 bg-white p-3 shadow-[0_2px_10px_-6px_rgba(40,57,108,0.2)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-[#28396C]/50">
+                {t.hero.chartEyebrow}
+              </p>
+              <p className="mt-0.5 font-display text-sm leading-none text-[#28396C]">
+                <span className="font-semibold">{t.hero.chartTitle}</span>{" "}
+                <span className="font-medium italic text-[#28396C]/60">
+                  {t.hero.chartTitleItalic}
+                </span>
+              </p>
             </div>
-            <nav className="mt-2 flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
-              {previewTopNav.map((n) => {
-                const Icon = n.icon;
-                const active = page === n.id;
-                return (
-                  <button
-                    key={n.id}
-                    onClick={() => setPage(n.id)}
-                    className={cn(
-                      "flex shrink-0 items-center gap-1 border px-1.5 py-1 transition",
-                      active
-                        ? "border-[#28396C] bg-[#28396C] font-semibold text-[#FBFDF2]"
-                        : "border-transparent text-[#5C6B94] hover:bg-[#B5E18B]/20",
-                    )}
-                  >
-                    <Icon className="h-2.5 w-2.5 opacity-70" />
-                    <span>{n.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            <span className="rounded-md border border-[#28396C]/10 px-1.5 py-0.5 text-[8px] font-semibold text-[#28396C]/60">
+              2026
+            </span>
           </div>
 
-          <main className="relative flex h-[240px] flex-col overflow-hidden bg-white sm:h-[300px]">
-            <AnimatePresence mode="wait">
-              {notice && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="absolute left-2 right-2 top-2 z-20 flex justify-center"
-                >
-                  <p className="max-w-xs rounded-full border border-[#28396C]/15 bg-[#FBFDF2]/95 px-3 py-1.5 text-center text-[10px] text-[#5C6B94] shadow-md backdrop-blur-sm">
-                    {notice}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 text-[#28396C]">
-               <HeroPreviewPageBody page={page} previewBtn={previewBtn} showLocked={showLocked} />
+          <div className="relative mt-3 h-[76px] w-full">
+            {/* Barres */}
+            <div className="absolute inset-0 flex items-end justify-between gap-[3px]">
+              {HERO_BARS.map((h, i) => (
+                <motion.span
+                  key={i}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${(h / 60) * 100}%` }}
+                  transition={{ duration: 0.7, delay: 0.5 + i * 0.04, ease }}
+                  className="min-w-0 flex-1 rounded-t-[3px] bg-[#C7DDF5]"
+                />
+              ))}
             </div>
-          </main>
+            {/* Courbe superposée */}
+            <svg
+              viewBox="0 0 192 60"
+              preserveAspectRatio="none"
+              className="absolute inset-0 h-full w-full overflow-visible"
+              aria-hidden
+            >
+              <motion.path
+                d={HERO_LINE}
+                fill="none"
+                stroke="#28396C"
+                strokeWidth={2}
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1.4, delay: 0.7, ease }}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+          </div>
+
+          <div className="mt-1.5 flex justify-between px-[1px] text-[6px] font-medium text-[#28396C]/40">
+            {HERO_MONTHS.map((m, i) => (
+              <span key={i}>{m}</span>
+            ))}
+          </div>
         </div>
+      </motion.div>
+
+      {/* ── Cartes flottantes (masquées sur petit écran) ── */}
+
+      {/* Total encaissé — en haut à droite */}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.8 }}
+        className="absolute -right-4 -top-6 hidden sm:block lg:-right-10"
+      >
+        <motion.div
+          {...float(10, 5)}
+          className="rounded-2xl border border-[#28396C]/10 bg-white/95 px-4 py-3 shadow-[0_24px_50px_-20px_rgba(40,57,108,0.45)] backdrop-blur"
+        >
+          <p className="text-[8px] font-bold uppercase tracking-widest text-[#28396C]/50">
+            {t.hero.collectedLabel}
+          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <p className="font-display text-xl font-semibold leading-none text-[#28396C]">457k</p>
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#6BA53A]">
+              +62k <ArrowRight className="h-2.5 w-2.5 -rotate-45" />
+            </span>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Derniers paiements — en bas à gauche */}
+      <motion.div
+        initial={{ opacity: 0, x: -24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 0.95 }}
+        className="absolute -bottom-8 -left-4 hidden sm:block lg:-left-12"
+      >
+        <motion.div
+          {...float(12, 6.5)}
+          className="w-[13.5rem] rounded-2xl border border-[#28396C]/10 bg-white/95 p-3 shadow-[0_24px_50px_-20px_rgba(40,57,108,0.45)] backdrop-blur"
+        >
+          <p className="text-[8px] font-bold uppercase tracking-widest text-[#28396C]/50">
+            {t.hero.recentLabel}
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {[
+              {
+                i: "FA",
+                n: "Famille Alami",
+                a: "1 800",
+                s: t.hero.statusPaid,
+                tone: "bg-[#B5E18B]/40 text-[#3E6420]",
+              },
+              {
+                i: "B",
+                n: "Benjelloun / Sara",
+                a: "1 200",
+                s: t.hero.statusLate,
+                tone: "bg-[#F6D8D8] text-[#9A2F2F]",
+              },
+            ].map((r) => (
+              <li key={r.i} className="flex items-center gap-2">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#28396C]/8 text-[8px] font-bold text-[#28396C]">
+                  {r.i}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[9px] font-semibold text-[#28396C]">
+                    {r.n}
+                  </span>
+                  <span className="block text-[8px] text-[#28396C]/50">{r.a} MAD</span>
+                </span>
+                <span
+                  className={cn(
+                    "shrink-0 rounded-full px-1.5 py-0.5 text-[7px] font-bold uppercase",
+                    r.tone,
+                  )}
+                >
+                  {r.s}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      </motion.div>
+
+      {/* Relance rapide — à droite, au milieu */}
+      <motion.div
+        initial={{ opacity: 0, x: 24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7, delay: 1.1 }}
+        className="absolute -right-6 bottom-10 hidden lg:block xl:-right-14"
+      >
+        <motion.div
+          {...float(9, 5.5)}
+          className="w-[11rem] overflow-hidden rounded-2xl border border-[#28396C]/10 shadow-[0_24px_50px_-20px_rgba(40,57,108,0.5)]"
+        >
+          <div className="bg-[#28396C] p-3">
+            <p className="text-[8px] font-bold uppercase tracking-widest text-[#B5E18B]">
+              {t.hero.reminderLabel}
+            </p>
+            <p className="mt-1 font-display text-xs font-semibold text-white">
+              {t.hero.reminderTitle}
+            </p>
+            <div className="mt-2 flex -space-x-1.5">
+              {["FA", "T", "B"].map((a) => (
+                <span
+                  key={a}
+                  className="grid h-6 w-6 place-items-center rounded-full border-2 border-[#28396C] bg-[#B5E18B] text-[7px] font-bold text-[#28396C]"
+                >
+                  {a}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="bg-white p-2.5">
+            <span className="flex items-center justify-center gap-1.5 rounded-full bg-[#B5E18B] py-1.5 text-[9px] font-bold text-[#28396C]">
+              <Send className="h-2.5 w-2.5" />
+              {t.hero.reminderCta}
+            </span>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
@@ -378,7 +625,17 @@ function Hero() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,_rgba(181,225,139,0.35)_0%,_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_75%,_rgba(40,57,108,0.08)_0%,_transparent_50%)]" />
         {/* Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(to right, #28396C 1px, transparent 1px), linear-gradient(to bottom, #28396C 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)" }} />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, #28396C 1px, transparent 1px), linear-gradient(to bottom, #28396C 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)",
+          }}
+        />
 
         <motion.div
           animate={!reduceMotion ? { scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] } : {}}
@@ -418,35 +675,52 @@ function Hero() {
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#28396C] shadow-sm backdrop-blur">
+            <motion.div
+              variants={fadeUp}
+              className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#28396C] shadow-sm backdrop-blur"
+            >
               <Sparkles className="h-3.5 w-3.5 animate-pulse text-[#6BA53A]" />
               {t.hero.badge}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl lg:text-7xl">
+            <motion.h1
+              variants={fadeUp}
+              className="mt-8 text-balance text-5xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl lg:text-7xl"
+            >
               {t.hero.titleLine1} <br />
-              <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, <br />
+              <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">
+                {t.hero.titleHighlight}
+              </span>
+              , <br />
               {t.hero.titleLine2}
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-lg leading-relaxed text-[#28396C]/70 sm:text-xl">
+            <motion.p
+              variants={fadeUp}
+              className="mt-6 max-w-lg text-lg leading-relaxed text-[#28396C]/70 sm:text-xl"
+            >
               {t.hero.subtitle}
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
-               <div className="flex -space-x-3">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-[#28396C] grid place-items-center text-[10px] font-bold text-[#FBFDF2] shadow-lg">
-                       {["FB", "KM", "SR", "AM"][i-1]}
-                    </div>
-                  ))}
-               </div>
-               <div className="text-sm">
-                  <div className="flex items-center gap-0.5 text-[#F0B429]">
-                    {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-10 rounded-full border-2 border-white bg-[#28396C] grid place-items-center text-[10px] font-bold text-[#FBFDF2] shadow-lg"
+                  >
+                    {["FB", "KM", "SR", "AM"][i - 1]}
                   </div>
-                  <p className="mt-1 text-[#28396C]/75">{t.hero.socialProof}</p>
-               </div>
+                ))}
+              </div>
+              <div className="text-sm">
+                <div className="flex items-center gap-0.5 text-[#F0B429]">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current" />
+                  ))}
+                </div>
+                <p className="mt-1 text-[#28396C]/75">{t.hero.socialProof}</p>
+              </div>
             </motion.div>
 
             <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -459,7 +733,7 @@ function Hero() {
                 {t.hero.ctaPrimary}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.95 }}
@@ -473,37 +747,21 @@ function Hero() {
 
             <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
               {trustItems.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/60 px-3 py-1.5 text-xs font-medium text-[#28396C]/75 backdrop-blur">
-                   <Icon className="h-3.5 w-3.5 text-[#6BA53A]" />
-                   {text}
+                <div
+                  key={text}
+                  className="flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/60 px-3 py-1.5 text-xs font-medium text-[#28396C]/75 backdrop-blur"
+                >
+                  <Icon className="h-3.5 w-3.5 text-[#6BA53A]" />
+                  {text}
                 </div>
               ))}
             </motion.div>
           </motion.div>
 
-          {/* Visual Area */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="relative lg:ml-12"
-          >
-            <div className="relative rounded-[2rem] bg-[#28396C] p-3 shadow-[0_45px_90px_-40px_rgba(40,57,108,0.65)] sm:p-4">
-              <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_20%_0%,_rgba(181,225,139,0.18)_0%,_transparent_55%)]" />
-              <HeroDashboardPreview />
-            </div>
-
-            {/* Promotional Badge */}
-            <motion.div
-              animate={!reduceMotion ? { y: [0, -10, 0] } : {}}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -right-3 flex flex-col items-center justify-center rounded-2xl border border-[#28396C]/10 bg-white/90 p-4 text-center shadow-[0_24px_50px_-20px_rgba(40,57,108,0.4)] backdrop-blur sm:-right-6"
-            >
-              <Gift className="h-6 w-6 text-[#6BA53A] mb-1" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#5C6B94]">{t.hero.promoLabel}</p>
-              <p className="text-xs font-bold text-[#28396C]">{t.hero.promoText}</p>
-            </motion.div>
-          </motion.div>
+          {/* Visual Area   collage du tableau de bord */}
+          <div className="relative mt-6 lg:mt-0 lg:ml-12">
+            <HeroDashboardCollage />
+          </div>
         </div>
       </div>
     </section>
@@ -539,7 +797,9 @@ function DemoSection() {
     setPage(tourSteps[i].page);
     autoRef.current = false;
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    resumeTimer.current = setTimeout(() => { autoRef.current = true; }, 10000);
+    resumeTimer.current = setTimeout(() => {
+      autoRef.current = true;
+    }, 10000);
   };
 
   const prevStep = () => goToStep((step - 1 + tourSteps.length) % tourSteps.length);
@@ -594,12 +854,18 @@ function DemoSection() {
           <div className="border-b border-[#B5E18B]/30 bg-white px-3 py-2 sm:px-5 sm:py-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold tracking-tight text-[#28396C] sm:text-base">Gestio</p>
-                <p className="text-[10px] uppercase tracking-widest text-[#5C6B94] sm:text-[11px]">{t.hero.specializedCenter}</p>
+                <p className="text-sm font-bold tracking-tight text-[#28396C] sm:text-base">
+                  Gestio
+                </p>
+                <p className="text-[10px] uppercase tracking-widest text-[#5C6B94] sm:text-[11px]">
+                  {t.hero.specializedCenter}
+                </p>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="hidden items-center gap-1.5 text-[11px] text-[#5C6B94] sm:flex sm:text-xs">
-                  <span className="flex h-5 w-5 items-center justify-center bg-[#6BA53A] text-[10px] font-bold text-[#FBFDF2] sm:h-6 sm:w-6 sm:text-[11px]">A</span>
+                  <span className="flex h-5 w-5 items-center justify-center bg-[#6BA53A] text-[10px] font-bold text-[#FBFDF2] sm:h-6 sm:w-6 sm:text-[11px]">
+                    A
+                  </span>
                   {t.demo.adminRole}
                 </div>
                 <button
@@ -618,11 +884,17 @@ function DemoSection() {
                   <motion.button
                     key={n.id}
                     type="button"
-                    onClick={() => { const idx = tourSteps.findIndex(t => t.page === n.id); if (idx !== -1) goToStep(idx); else setPage(n.id); }}
+                    onClick={() => {
+                      const idx = tourSteps.findIndex((t) => t.page === n.id);
+                      if (idx !== -1) goToStep(idx);
+                      else setPage(n.id);
+                    }}
                     whileTap={{ scale: 0.97 }}
                     className={cn(
                       "flex items-center gap-0.5 border px-1.5 py-0.5 text-[10px] font-medium transition sm:px-2 sm:py-1 sm:text-xs",
-                      active ? "border-[#28396C] bg-[#28396C] font-semibold text-[#FBFDF2]" : "border-transparent text-[#5C6B94] hover:bg-[#B5E18B]/20",
+                      active
+                        ? "border-[#28396C] bg-[#28396C] font-semibold text-[#FBFDF2]"
+                        : "border-transparent text-[#5C6B94] hover:bg-[#B5E18B]/20",
                     )}
                   >
                     <Icon className="h-2.5 w-2.5 opacity-70 sm:h-3 sm:w-3" />
@@ -673,17 +945,34 @@ function DemoSection() {
   useEffect(() => {
     const el = document.getElementById("demo");
     if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { track("demo_section_view"); observer.disconnect(); } }, { threshold: 0.2 });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          track("demo_section_view");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
   return (
-    <section id="demo" className="relative overflow-hidden border-t border-[#B5E18B]/20 bg-[color-mix(in_srgb,#B5E18B_8%,#FBFDF2_92%)] py-12 sm:py-16">
-      <div className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, rgba(40,57,108,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.05) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
+    <section
+      id="demo"
+      className="relative overflow-hidden border-t border-[#B5E18B]/20 bg-[color-mix(in_srgb,#B5E18B_8%,#FBFDF2_92%)] py-12 sm:py-16"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(40,57,108,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.05) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
         {/* Section header */}
         <motion.div
           initial="hidden"
@@ -692,11 +981,17 @@ function DemoSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-2 text-sm font-bold uppercase tracking-wider text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)] sm:px-5 sm:text-base">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-2 text-sm font-bold uppercase tracking-wider text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)] sm:px-5 sm:text-base"
+          >
             <MousePointerClick className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
             {t.demo.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.demo.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground sm:text-xl">
@@ -730,15 +1025,33 @@ function DemoSection() {
                       : "border-[#28396C]/10 bg-white text-[#28396C] shadow-sm hover:border-[#6BA53A]/40 hover:shadow-md",
                   )}
                 >
-                  <span className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition",
-                    active ? "border-[#B5E18B]/40 bg-[#B5E18B]/15" : "border-[#28396C]/10 bg-[#28396C]/5 group-hover:border-[#6BA53A]/30",
-                  )}>
+                  <span
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition",
+                      active
+                        ? "border-[#B5E18B]/40 bg-[#B5E18B]/15"
+                        : "border-[#28396C]/10 bg-[#28396C]/5 group-hover:border-[#6BA53A]/30",
+                    )}
+                  >
                     <Icon className="h-4 w-4" strokeWidth={1.5} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("text-base font-bold leading-tight", active ? "text-[#FBFDF2]" : "text-[#28396C]")}>{s.label}</p>
-                    <p className={cn("mt-0.5 text-sm", active ? "text-[#FBFDF2]/65" : "text-[#5C6B94]")}>{s.tag}</p>
+                    <p
+                      className={cn(
+                        "text-base font-bold leading-tight",
+                        active ? "text-[#FBFDF2]" : "text-[#28396C]",
+                      )}
+                    >
+                      {s.label}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-0.5 text-sm",
+                        active ? "text-[#FBFDF2]/65" : "text-[#5C6B94]",
+                      )}
+                    >
+                      {s.tag}
+                    </p>
                   </div>
                   {active && <span className="shrink-0 text-[#B5E18B] text-sm">→</span>}
                 </motion.button>
@@ -772,22 +1085,43 @@ function DemoSection() {
                       </span>
                     </div>
                     <h3 className="mt-1.5 text-2xl font-black">{currentStep.headline}</h3>
-                    <p className="mt-2 text-base leading-relaxed text-[#FBFDF2]/75">{currentStep.description}</p>
+                    <p className="mt-2 text-base leading-relaxed text-[#FBFDF2]/75">
+                      {currentStep.description}
+                    </p>
                   </div>
                 </div>
                 {/* Controls */}
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     {tourSteps.map((_, i) => (
-                      <button key={i} onClick={() => goToStep(i)}
-                        className={cn("h-1.5 rounded-full transition-all", i === step ? "w-6 bg-[#B5E18B]" : "w-1.5 bg-[#FBFDF2]/30 hover:bg-[#FBFDF2]/60")}
+                      <button
+                        key={i}
+                        onClick={() => goToStep(i)}
+                        className={cn(
+                          "h-1.5 rounded-full transition-all",
+                          i === step
+                            ? "w-6 bg-[#B5E18B]"
+                            : "w-1.5 bg-[#FBFDF2]/30 hover:bg-[#FBFDF2]/60",
+                        )}
                         aria-label={`${t.a11y.module} ${i + 1}`}
                       />
                     ))}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B5E18B]/40 text-[#B5E18B]/70 transition hover:border-[#B5E18B] hover:text-[#B5E18B]">←</button>
-                    <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 text-[#B5E18B]/70 transition hover:border-[#B5E18B] hover:bg-[#B5E18B]/20 hover:text-[#B5E18B]">→</button>
+                    <button
+                      onClick={prevStep}
+                      aria-label={t.a11y.previous}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B5E18B]/40 text-[#B5E18B]/70 transition hover:border-[#B5E18B] hover:text-[#B5E18B]"
+                    >
+                      ←
+                    </button>
+                    <button
+                      onClick={nextStep}
+                      aria-label={t.a11y.next}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 text-[#B5E18B]/70 transition hover:border-[#B5E18B] hover:bg-[#B5E18B]/20 hover:text-[#B5E18B]"
+                    >
+                      →
+                    </button>
                   </div>
                 </div>
                 <div className="absolute -bottom-[10px] left-10 h-0 w-0 border-l-[10px] border-r-[10px] border-t-[10px] border-l-transparent border-r-transparent border-t-[#28396C]" />
@@ -823,8 +1157,18 @@ function DemoSection() {
                       : "border-[#28396C]/10 bg-white text-[#28396C] shadow-sm",
                   )}
                 >
-                  <Icon className={cn("h-5 w-5", active ? "text-[#B5E18B]" : "text-[#5C6B94]/70")} strokeWidth={1.5} />
-                  <span className={cn("text-xs font-bold whitespace-nowrap sm:text-sm", active ? "text-[#FBFDF2]" : "text-[#5C6B94]")}>{s.label}</span>
+                  <Icon
+                    className={cn("h-5 w-5", active ? "text-[#B5E18B]" : "text-[#5C6B94]/70")}
+                    strokeWidth={1.5}
+                  />
+                  <span
+                    className={cn(
+                      "text-xs font-bold whitespace-nowrap sm:text-sm",
+                      active ? "text-[#FBFDF2]" : "text-[#5C6B94]",
+                    )}
+                  >
+                    {s.label}
+                  </span>
                 </motion.button>
               );
             })}
@@ -845,24 +1189,47 @@ function DemoSection() {
                   <StepIcon className="h-4 w-4 text-[#B5E18B]" strokeWidth={1.5} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-mono text-[#B5E18B]/60 uppercase tracking-widest">Module {step + 1} / {tourSteps.length} · {currentStep.tag}</p>
-                  <h3 className="mt-0.5 text-lg font-black leading-tight sm:text-xl">{currentStep.headline}</h3>
+                  <p className="text-sm font-mono text-[#B5E18B]/60 uppercase tracking-widest">
+                    Module {step + 1} / {tourSteps.length} · {currentStep.tag}
+                  </p>
+                  <h3 className="mt-0.5 text-lg font-black leading-tight sm:text-xl">
+                    {currentStep.headline}
+                  </h3>
                 </div>
               </div>
-              <p className="mt-2.5 text-base leading-relaxed text-[#FBFDF2]/75">{currentStep.description}</p>
+              <p className="mt-2.5 text-base leading-relaxed text-[#FBFDF2]/75">
+                {currentStep.description}
+              </p>
               {/* Progress dots + arrows */}
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   {tourSteps.map((_, i) => (
-                    <button key={i} onClick={() => goToStep(i)}
-                      className={cn("h-1.5 rounded-full transition-all", i === step ? "w-5 bg-[#B5E18B]" : "w-1.5 bg-[#FBFDF2]/30")}
+                    <button
+                      key={i}
+                      onClick={() => goToStep(i)}
+                      className={cn(
+                        "h-1.5 rounded-full transition-all",
+                        i === step ? "w-5 bg-[#B5E18B]" : "w-1.5 bg-[#FBFDF2]/30",
+                      )}
                       aria-label={`Module ${i + 1}`}
                     />
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={prevStep} aria-label={t.a11y.previous} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B5E18B]/40 text-[#B5E18B]/70 text-sm transition hover:border-[#B5E18B] hover:text-[#B5E18B]">←</button>
-                  <button onClick={nextStep} aria-label={t.a11y.next} className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 text-[#B5E18B]/70 text-sm transition hover:border-[#B5E18B] hover:bg-[#B5E18B]/20 hover:text-[#B5E18B]">→</button>
+                  <button
+                    onClick={prevStep}
+                    aria-label={t.a11y.previous}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B5E18B]/40 text-[#B5E18B]/70 text-sm transition hover:border-[#B5E18B] hover:text-[#B5E18B]"
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    aria-label={t.a11y.next}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-[#B5E18B]/40 bg-[#B5E18B]/10 text-[#B5E18B]/70 text-sm transition hover:border-[#B5E18B] hover:bg-[#B5E18B]/20 hover:text-[#B5E18B]"
+                  >
+                    →
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -880,9 +1247,7 @@ function DemoSection() {
           transition={{ duration: 0.5, ease, delay: 0.2 }}
           className="mt-8 flex flex-col items-center gap-3 text-center"
         >
-          <p className="text-sm text-muted-foreground">
-            {t.demo.ctaText}
-          </p>
+          <p className="text-sm text-muted-foreground">{t.demo.ctaText}</p>
           <motion.button
             whileHover={{ scale: 1.04, y: -2 }}
             whileTap={{ scale: 0.97 }}
@@ -893,7 +1258,6 @@ function DemoSection() {
             <ArrowRight className="h-4 w-4" />
           </motion.button>
         </motion.div>
-
       </div>
     </section>
   );
@@ -920,10 +1284,16 @@ function PainPointsSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]"
+          >
             {t.pain.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.pain.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
@@ -943,7 +1313,11 @@ function PainPointsSection() {
               key={p.title}
               variants={fadeUp}
               whileHover={{ y: -6, transition: { type: "spring", stiffness: 280 } }}
-              className={cn("flex flex-col gap-4 rounded-3xl border-t-4 border border-[#28396C]/10 p-6 shadow-[0_18px_45px_-25px_rgba(40,57,108,0.35)] transition-shadow hover:shadow-[0_28px_60px_-25px_rgba(40,57,108,0.45)]", p.accent, p.bg)}
+              className={cn(
+                "flex flex-col gap-4 rounded-3xl border-t-4 border border-[#28396C]/10 p-6 shadow-[0_18px_45px_-25px_rgba(40,57,108,0.35)] transition-shadow hover:shadow-[0_28px_60px_-25px_rgba(40,57,108,0.45)]",
+                p.accent,
+                p.bg,
+              )}
             >
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#5C6B94]/20 bg-white">
@@ -966,10 +1340,12 @@ function PainPointsSection() {
           transition={{ duration: 0.6, ease, delay: 0.3 }}
           className="mt-8 text-center"
         >
-          <p className="text-base font-semibold text-[#5C6B94]">
-            {t.pain.solutionHint}
-          </p>
-          <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }} className="mt-3 text-[#6BA53A]/60 text-xl">
+          <p className="text-base font-semibold text-[#5C6B94]">{t.pain.solutionHint}</p>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="mt-3 text-[#6BA53A]/60 text-xl"
+          >
             ↓
           </motion.div>
         </motion.div>
@@ -987,63 +1363,73 @@ function SolutionSection() {
   return (
     <section className="relative overflow-hidden bg-[#FBFDF2] py-10 sm:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="relative grid min-w-0 items-center gap-8 overflow-hidden rounded-[2.5rem] bg-[#28396C] px-6 py-12 text-[#FBFDF2] shadow-[0_45px_100px_-45px_rgba(40,57,108,0.7)] sm:gap-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:gap-14 lg:px-14">
-      <div className="pointer-events-none absolute -left-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#B5E18B]/[0.14] blur-3xl" />
-      <div className="pointer-events-none absolute -right-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#B5E18B]/[0.08] blur-3xl" />
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={{ show: { transition: { staggerChildren: 0.1 } } }}
-        >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#B5E18B]">
-            {t.solution.badge}
-          </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            {t.solution.title}{" "}
-            <span style={{ color: "#B5E18B"}}>{t.solution.titleMuted}</span>
-          </motion.h2>
-          <motion.p variants={fadeUp} className="mt-6 text-lg text-[#FBFDF2]/80">
-            {t.solution.subtitle}
-          </motion.p>
-          <motion.ul variants={fadeUp} className="mt-8 space-y-4">
-            {t.solution.benefits.map((b) => (
-              <li key={b} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#B5E18B] text-[#28396C]">
-                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                </span>
-                <span className="text-sm leading-relaxed text-[#FBFDF2]/85">{b}</span>
-              </li>
-            ))}
-          </motion.ul>
-          <motion.button
-            variants={fadeUp}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => scrollToId("contact")}
-            className="landing-cta-primary mt-10 inline-flex items-center gap-2 px-7 py-4 text-md font-black transition"
+        <div className="relative grid min-w-0 items-center gap-8 overflow-hidden rounded-[2.5rem] bg-[#28396C] px-6 py-12 text-[#FBFDF2] shadow-[0_45px_100px_-45px_rgba(40,57,108,0.7)] sm:gap-10 sm:px-10 sm:py-16 lg:grid-cols-2 lg:gap-14 lg:px-14">
+          <div className="pointer-events-none absolute -left-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#B5E18B]/[0.14] blur-3xl" />
+          <div className="pointer-events-none absolute -right-32 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-[#B5E18B]/[0.08] blur-3xl" />
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={{ show: { transition: { staggerChildren: 0.1 } } }}
           >
-            {t.solution.cta}
-            <ArrowRight className="h-4 w-4" />
-          </motion.button>
-        </motion.div>
+            <motion.div
+              variants={fadeUp}
+              className="inline-flex items-center gap-2 rounded-full border border-[#B5E18B]/30 bg-[#B5E18B]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#B5E18B]"
+            >
+              {t.solution.badge}
+            </motion.div>
+            <motion.h2
+              variants={fadeUp}
+              className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
+            >
+              {t.solution.title} <span style={{ color: "#B5E18B" }}>{t.solution.titleMuted}</span>
+            </motion.h2>
+            <motion.p variants={fadeUp} className="mt-6 text-lg text-[#FBFDF2]/80">
+              {t.solution.subtitle}
+            </motion.p>
+            <motion.ul variants={fadeUp} className="mt-8 space-y-4">
+              {t.solution.benefits.map((b) => (
+                <li key={b} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#B5E18B] text-[#28396C]">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  </span>
+                  <span className="text-sm leading-relaxed text-[#FBFDF2]/85">{b}</span>
+                </li>
+              ))}
+            </motion.ul>
+            <motion.button
+              variants={fadeUp}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => scrollToId("contact")}
+              className="landing-cta-primary mt-10 inline-flex items-center gap-2 px-7 py-4 text-md font-black transition"
+            >
+              {t.solution.cta}
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
-          className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4"
-        >
-          {t.solution.stats.map((stat) => (
-            <div key={stat.label} className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm sm:p-6">
-              <p className="text-2xl font-black tracking-tight tabular-nums text-[#FBFDF2] sm:text-3xl md:text-4xl">{stat.value}</p>
-              <p className="mt-1 text-xs font-semibold text-[#B5E18B] sm:text-sm">{stat.label}</p>
-              <p className="text-[10px] text-[#B5E18B]/60 sm:text-xs">{stat.sub}</p>
-            </div>
-          ))}
-        </motion.div>
-      </div>
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease }}
+            className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4"
+          >
+            {t.solution.stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm sm:p-6"
+              >
+                <p className="text-2xl font-black tracking-tight tabular-nums text-[#FBFDF2] sm:text-3xl md:text-4xl">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-[#B5E18B] sm:text-sm">{stat.label}</p>
+                <p className="text-[10px] text-[#B5E18B]/60 sm:text-xs">{stat.sub}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -1060,8 +1446,18 @@ function ModulesSection() {
   }));
 
   return (
-    <section id="modules" className="relative bg-[color-mix(in_srgb,#B5E18B_6%,#FBFDF2_94%)] py-14 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, rgba(40,57,108,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.04) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
+    <section
+      id="modules"
+      className="relative bg-[color-mix(in_srgb,#B5E18B_6%,#FBFDF2_94%)] py-14 sm:py-20"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(40,57,108,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.04) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -1070,10 +1466,16 @@ function ModulesSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)]">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)]"
+          >
             {t.modules.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.modules.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
@@ -1102,7 +1504,9 @@ function ModulesSection() {
                 </span>
               </div>
               <h3 className="mt-5 text-lg font-black text-[#28396C]">{mod.title}</h3>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[#6BA53A]">{mod.benefit}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[#6BA53A]">
+                {mod.benefit}
+              </p>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{mod.text}</p>
               <p className="mt-5 text-[11px] font-semibold uppercase tracking-wider text-[#6BA53A] opacity-0 transition group-hover:opacity-100">
                 {t.modules.seeInDemo}
@@ -1151,12 +1555,21 @@ type TestimonialItem = {
 
 function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "rtl" }) {
   return (
-    <div dir={dir} className="flex h-full min-w-0 flex-col gap-4 rounded-3xl border border-[#28396C]/10 bg-white p-4 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] sm:p-6">
+    <div
+      dir={dir}
+      className="flex h-full min-w-0 flex-col gap-4 rounded-3xl border border-[#28396C]/10 bg-white p-4 shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] sm:p-6"
+    >
       {/* Stars + date */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-0.5 text-[#F0B429]">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className={cn("h-3.5 w-3.5", i < item.stars ? "fill-current" : "fill-none opacity-30")} />
+            <Star
+              key={i}
+              className={cn(
+                "h-3.5 w-3.5",
+                i < item.stars ? "fill-current" : "fill-none opacity-30",
+              )}
+            />
           ))}
         </div>
         <span className="text-[10px] text-muted-foreground">{item.date}</span>
@@ -1180,7 +1593,9 @@ function TestimonialCard({ item, dir }: { item: TestimonialItem; dir?: "ltr" | "
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-[#28396C]">{item.name}</p>
-          <p className="truncate text-[11px] text-[#5C6B94]">{item.role} · {item.center}</p>
+          <p className="truncate text-[11px] text-[#5C6B94]">
+            {item.role} · {item.center}
+          </p>
           <p className="flex items-center gap-0.5 text-[10px] text-[#5C6B94]/70">
             <MapPin className="h-2.5 w-2.5 shrink-0" />
             {item.city}
@@ -1282,11 +1697,17 @@ function SocialProofSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#6BA53A]/20 bg-[#B5E18B]/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#4F7A2B]">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full border border-[#6BA53A]/20 bg-[#B5E18B]/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#4F7A2B]"
+          >
             <Star className="h-3.5 w-3.5 fill-current" />
             {t.testimonials.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.testimonials.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
@@ -1304,8 +1725,12 @@ function SocialProofSection() {
         >
           {t.testimonials.stats.map((s) => (
             <div key={s.label} className="py-6 text-center">
-              <p className="text-2xl font-black tracking-tight text-[#FBFDF2] sm:text-3xl">{s.value}</p>
-              <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-[#B5E18B] sm:text-xs">{s.label}</p>
+              <p className="text-2xl font-black tracking-tight text-[#FBFDF2] sm:text-3xl">
+                {s.value}
+              </p>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-[#B5E18B] sm:text-xs">
+                {s.label}
+              </p>
             </div>
           ))}
         </motion.div>
@@ -1343,11 +1768,16 @@ function SocialProofSection() {
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => { setCurrent(i); setIsPaused(true); }}
+                  onClick={() => {
+                    setCurrent(i);
+                    setIsPaused(true);
+                  }}
                   aria-label={`${t.a11y.review} ${i + 1}`}
                   className={cn(
                     "h-2 rounded-full transition-all duration-300",
-                    i === current ? "w-7 bg-[#28396C]" : "w-2 bg-[#28396C]/20 hover:bg-[#5C6B94]/40",
+                    i === current
+                      ? "w-7 bg-[#28396C]"
+                      : "w-2 bg-[#28396C]/20 hover:bg-[#5C6B94]/40",
                   )}
                 />
               ))}
@@ -1466,12 +1896,33 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
         </>
       )}
       <div className="flex items-center justify-between gap-2">
-        <span className={cn("font-mono text-xs font-bold uppercase tracking-widest", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>{`0${idx + 1}`} / 03</span>
-        <span className={cn("h-2 w-2 shrink-0 rounded-full", plan.popular ? "bg-[#B5E18B]" : "bg-[#28396C]")} />
+        <span
+          className={cn(
+            "font-mono text-xs font-bold uppercase tracking-widest",
+            plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]",
+          )}
+        >
+          {`0${idx + 1}`} / 03
+        </span>
+        <span
+          className={cn(
+            "h-2 w-2 shrink-0 rounded-full",
+            plan.popular ? "bg-[#B5E18B]" : "bg-[#28396C]",
+          )}
+        />
       </div>
-      <h3 className={cn("mt-4 text-2xl font-black sm:text-3xl", plan.popular && "sm:text-4xl")}>{plan.name}</h3>
-      <p className={cn("mt-2 text-sm", plan.popular ? "text-[#FBFDF2]/70" : "text-[#5C6B94]")}>{plan.blurb}</p>
-      <div className={cn("my-6 h-px w-full rounded-none", plan.popular ? "bg-[#B5E18B]/25" : "bg-[#28396C]/15")} />
+      <h3 className={cn("mt-4 text-2xl font-black sm:text-3xl", plan.popular && "sm:text-4xl")}>
+        {plan.name}
+      </h3>
+      <p className={cn("mt-2 text-sm", plan.popular ? "text-[#FBFDF2]/70" : "text-[#5C6B94]")}>
+        {plan.blurb}
+      </p>
+      <div
+        className={cn(
+          "my-6 h-px w-full rounded-none",
+          plan.popular ? "bg-[#B5E18B]/25" : "bg-[#28396C]/15",
+        )}
+      />
       <div>
         <AnimatePresence mode="wait">
           <motion.div
@@ -1482,17 +1933,51 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
             transition={{ duration: 0.3, ease }}
           >
             {plan.monthly == null ? (
-              <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">{t.pricing.custom}</div>
+              <div className="text-3xl font-black tracking-tight tabular-nums sm:text-4xl">
+                {t.pricing.custom}
+              </div>
             ) : (
               <>
                 <div className="flex min-w-0 flex-wrap items-baseline gap-1">
-                  <span className={cn("min-w-0 font-black tracking-tight tabular-nums", plan.popular ? "text-4xl sm:text-5xl lg:text-6xl" : "text-4xl sm:text-5xl lg:text-6xl")}>{yearly ? plan.yearly?.toLocaleString(numberLocale) : plan.monthly?.toLocaleString(numberLocale)}</span>
-                  <span className={cn("ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>{yearly ? t.pricing.perYear : t.pricing.perMonth}</span>
+                  <span
+                    className={cn(
+                      "min-w-0 font-black tracking-tight tabular-nums",
+                      plan.popular
+                        ? "text-4xl sm:text-5xl lg:text-6xl"
+                        : "text-4xl sm:text-5xl lg:text-6xl",
+                    )}
+                  >
+                    {yearly
+                      ? plan.yearly?.toLocaleString(numberLocale)
+                      : plan.monthly?.toLocaleString(numberLocale)}
+                  </span>
+                  <span
+                    className={cn(
+                      "ml-0 shrink-0 text-xs sm:ml-1 sm:text-sm",
+                      plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]",
+                    )}
+                  >
+                    {yearly ? t.pricing.perYear : t.pricing.perMonth}
+                  </span>
                 </div>
                 {yearly && (
-                  <p className={cn("mt-2 text-xs", plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]")}>
+                  <p
+                    className={cn(
+                      "mt-2 text-xs",
+                      plan.popular ? "text-[#FBFDF2]/60" : "text-[#5C6B94]",
+                    )}
+                  >
                     {t.pricing.yearlyEquiv}{" "}
-                    <span className={cn("font-semibold", plan.popular ? "text-[#FBFDF2]" : "text-[#28396C]")}>{Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}{t.pricing.perMonthShort}</span> {t.pricing.yearlyEquivSuffix}
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        plan.popular ? "text-[#FBFDF2]" : "text-[#28396C]",
+                      )}
+                    >
+                      {Math.round(plan.yearly! / 10).toLocaleString(numberLocale)}
+                      {t.pricing.perMonthShort}
+                    </span>{" "}
+                    {t.pricing.yearlyEquivSuffix}
                   </p>
                 )}
               </>
@@ -1502,8 +1987,20 @@ function PricingCard({ plan, idx, yearly }: { plan: Plan; idx: number; yearly: b
       </div>
       <ul className="mt-8 flex-1 space-y-3">
         {plan.features.map((f) => (
-          <motion.li key={f} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease }} className="flex items-start gap-3 text-sm">
-            <span className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full", plan.popular ? "bg-[#B5E18B] text-[#28396C]" : "bg-[#28396C] text-[#FBFDF2]")}>
+          <motion.li
+            key={f}
+            initial={{ opacity: 0, x: -8 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.3, ease }}
+            className="flex items-start gap-3 text-sm"
+          >
+            <span
+              className={cn(
+                "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                plan.popular ? "bg-[#B5E18B] text-[#28396C]" : "bg-[#28396C] text-[#FBFDF2]",
+              )}
+            >
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
             </span>
             <span className={plan.popular ? "text-[#FBFDF2]/90" : "text-[#28396C]/80"}>{f}</span>
@@ -1532,7 +2029,15 @@ function PricingSection() {
   useEffect(() => {
     const el = document.getElementById("tarifs");
     if (!el) return;
-    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { track("pricing_view"); observer.disconnect(); } }, { threshold: 0.2 });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          track("pricing_view");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -1549,7 +2054,14 @@ function PricingSection() {
 
   return (
     <section id="tarifs" className="relative overflow-hidden bg-[#FBFDF2] py-14 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, rgba(40,57,108,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.04) 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(40,57,108,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(40,57,108,0.04) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -1558,10 +2070,16 @@ function PricingSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)]">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full bg-[#28396C] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FBFDF2] shadow-[0_14px_30px_-14px_rgba(40,57,108,0.6)]"
+          >
             {t.pricing.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.pricing.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
@@ -1582,7 +2100,9 @@ function PricingSection() {
               onClick={() => setYearly(false)}
               className={cn(
                 "min-h-[3rem] flex-1 rounded-full px-3 py-3 text-xs font-black uppercase tracking-wider transition-colors sm:px-6 sm:text-sm",
-                !yearly ? "bg-[#28396C] text-[#FBFDF2] shadow-md" : "bg-transparent text-[#28396C] hover:bg-[#B5E18B]/20",
+                !yearly
+                  ? "bg-[#28396C] text-[#FBFDF2] shadow-md"
+                  : "bg-transparent text-[#28396C] hover:bg-[#B5E18B]/20",
               )}
             >
               {t.pricing.monthly}
@@ -1592,14 +2112,18 @@ function PricingSection() {
               onClick={() => setYearly(true)}
               className={cn(
                 "flex min-h-[3rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-full px-3 py-2 text-xs font-black uppercase tracking-wider transition-colors sm:flex-row sm:gap-2 sm:px-6 sm:py-3 sm:text-sm",
-                yearly ? "bg-[#28396C] text-[#FBFDF2] shadow-md" : "bg-transparent text-[#28396C] hover:bg-[#B5E18B]/20",
+                yearly
+                  ? "bg-[#28396C] text-[#FBFDF2] shadow-md"
+                  : "bg-transparent text-[#28396C] hover:bg-[#B5E18B]/20",
               )}
             >
               <span>{t.pricing.yearly}</span>
               <span
                 className={cn(
                   "rounded-full border px-1.5 py-0.5 text-[8px] font-black leading-none sm:text-[9px]",
-                  yearly ? "border-[#B5E18B]/60 text-[#B5E18B]" : "border-[#28396C]/40 text-[#28396C]",
+                  yearly
+                    ? "border-[#B5E18B]/60 text-[#B5E18B]"
+                    : "border-[#28396C]/40 text-[#28396C]",
                 )}
               >
                 {t.pricing.yearlyDiscount}
@@ -1607,23 +2131,40 @@ function PricingSection() {
             </button>
           </div>
           <AnimatePresence mode="wait">
-            <motion.p key={yearly ? "y" : "m"} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <motion.p
+              key={yearly ? "y" : "m"}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
               {yearly ? t.pricing.billingYearly : t.pricing.billingMonthly}
             </motion.p>
           </AnimatePresence>
         </motion.div>
 
         <div className="mt-10 w-full min-w-0 lg:hidden">
-          <Carousel setApi={setCarouselApi} opts={{ align: "start", loop: false }} className="w-full">
+          <Carousel
+            setApi={setCarouselApi}
+            opts={{ align: "start", loop: false }}
+            className="w-full"
+          >
             <CarouselContent className="-ml-3 sm:-ml-4">
               {pricingPlans.map((plan, idx) => (
-                <CarouselItem key={plan.id} className="basis-[min(100%,22rem)] pl-3 sm:basis-[88%] sm:pl-4">
+                <CarouselItem
+                  key={plan.id}
+                  className="basis-[min(100%,22rem)] pl-3 sm:basis-[88%] sm:pl-4"
+                >
                   <PricingCard plan={plan} idx={idx} yearly={yearly} />
                 </CarouselItem>
               ))}
             </CarouselContent>
           </Carousel>
-          <div className="mt-6 flex justify-center gap-2" role="tablist" aria-label={t.a11y.choosePlan}>
+          <div
+            className="mt-6 flex justify-center gap-2"
+            role="tablist"
+            aria-label={t.a11y.choosePlan}
+          >
             {pricingPlans.map((plan, i) => (
               <button
                 key={plan.id}
@@ -1634,7 +2175,9 @@ function PricingSection() {
                 onClick={() => carouselApi?.scrollTo(i)}
                 className={cn(
                   "h-2 rounded-full transition-all duration-300",
-                  carouselIndex === i ? "w-8 bg-[#28396C]" : "w-2 bg-[#28396C]/25 hover:bg-[#5C6B94]/40",
+                  carouselIndex === i
+                    ? "w-8 bg-[#28396C]"
+                    : "w-2 bg-[#28396C]/25 hover:bg-[#5C6B94]/40",
                 )}
               />
             ))}
@@ -1689,10 +2232,16 @@ function FaqSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="text-center"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]"
+          >
             {t.faq.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.faq.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
@@ -1708,9 +2257,17 @@ function FaqSection() {
         >
           <Accordion type="multiple" className="w-full">
             {t.faq.items.map((item, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="border-b border-border last:border-b-0">
-                <AccordionTrigger className="px-3 py-4 text-left text-sm font-bold hover:no-underline sm:px-4 sm:py-5 sm:text-base">{item.q}</AccordionTrigger>
-                <AccordionContent className="px-3 pb-4 text-sm leading-relaxed text-muted-foreground sm:px-4 sm:pb-5">{item.a}</AccordionContent>
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="border-b border-border last:border-b-0"
+              >
+                <AccordionTrigger className="px-3 py-4 text-left text-sm font-bold hover:no-underline sm:px-4 sm:py-5 sm:text-base">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="px-3 pb-4 text-sm leading-relaxed text-muted-foreground sm:px-4 sm:pb-5">
+                  {item.a}
+                </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
@@ -1732,10 +2289,18 @@ function CallQrCard() {
         aria-label={t.contact.qr.callNow}
         className="grid shrink-0 place-items-center rounded-xl border border-foreground/15 bg-white p-2 shadow-md transition hover:shadow-lg"
       >
-        <img src="/call-qr.svg" alt={t.contact.qr.subtitle} width={84} height={84} className="h-20 w-20" />
+        <img
+          src="/call-qr.svg"
+          alt={t.contact.qr.subtitle}
+          width={84}
+          height={84}
+          className="h-20 w-20"
+        />
       </a>
       <div className="min-w-0">
-        <p className="text-[10px] font-black uppercase tracking-widest text-primary">{t.contact.qr.title}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+          {t.contact.qr.title}
+        </p>
         <p className="mt-1 text-sm font-semibold text-foreground">{t.contact.qr.subtitle}</p>
         <a
           href="tel:+212777777428"
@@ -1836,58 +2401,127 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
     >
       <AnimatePresence mode="wait">
         {status === "sent" ? (
-          <motion.div key="sent" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, ease }} className="flex flex-col items-center py-10 text-center">
-            <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 200, delay: 0.1 }} className="grid h-16 w-16 place-items-center rounded-full bg-[#B5E18B] text-[#28396C] shadow-[0_18px_40px_-15px_rgba(107,165,58,0.6)]">
+          <motion.div
+            key="sent"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.4, ease }}
+            className="flex flex-col items-center py-10 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+              className="grid h-16 w-16 place-items-center rounded-full bg-[#B5E18B] text-[#28396C] shadow-[0_18px_40px_-15px_rgba(107,165,58,0.6)]"
+            >
               <Check className="h-8 w-8" strokeWidth={2.5} />
             </motion.div>
             <h3 className="mt-6 text-2xl font-black">{t.contact.form.successTitle}</h3>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t.contact.form.successText}</p>
-            <button type="button" onClick={reset} className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent">
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              {t.contact.form.successText}
+            </p>
+            <button
+              type="button"
+              onClick={reset}
+              className="mt-6 text-sm font-semibold text-primary underline underline-offset-4 transition hover:text-accent"
+            >
               {t.contact.form.retry}
             </button>
           </motion.div>
         ) : (
-          <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-4">
-            <p className="text-lg font-black tracking-tight text-foreground">{t.contact.form.heading}</p>
+          <motion.div
+            key="form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col gap-4"
+          >
+            <p className="text-lg font-black tracking-tight text-foreground">
+              {t.contact.form.heading}
+            </p>
 
             <div>
-              <label htmlFor="dr-center" className={labelBase}>{t.contact.form.centerLabel}</label>
+              <label htmlFor="dr-center" className={labelBase}>
+                {t.contact.form.centerLabel}
+              </label>
               <div className="relative">
                 <Building2 className="pointer-events-none absolute top-1/2 ltr:left-3 rtl:right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input ref={centerRef} id="dr-center" type="text" placeholder={t.contact.form.centerPlaceholder} required aria-required="true" autoComplete="organization" className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")} />
+                <input
+                  ref={centerRef}
+                  id="dr-center"
+                  type="text"
+                  placeholder={t.contact.form.centerPlaceholder}
+                  required
+                  aria-required="true"
+                  autoComplete="organization"
+                  className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")}
+                />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="min-w-0">
-                <label htmlFor="dr-email" className={labelBase}>{t.contact.form.emailLabel}</label>
+                <label htmlFor="dr-email" className={labelBase}>
+                  {t.contact.form.emailLabel}
+                </label>
                 <div className="relative">
                   <Mail className="pointer-events-none absolute top-1/2 ltr:left-3 rtl:right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input ref={emailRef} id="dr-email" type="email" inputMode="email" placeholder={t.contact.form.emailPlaceholder} required aria-required="true" autoComplete="email" className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")} />
+                  <input
+                    ref={emailRef}
+                    id="dr-email"
+                    type="email"
+                    inputMode="email"
+                    placeholder={t.contact.form.emailPlaceholder}
+                    required
+                    aria-required="true"
+                    autoComplete="email"
+                    className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")}
+                  />
                 </div>
               </div>
               <div className="min-w-0">
-                <label htmlFor="dr-phone" className={labelBase}>{t.contact.form.phoneLabel}</label>
+                <label htmlFor="dr-phone" className={labelBase}>
+                  {t.contact.form.phoneLabel}
+                </label>
                 <div className="relative">
                   <Phone className="pointer-events-none absolute top-1/2 ltr:left-3 rtl:right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input ref={phoneRef} id="dr-phone" type="tel" inputMode="tel" placeholder={t.contact.form.phonePlaceholder} required aria-required="true" autoComplete="tel" className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")} />
+                  <input
+                    ref={phoneRef}
+                    id="dr-phone"
+                    type="tel"
+                    inputMode="tel"
+                    placeholder={t.contact.form.phonePlaceholder}
+                    required
+                    aria-required="true"
+                    autoComplete="tel"
+                    className={cn(fieldBase, "ltr:pl-10 rtl:pr-10")}
+                  />
                 </div>
               </div>
             </div>
 
             <div>
-              <label htmlFor="dr-date" className={labelBase}>{t.contact.form.dateLabel}</label>
+              <label htmlFor="dr-date" className={labelBase}>
+                {t.contact.form.dateLabel}
+              </label>
               <Popover open={dateOpen} onOpenChange={setDateOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
                     id="dr-date"
                     aria-label={t.a11y.pickDate}
-                    className={cn(fieldBase, "flex items-center gap-2.5 text-left rtl:text-right", !date && "text-muted-foreground")}
+                    className={cn(
+                      fieldBase,
+                      "flex items-center gap-2.5 text-left rtl:text-right",
+                      !date && "text-muted-foreground",
+                    )}
                   >
                     <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate">
-                      {date ? format(date, "PPP", { locale: getDateFnsLocale(locale) }) : t.contact.form.datePlaceholder}
+                      {date
+                        ? format(date, "PPP", { locale: getDateFnsLocale(locale) })
+                        : t.contact.form.datePlaceholder}
                     </span>
                   </button>
                 </PopoverTrigger>
@@ -1895,7 +2529,10 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
                   <CalendarPicker
                     mode="single"
                     selected={date}
-                    onSelect={(d) => { setDate(d); setDateOpen(false); }}
+                    onSelect={(d) => {
+                      setDate(d);
+                      setDateOpen(false);
+                    }}
                     disabled={{ before: today }}
                     defaultMonth={date ?? today}
                     locale={getDateFnsLocale(locale)}
@@ -1906,10 +2543,18 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
             </div>
 
             <div>
-              <label htmlFor="dr-message" className={labelBase}>{t.contact.form.messageLabel}</label>
+              <label htmlFor="dr-message" className={labelBase}>
+                {t.contact.form.messageLabel}
+              </label>
               <div className="relative">
                 <MessageSquare className="pointer-events-none absolute top-3 ltr:left-3 rtl:right-3 h-4 w-4 text-muted-foreground" />
-                <textarea ref={messageRef} id="dr-message" rows={3} placeholder={t.contact.form.messagePlaceholder} className={cn(fieldBase, "resize-none ltr:pl-10 rtl:pr-10")} />
+                <textarea
+                  ref={messageRef}
+                  id="dr-message"
+                  rows={3}
+                  placeholder={t.contact.form.messagePlaceholder}
+                  className={cn(fieldBase, "resize-none ltr:pl-10 rtl:pr-10")}
+                />
               </div>
             </div>
 
@@ -1937,7 +2582,12 @@ function DemoRequestForm({ reduceMotion }: { reduceMotion: boolean | null }) {
               className="group relative mt-1 inline-flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden px-6 py-3.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-80 sm:py-4 landing-cta-primary"
             >
               {!reduceMotion && status !== "submitting" && (
-                <motion.span className="pointer-events-none absolute inset-0 z-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
+                <motion.span
+                  className="pointer-events-none absolute inset-0 z-0 bg-white/10"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.5 }}
+                />
               )}
               {status === "submitting" ? (
                 <>
@@ -1969,10 +2619,16 @@ function ContactSection() {
   const { t } = useLandingI18n();
   const reduceMotion = useReducedMotion();
   return (
-    <section id="contact" className="relative overflow-hidden py-14 pb-[max(4rem,calc(4rem+env(safe-area-inset-bottom)))] sm:py-20 sm:pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))]">
+    <section
+      id="contact"
+      className="relative overflow-hidden py-14 pb-[max(4rem,calc(4rem+env(safe-area-inset-bottom)))] sm:py-20 sm:pb-[max(5rem,calc(5rem+env(safe-area-inset-bottom)))]"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-20 right-1/4 h-80 w-80 bg-primary/15 blur-3xl animate-blob" />
-        <div className="absolute bottom-0 left-1/4 h-80 w-80 bg-accent/20 blur-3xl animate-blob" style={{ animationDelay: "-6s" }} />
+        <div
+          className="absolute bottom-0 left-1/4 h-80 w-80 bg-accent/20 blur-3xl animate-blob"
+          style={{ animationDelay: "-6s" }}
+        />
       </div>
       <div className="mx-auto grid min-w-0 max-w-7xl gap-8 px-4 sm:gap-10 sm:px-6 lg:grid-cols-2 lg:items-start lg:gap-12 lg:px-8">
         <motion.div
@@ -1982,10 +2638,16 @@ function ContactSection() {
           variants={{ show: { transition: { staggerChildren: 0.08 } } }}
           className="min-w-0"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]">
+          <motion.div
+            variants={fadeUp}
+            className="inline-flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-[#B5E18B]/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#28396C]"
+          >
             {t.contact.badge}
           </motion.div>
-          <motion.h2 variants={fadeUp} className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">
+          <motion.h2
+            variants={fadeUp}
+            className="mt-6 text-balance text-3xl font-black tracking-tight sm:text-4xl md:text-5xl"
+          >
             {t.contact.title}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-lg text-muted-foreground">
@@ -2004,12 +2666,17 @@ function ContactSection() {
               ] as const
             ).map(({ Icon, text, href }) => (
               <li key={text} className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center" style={{color: "var(--eiden-forest)"}}>
+                <span
+                  className="flex h-11 w-11 shrink-0 items-center justify-center"
+                  style={{ color: "var(--eiden-forest)" }}
+                >
                   <Icon className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
                 </span>
                 <a
                   href={href}
-                  {...(href.startsWith("http") ? ({ target: "_blank", rel: "noopener noreferrer" } as const) : {})}
+                  {...(href.startsWith("http")
+                    ? ({ target: "_blank", rel: "noopener noreferrer" } as const)
+                    : {})}
                   className="min-w-0 break-words text-base font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:text-primary hover:decoration-primary"
                 >
                   {text}
@@ -2055,12 +2722,12 @@ function Footer() {
               </div>
               <span className="text-lg font-black tracking-tight">Gestio</span>
             </div>
-            <p className="mt-3 text-sm text-background leading-relaxed">
-              {t.footer.tagline}
-            </p>
+            <p className="mt-3 text-sm text-background leading-relaxed">{t.footer.tagline}</p>
           </div>
           <div>
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">{t.footer.navigation}</p>
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">
+              {t.footer.navigation}
+            </p>
             <ul className="space-y-2 text-sm">
               {[
                 { label: t.nav.demoInteractive, id: "demo" },
@@ -2070,13 +2737,20 @@ function Footer() {
                 { label: t.nav.contact, id: "contact" },
               ].map((item) => (
                 <li key={item.id}>
-                  <button onClick={() => scrollToId(item.id)} className="text-background transition hover:text-background">{item.label}</button>
+                  <button
+                    onClick={() => scrollToId(item.id)}
+                    className="text-background transition hover:text-background"
+                  >
+                    {item.label}
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">{t.footer.contact}</p>
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-background">
+              {t.footer.contact}
+            </p>
             <ul className="space-y-2 text-sm text-background">
               <li>
                 <a href={`mailto:${t.contact.email}`} className="transition hover:text-background">
@@ -2084,8 +2758,21 @@ function Footer() {
                 </a>
               </li>
               <li className="text-balance">{t.contact.address}</li>
-              <li><a href="tel:+212777777428" className="transition hover:text-background">{t.footer.phoneMorocco}</a></li>
-              <li><a href="https://eiden-group.com" target="_blank" rel="noopener noreferrer" className="transition hover:text-background">{t.footer.website}</a></li>
+              <li>
+                <a href="tel:+212777777428" className="transition hover:text-background">
+                  {t.footer.phoneMorocco}
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://eiden-group.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition hover:text-background"
+                >
+                  {t.footer.website}
+                </a>
+              </li>
             </ul>
             <motion.button
               whileHover={{ scale: 1.03 }}
@@ -2122,7 +2809,10 @@ function LandingPage() {
   }, [t.meta.title, t.meta.description]);
 
   return (
-    <div dir={dir} className="landing-page min-h-screen min-w-0 overflow-x-clip bg-background text-foreground">
+    <div
+      dir={dir}
+      className="landing-page min-h-screen min-w-0 overflow-x-clip bg-background text-foreground"
+    >
       <Header />
       <Hero />
       <PainPointsSection />

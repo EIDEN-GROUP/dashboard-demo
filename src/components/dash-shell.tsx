@@ -22,12 +22,10 @@ import {
   ChevronRight,
   ExternalLink,
   RefreshCw,
+  GraduationCap,
 } from "lucide-react";
 
 export type NavItem = { to: string; label: string; icon: any };
-
-/** Monogramme de marque   clair, il se pose sur un badge foncé. */
-const BRAND_MARK_SRC = "/favicon.png";
 
 type ShellMessage = {
   id: string;
@@ -628,16 +626,13 @@ export function DashShell({
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
           <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 items-center">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#28396C]">
-                  <img
-                    src={BRAND_MARK_SRC}
-                    alt={t.shell.platform}
-                    width={22}
-                    height={22}
-                    className="h-[22px] w-[22px]"
-                    decoding="async"
-                  />
+              <Link
+                to={topNav[0]?.to ?? "/dashboard"}
+                aria-label={t.shell.platform}
+                className="flex min-w-0 items-center"
+              >
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#28396C]">
+                  <GraduationCap className="h-5 w-5 text-[#B5E18B]" strokeWidth={2} />
                 </span>
               </Link>
               {switchTo && switchLabel ? (
@@ -669,16 +664,13 @@ export function DashShell({
           {/* Desktop: full header */}
           <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
-              <Link to={topNav[0]?.to ?? "/dashboard"} className="flex items-center">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#28396C] shadow-[0_10px_24px_-12px_rgba(40,57,108,0.6)]">
-                  <img
-                    src={BRAND_MARK_SRC}
-                    alt={t.shell.platform}
-                    width={30}
-                    height={30}
-                    className="h-[30px] w-[30px]"
-                    decoding="async"
-                  />
+              <Link
+                to={topNav[0]?.to ?? "/dashboard"}
+                aria-label={t.shell.platform}
+                className="flex items-center"
+              >
+                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#28396C] shadow-[0_12px_28px_-12px_rgba(40,57,108,0.6)]">
+                  <GraduationCap className="h-7 w-7 text-[#B5E18B]" strokeWidth={2} />
                 </span>
               </Link>
               {switchTo && switchLabel ? (

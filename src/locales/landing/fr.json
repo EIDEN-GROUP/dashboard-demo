@@ -65,7 +65,29 @@
     "live": "Live",
     "specializedCenter": "Centre spécialisé",
     "loginToAccess": "Connectez-vous pour accéder à votre espace.",
-    "loginToAccessReal": "Connectez-vous pour accéder à votre espace réel."
+    "loginToAccessReal": "Connectez-vous pour accéder à votre espace réel.",
+    "collageEyebrow": "Vue d'ensemble CRM",
+    "collageTitle": "Tableau",
+    "collageTitleItalic": "de bord",
+    "collageCta": "Ajouter un client",
+    "kpiFamilies": "Familles",
+    "kpiFamiliesHint": "inscrites",
+    "kpiPaid": "Payé",
+    "kpiPaidHint": "paiements reçus",
+    "kpiLate": "En retard",
+    "kpiLateHint": "relance recommandée",
+    "kpiUnpaid": "Impayé",
+    "kpiUnpaidHint": "facture en attente",
+    "chartEyebrow": "Vue d'ensemble",
+    "chartTitle": "Statistique",
+    "chartTitleItalic": "générale",
+    "collectedLabel": "Total encaissé",
+    "recentLabel": "Derniers paiements",
+    "statusPaid": "Payé",
+    "statusLate": "En retard",
+    "reminderLabel": "Relance rapide",
+    "reminderTitle": "Rappel de paiement",
+    "reminderCta": "Envoyer le rappel"
   },
   "demo": {
     "badge": "Démo interactive sans compte requis",
@@ -144,10 +166,26 @@
     ],
     "cta": "Réserver ma démo 20 min, sans engagement",
     "stats": [
-      { "value": "10+", "label": "centres actifs", "sub": "au Maroc" },
-      { "value": "6", "label": "modules intégrés", "sub": "tout-en-un" },
-      { "value": "< 48h", "label": "mise en service", "sub": "accompagnée" },
-      { "value": "100%", "label": "adapté au Maroc", "sub": "marché local" }
+      {
+        "value": "10+",
+        "label": "centres actifs",
+        "sub": "au Maroc"
+      },
+      {
+        "value": "6",
+        "label": "modules intégrés",
+        "sub": "tout-en-un"
+      },
+      {
+        "value": "< 48h",
+        "label": "mise en service",
+        "sub": "accompagnée"
+      },
+      {
+        "value": "100%",
+        "label": "adapté au Maroc",
+        "sub": "marché local"
+      }
     ]
   },
   "modules": {
@@ -194,10 +232,22 @@
     "title": "Ce que disent nos directeurs.",
     "subtitle": "Des centres à travers tout le Maroc qui utilisent Gestio au quotidien.",
     "stats": [
-      { "value": "10+", "label": "centres actifs" },
-      { "value": "4.9 / 5", "label": "note moyenne" },
-      { "value": "< 48h", "label": "mise en service" },
-      { "value": "100%", "label": "recommandent Gestio" }
+      {
+        "value": "10+",
+        "label": "centres actifs"
+      },
+      {
+        "value": "4.9 / 5",
+        "label": "note moyenne"
+      },
+      {
+        "value": "< 48h",
+        "label": "mise en service"
+      },
+      {
+        "value": "100%",
+        "label": "recommandent Gestio"
+      }
     ],
     "ctaText": "Votre centre pourrait être le prochain. 5 créneaux disponibles cette semaine.",
     "ctaButton": "Réserver ma démo 20 min, sans engagement",
@@ -314,21 +364,38 @@
         "id": "essentiel",
         "name": "Essentiel",
         "blurb": "Jusqu'à ~500 dossiers actifs. Un seul administrateur.",
-        "features": ["CRM dossiers & élèves", "Planning & rendez-vous", "Rapports de base", "Support par email"],
+        "features": [
+          "CRM dossiers & élèves",
+          "Planning & rendez-vous",
+          "Rapports de base",
+          "Support par email"
+        ],
         "cta": "Démarrer avec Essentiel →"
       },
       {
         "id": "pro",
         "name": "Pro",
         "blurb": "Centres actifs : équipe multi-rôles et pilotage renforcé.",
-        "features": ["Tout Essentiel", "Paiements & relances auto", "Suivi des nouvelles demandes", "Exports & tableaux avancés", "Support prioritaire", "✓ Onboarding + Formation + Support inclus"],
+        "features": [
+          "Tout Essentiel",
+          "Paiements & relances auto",
+          "Suivi des nouvelles demandes",
+          "Exports & tableaux avancés",
+          "Support prioritaire",
+          "✓ Onboarding + Formation + Support inclus"
+        ],
         "cta": "Démarrer avec Pro le plus populaire →"
       },
       {
         "id": "reseau",
         "name": "Réseau",
         "blurb": "Multi-sites, groupes et besoins sur mesure.",
-        "features": ["SLA dédié", "Intégrations & API", "Formation des équipes", "Accompagnement au déploiement"],
+        "features": [
+          "SLA dédié",
+          "Intégrations & API",
+          "Formation des équipes",
+          "Accompagnement au déploiement"
+        ],
         "cta": "Parler à un expert"
       }
     ]
