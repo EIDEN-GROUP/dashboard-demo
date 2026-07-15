@@ -83,3 +83,46 @@ export const deleteSchoolVacation = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ── Sync public holidays from Nager API ──
+
+type NagerHoliday = {
+  date: string;
+  localName: string;
+  name: string;
+  countryCode: string;
+  fixed: boolean;
+  global: boolean;
+  types: string[];
+};
+
+export const syncPublicHolidays = createServerFn({ method: "POST" })
+  .inputValidator((years: number[]) => years)
+  .handler(async ({ data: years }) => {
+    const existingRows = await supabaseAdmin
+      .from("holidays")
+      .select("date, label");
+    const existing = new Set(
+      (existingRows.data ?? []).map((r) => `${r.date}|${r.label}`),
+    );
+
+    let added = 0;
+
+    for (const year of years) {
+      const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/MA`);
+      if (!res.ok) continue;
+      const holidays: NagerHoliday[] = await res.json();
+
+      const rows = holidays
+        .filter((h) => !existing.has(`${h.date}|${h.localName}`))
+        .map((h) => ({ date: h.date, label: h.localName }));
+
+      if (rows.length === 0) continue;
+
+      const { error } = await supabaseAdmin.from("holidays").insert(rows);
+      if (error) throw new Error(error.message);
+      added += rows.length;
+    }
+
+    return { added };
+  });

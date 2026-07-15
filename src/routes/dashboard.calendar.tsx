@@ -9,6 +9,7 @@ import {
   Trash2,
   Star,
   Sun,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -29,6 +30,7 @@ import {
   listSchoolVacations,
   createSchoolVacation,
   deleteSchoolVacation,
+  syncPublicHolidays,
   type Holiday,
   type SchoolVacation,
 } from "@/lib/server-holidays-vacations";
@@ -209,6 +211,12 @@ function CrmCalendrier() {
     onError: handleMutError,
   });
 
+  const syncMutation = useMutation({
+    mutationFn: () => syncPublicHolidays({ data: [new Date().getFullYear(), new Date().getFullYear() + 1] }),
+    onSuccess: (result) => { forceRefetch(); toast.success(`${result.added} jour(s) férié(s) synchronisé(s)`); },
+    onError: handleMutError,
+  });
+
   const createVacationMutation = useMutation({
     mutationFn: (input: { data: { start_date: string; end_date: string; label: string } }) => createSchoolVacation(input),
     onSuccess: () => { forceRefetch(); toast.success("Vacance ajoutée"); },
@@ -282,6 +290,15 @@ function CrmCalendrier() {
       <div className="flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-2 rounded-full bg-[#6BA53A]/15 px-3 py-1.5 text-xs font-semibold text-[#3E6420]">
           <span className="h-2.5 w-2.5 rounded-full bg-[#6BA53A]" /> Jour férié ({holidays.length})
+          <button
+            type="button"
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+            className="ml-1 grid h-5 w-5 place-items-center rounded-full bg-[#6BA53A]/20 text-[#3E6420] transition hover:bg-[#6BA53A]/40 disabled:opacity-50"
+            title="Synchroniser les jours fériés marocains"
+          >
+            <RefreshCw className={cn("h-3 w-3", syncMutation.isPending && "animate-spin")} />
+          </button>
         </span>
         <span className="inline-flex items-center gap-2 rounded-full bg-[#CFC27A]/40 px-3 py-1.5 text-xs font-semibold text-[#7A6E2E]">
           <span className="h-2.5 w-2.5 rounded-full bg-[#CFC27A]" /> Vacances ({schoolVacations.length})
