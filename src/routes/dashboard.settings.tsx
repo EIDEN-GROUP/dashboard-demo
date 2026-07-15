@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listLevels,
@@ -20,7 +21,7 @@ import {
   iconButton,
 } from "@/lib/dash-ui";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign } from "lucide-react";
+import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign, ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "Paramètres - CRM" }] }),
@@ -102,11 +103,22 @@ function ComboboxInput({
 }) {
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const filtered = options.filter((o) => o !== value && o.toLowerCase().includes(value.toLowerCase()));
   const show = open && filtered.length > 0;
 
+  // Panel is portaled to <body> (fixed-positioned off the input's own rect) so it
+  // isn't clipped by the settings card's `overflow-hidden`, same as every other
+  // dropdown on this page (which portal via the shared shadcn Select).
+  useLayoutEffect(() => {
+    if (!show || !wrapRef.current) return;
+    const r = wrapRef.current.getBoundingClientRect();
+    setRect({ top: r.bottom + 4, left: r.left, width: r.width });
+  }, [show]);
+
   return (
-    <div className="relative">
+    <div ref={wrapRef} className="relative">
       <input
         value={value}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
@@ -114,22 +126,35 @@ function ComboboxInput({
         onBlur={() => setTimeout(() => { setOpen(false); setFocused(false); }, 150)}
         placeholder={placeholder}
         aria-label={label}
-        className={cn(fieldClass, "w-full")}
+        className={cn(fieldClass, "w-full pr-8")}
       />
-      {show ? (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-40 overflow-y-auto rounded-lg border border-[#28396C]/15 bg-white shadow-lg">
-          {filtered.map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onMouseDown={() => { onChange(opt); setOpen(false); }}
-              className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-[#B5E18B]/20"
+      <ChevronDown
+        className={cn(
+          "pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60 transition-transform",
+          focused && "rotate-180",
+        )}
+        aria-hidden
+      />
+      {show && rect
+        ? createPortal(
+            <div
+              style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width }}
+              className="z-50 max-h-40 overflow-y-auto rounded-lg border border-[#28396C]/15 bg-popover shadow-lg"
             >
-              {opt}
-            </button>
-          ))}
-        </div>
-      ) : null}
+              {filtered.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onMouseDown={() => { onChange(opt); setOpen(false); }}
+                  className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-[#B5E18B]/20"
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
@@ -254,13 +279,15 @@ function LevelsSection() {
                 aria-label="Nom du niveau"
                 className={cn(fieldClass, "flex-1 basis-full sm:basis-auto")}
               />
-              <ComboboxInput
-                value={editCycle}
-                onChange={setEditCycle}
-                options={allCycles}
-                placeholder="Cycle"
-                label="Cycle"
-              />
+              <div className="flex-1 basis-full sm:basis-[180px]">
+                <ComboboxInput
+                  value={editCycle}
+                  onChange={setEditCycle}
+                  options={allCycles}
+                  placeholder="Cycle"
+                  label="Cycle"
+                />
+              </div>
               <div className="flex flex-1 items-center gap-2 sm:flex-none">
                 <input
                   value={editFee}

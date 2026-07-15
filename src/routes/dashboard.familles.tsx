@@ -355,8 +355,8 @@ function CrmParentsPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <section className={cn(softCard, "p-5 lg:col-span-2")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="relative min-w-0 sm:col-span-2">
+          <div className="mt-4 space-y-4">
+            <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
               <Input
                 value={search}
@@ -366,35 +366,37 @@ function CrmParentsPage() {
                 aria-label={t.familles.searchAria}
               />
             </div>
-            <div>
-              <Label className={labelClass}>Niveau</Label>
-              <Select value={niveauFilter} onValueChange={setNiveauFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par niveau">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  <SelectItem value="tous">Tous les niveaux</SelectItem>
-                  {niveaux.map((n) => (
-                    <SelectItem key={n} value={n}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="sm:col-span-2">
-              <Label className={labelClass}>Service souscrit</Label>
-              <Select value={serviceFilter} onValueChange={setServiceFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  <SelectItem value="tous">Tous les services</SelectItem>
-                  <SelectItem value="transport">Transport scolaire</SelectItem>
-                  <SelectItem value="cantine">Cantine</SelectItem>
-                  <SelectItem value="garderie">Garderie</SelectItem>
-                  <SelectItem value="activites">Activités périscolaires</SelectItem>
-                  <SelectItem value="remise">Avec remise fratrie</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className={labelClass}>Niveau</Label>
+                <Select value={niveauFilter} onValueChange={setNiveauFilter}>
+                  <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par niveau">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="tous">Tous les niveaux</SelectItem>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n} value={n}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className={labelClass}>Service souscrit</Label>
+                <Select value={serviceFilter} onValueChange={setServiceFilter}>
+                  <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="tous">Tous les services</SelectItem>
+                    <SelectItem value="transport">Transport scolaire</SelectItem>
+                    <SelectItem value="cantine">Cantine</SelectItem>
+                    <SelectItem value="garderie">Garderie</SelectItem>
+                    <SelectItem value="activites">Activités périscolaires</SelectItem>
+                    <SelectItem value="remise">Avec remise fratrie</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
@@ -409,17 +411,16 @@ function CrmParentsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Analyse</p>
           {donutTotal > 0 ? (
             <>
-              <div className="mt-1 flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={180}>
+              <div className="mx-auto mt-2 h-48 w-full max-w-[15rem]">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={donut}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={48}
-                      outerRadius={78}
                       dataKey="value"
-                      strokeWidth={0}
+                      nameKey="name"
+                      outerRadius="95%"
+                      stroke="none"
+                      labelLine={false}
                       label={renderPieLabel}
                     >
                       {donut.map((d) => (
@@ -433,20 +434,22 @@ function CrmParentsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+              <ul className="mt-3 space-y-1.5">
                 {donut.map((d) => {
                   const share = Math.round((d.value / donutTotal) * 100);
                   return (
-                    <div key={d.name} className="flex items-center gap-2 text-xs">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="font-medium text-foreground">{d.name}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {d.value} <span className="text-[10px]">({share}%)</span>
+                    <li key={d.name} className="flex items-center justify-between gap-2 rounded-full bg-muted/60 px-3 py-1.5 text-xs">
+                      <span className="flex items-center gap-2 font-medium text-foreground">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                        {d.name}
                       </span>
-                    </div>
+                      <span className="font-semibold tabular-nums text-foreground">
+                        {d.value} · {share}%
+                      </span>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </>
           ) : null}
         </section>

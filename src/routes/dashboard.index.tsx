@@ -77,7 +77,7 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 // Données démo   statistique générale (encaissé en k MAD + nb de paiements)
 // ──────────────────────────────────────────────────────────
-type Grain = "mensuel" | "annuel";
+type Grain = "mensuel" | "trimestriel" | "annuel";
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 type SeriesKey = "encaisse" | "impaye" | "retard";
@@ -330,10 +330,11 @@ function CrmDash() {
                   </SelectTrigger>
                   <SelectContent className={softSelectContent}>
                     <SelectItem value="mensuel">Mensuel</SelectItem>
+                    <SelectItem value="trimestriel">3 mois</SelectItem>
                     <SelectItem value="annuel">Annuel</SelectItem>
                   </SelectContent>
                 </Select>
-                {/* In annual mode every year is already on screen, so the year picker is moot. */}
+                {/* Only monthly is scoped to a year; "3 mois" is the last 3 months from today and annual shows every year. */}
                 {grain === "mensuel" ? (
                   <Select value={year} onValueChange={setYear}>
                     <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[6.5rem] rounded-xl")} aria-label="Année">
@@ -420,7 +421,12 @@ function CrmDash() {
                 );
               })}
               <li className="ml-1 text-xs text-muted-foreground">
-                {grain === "mensuel" ? `Par mois · ${year}` : "Par année"} · MAD
+                {grain === "mensuel"
+                  ? `Par mois · ${year}`
+                  : grain === "trimestriel"
+                    ? "3 derniers mois"
+                    : "Par année"}{" "}
+                · MAD
               </li>
             </ul>
           </div>
