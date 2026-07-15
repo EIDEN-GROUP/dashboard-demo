@@ -17,6 +17,12 @@ export type Client = {
   cin: string;
   father_name: string;
   mother_name: string;
+  cin_mother: string;
+  profession_father: string;
+  profession_mother: string;
+  address: string;
+  child_names: ChildInfo[];
+  subscribed_frais: string[];
   dob: string;
   level: string;
   crm_stage: "nouveau" | "converti";
@@ -29,6 +35,15 @@ export type Client = {
   whatsapp_optin: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type ChildInfo = {
+  name: string;
+  dob: string;
+  cycle: string;
+  level: string;
+  services: string[];
+  frais: string[];
 };
 
 export type Payment = {
@@ -115,6 +130,7 @@ export type EmailLog = {
 export type Level = {
   id: string;
   name: string;
+  cycle: string;
   monthly_fee: number;
   created_at: string;
   updated_at: string;

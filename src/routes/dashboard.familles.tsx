@@ -16,6 +16,8 @@ import {
   Percent,
   Bus,
   Package,
+  Briefcase,
+  BookOpen,
 } from "lucide-react";
 import {
   Dialog,
@@ -55,9 +57,11 @@ import {
   STATUS_COLORS,
   dashTooltip,
   renderPieLabel,
+  eyebrowClass,
 } from "@/lib/dash-ui";
 import { listClients, createClient, updateClient, deleteClient, type ClientInput } from "@/lib/server-clients";
 import { getSettings } from "@/lib/server-settings";
+import { AddClientDialog, emptyChild, emptyWizard, type WizardData, type ChildFormData } from "@/components/add-client-wizard";
 import { createPayment, updatePaymentInvoice } from "@/lib/server-payments";
 import { sendClientMessage, sendBroadcast, sendPaymentReceipt } from "@/lib/server-whatsapp";
 import { toast } from "sonner";
@@ -85,8 +89,13 @@ type DbClient = {
   phone: string;
   phone2: string;
   cin: string;
+  cin_mother: string;
   father_name: string;
   mother_name: string;
+  profession_father: string;
+  profession_mother: string;
+  address: string;
+  child_names: { name: string; dob: string; cycle: string; level: string; services: string[]; frais: string[] }[];
   dob: string;
   level: string;
   crm_stage: string;
@@ -103,6 +112,7 @@ type DbClient = {
   fratrie: number;
   remise: number;
   subscribed_services: string[];
+  subscribed_frais: string[];
   created_at: string;
 };
 
@@ -113,7 +123,9 @@ function remiseAuto(fratrie: number) {
 }
 
 function servicesOf(c: DbClient, svcNames: string[]) {
-  return (c.subscribed_services ?? []).filter((s) => svcNames.includes(s));
+  const all = (c.child_names ?? []).flatMap((ch) => ch.services ?? []);
+  const dedup = [...new Set(all)];
+  return dedup.filter((s) => svcNames.includes(s));
 }
 
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
@@ -236,6 +248,11 @@ function CrmParentsPage() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+
+  // Wizard data persists across dialog close so users don't lose their input
+  const [wizard, setWizard] = useState<WizardData>(emptyWizard);
+
+  const updateWizard = (patch: Partial<WizardData>) => setWizard((prev) => ({ ...prev, ...patch }));
 
   const removeClient = useMutation({
     mutationFn: (id: string) => deleteClient({ data: id }),
@@ -488,8 +505,8 @@ function CrmParentsPage() {
                       {(c.monthly_fee ?? 0)} {t.common.mad}
                     </span>
                     {(c.remise ?? 0) > 0 ? (
-                      <span className="mt-0.5 block text-xs text-muted-foreground line-through">
-                        {Math.round((c.monthly_fee ?? 0) / (1 - (c.remise ?? 0) / 100))} {t.common.mad}
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        {Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad} après remise
                       </span>
                     ) : null}
                   </td>
@@ -530,7 +547,13 @@ function CrmParentsPage() {
         ) : null}
       </section>
 
-      <AddClientDialog open={addOpen} onOpenChange={setAddOpen} />
+      <AddClientDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        wizard={wizard}
+        updateWizard={updateWizard}
+        setWizard={setWizard}
+      />
 
       {detail ? (
         <DetailClientDialog
@@ -641,24 +664,53 @@ function DetailClientDialog({
               <InfoRow label="Date d'inscription" value={dash(new Date(client.created_at).toLocaleDateString("fr-FR"))} />
               <InfoRow label="Enfants scolarisés" value={`${client.fratrie ?? 1}`} />
 
-              <SectionTitle icon={CalendarDays}>Parents & identité</SectionTitle>
-              <InfoRow label="Nom du père" value={dash(client.father_name)} />
-              <InfoRow label="Nom de la mère" value={dash(client.mother_name)} />
-              <InfoRow label="CIN / Passeport" value={dash(client.cin)} />
+      <SectionTitle icon={CalendarDays}>Parents & identité</SectionTitle>
+        <InfoRow label="Nom du père" value={dash(client.father_name)} />
+        <InfoRow label="Nom de la mère" value={dash(client.mother_name)} />
+        <InfoRow label="CIN / Passeport (père)" value={dash(client.cin)} />
+        <InfoRow label="CIN / Passeport (mère)" value={dash(client.cin_mother)} />
 
-              <SectionTitle icon={Phone}>Contact</SectionTitle>
-              <InfoRow label="Email du père" value={dash(client.email)} />
-              <InfoRow label="Email de la mère" value={dash(client.email2)} />
-              <InfoRow label="Téléphone du père" value={dash(client.phone)} />
-              <InfoRow label="Téléphone de la mère" value={dash(client.phone2)} />
+        <SectionTitle icon={Briefcase}>Profession & adresse</SectionTitle>
+        <InfoRow label="Profession du père" value={dash(client.profession_father)} />
+        <InfoRow label="Profession de la mère" value={dash(client.profession_mother)} />
+        <InfoRow label="Adresse" value={dash(client.address)} />
 
-              <SectionTitle icon={ShieldAlert}>Contact d'urgence</SectionTitle>
-              <InfoRow label="Notes" value={dash(client.notes)} />
+        <SectionTitle icon={Phone}>Contact</SectionTitle>
+        <InfoRow label="Email du père" value={dash(client.email)} />
+        <InfoRow label="Email de la mère" value={dash(client.email2)} />
+        <InfoRow label="Téléphone 1" value={dash(client.phone)} />
+        <InfoRow label="Téléphone 2" value={dash(client.phone2)} />
 
-              <SectionTitle icon={Bus}>Services souscrits</SectionTitle>
-              {services.filter((s) => s.enabled).map((s) => (
-                <InfoRow key={s.name} label={s.name} value={subscribed.includes(s.name) ? "Oui" : "Non"} />
-              ))}
+        <SectionTitle icon={ShieldAlert}>Contact d'urgence</SectionTitle>
+        <InfoRow label="Notes" value={dash(client.notes)} />
+
+        <SectionTitle icon={BookOpen}>Élèves</SectionTitle>
+        {(client.child_names ?? []).length > 0 ? (
+          (client.child_names ?? []).map((ch, i) => (
+            <div key={i} className="col-span-full rounded-xl bg-muted/40 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Élève {i + 1} — {ch.name}
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <InfoRow label="Date de naissance" value={dash(ch.dob)} />
+                <InfoRow label="Cycle" value={dash(ch.cycle)} />
+                <InfoRow label="Niveau" value={dash(ch.level)} />
+                <InfoRow label="Services" value={(ch.services ?? []).join(", ") || "—"} />
+              </div>
+            </div>
+          ))
+        ) : (
+          <InfoRow label="Nom de l'élève" value={dash(client.child_name)} />
+        )}
+
+        <SectionTitle icon={Bus}>Frais supplémentaires</SectionTitle>
+        {(() => {
+          const all = (client.child_names ?? []).flatMap((ch) => ch.frais ?? []);
+          const dedup = [...new Set(all as string[])];
+          return dedup.length > 0
+            ? dedup.map((f) => <InfoRow key={f} label={f} value="Souscrit" />)
+            : <InfoRow label="Aucun" value="—" />;
+        })()}
 
               <SectionTitle icon={Utensils}>Paiement & remise</SectionTitle>
               <InfoRow label="Frais mensuels" value={`${client.monthly_fee ?? 0} ${t.common.mad}`} />
@@ -694,126 +746,6 @@ function DetailClientDialog({
               </button>
             </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function AddClientDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
-  const { t } = useDashboardI18n();
-  const queryClient = useQueryClient();
-  const f = t.form;
-  const a = t.familles.addModal;
-  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
-  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
-  const [busy, setBusy] = useState(false);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(dialogSurface, "max-w-[640px]")}>
-        <DialogDescription className="sr-only">{a.srDesc}</DialogDescription>
-        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
-          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{a.title}</DialogTitle>
-          </div>
-          <form
-            className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setBusy(true);
-              const fd = new FormData(e.currentTarget);
-              const subscribed = services.filter((s) => fd.get(`svc_${s.name}`)).map((s) => s.name);
-              try {
-                await createClient({
-                  data: {
-                    parent_name: String(fd.get("parent") || ""),
-                    child_name: String(fd.get("child") || ""),
-                    email: String(fd.get("email1") || ""),
-                    email2: String(fd.get("email2") || ""),
-                    phone: String(fd.get("tel1") || ""),
-                    level: String(fd.get("niveau") || ""),
-                    monthly_fee: Number(fd.get("mensuel") || 0),
-                    fratrie: Number(fd.get("fratrie") || 1),
-                    remise: remiseAuto(Number(fd.get("fratrie") || 1)),
-                    subscribed_services: subscribed,
-                    payment_day: 1,
-                  },
-                });
-                queryClient.invalidateQueries({ queryKey: ["clients"] });
-                toast.success("Client créé");
-                onOpenChange(false);
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Erreur");
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="nc-parent" label={f.parentDisplayName}>
-                <Input id="nc-parent" name="parent" required className={inputClass} placeholder={f.parentDisplayPlaceholder} />
-              </Field>
-              <Field id="nc-child" label={f.studentName}>
-                <Input id="nc-child" name="child" required className={inputClass} />
-              </Field>
-              <Field id="nc-email" label="Email du père">
-                <Input id="nc-email" name="email1" type="email" className={inputClass} />
-              </Field>
-              <Field id="nc-email2" label="Email de la mère">
-                <Input id="nc-email2" name="email2" type="email" className={inputClass} />
-              </Field>
-              <Field id="nc-tel" label={f.phone1}>
-                <Input id="nc-tel" name="tel1" type="tel" className={inputClass} />
-              </Field>
-              <Field id="nc-niveau" label={f.level}>
-                <Input id="nc-niveau" name="niveau" className={inputClass} placeholder={f.levelExample} />
-              </Field>
-              <Field id="nc-mensuel" label={f.monthlyFeesMad}>
-                <Input id="nc-mensuel" name="mensuel" type="number" min={0} defaultValue={0} className={inputClass} />
-              </Field>
-              <Field id="nc-fratrie" label="Enfants scolarisés">
-                <Input id="nc-fratrie" name="fratrie" type="number" min={1} max={10} defaultValue={1} className={inputClass} />
-              </Field>
-              <div className="sm:col-span-2">
-                <Label className={labelClass}>Services souscrits</Label>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Une remise fratrie de 10 % est appliquée dès le 3ᵉ enfant, 15 % dès le 4ᵉ.
-                </p>
-                <div className="mt-2 flex flex-wrap gap-4">
-                  {services.filter((s) => s.enabled).map((s) => (
-                    <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
-                      <input
-                        type="checkbox"
-                        name={`svc_${s.name}`}
-                        className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
-                      />
-                      {s.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3 border-t border-[#28396C]/10 pt-5">
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
-              >
-                {t.common.cancel}
-              </button>
-              <button type="submit" className={cn(primaryPill, "px-5 py-2")}>
-                {a.submit}
-              </button>
-            </div>
-          </form>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listLevels,
@@ -20,7 +20,7 @@ import {
   iconButton,
 } from "@/lib/dash-ui";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X } from "lucide-react";
+import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "Paramètres - CRM" }] }),
@@ -79,9 +79,57 @@ function SettingsPage() {
       <div className="space-y-4 sm:space-y-6">
         <LevelsSection />
         <ServicesSection />
+        <FraisSection />
         <SiblingDiscountSection />
         <PaymentDueSection />
       </div>
+    </div>
+  );
+}
+
+function ComboboxInput({
+  value,
+  onChange,
+  options,
+  placeholder,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder: string;
+  label: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const filtered = options.filter((o) => o !== value && o.toLowerCase().includes(value.toLowerCase()));
+  const show = open && filtered.length > 0;
+
+  return (
+    <div className="relative">
+      <input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => { setOpen(true); setFocused(true); }}
+        onBlur={() => setTimeout(() => { setOpen(false); setFocused(false); }, 150)}
+        placeholder={placeholder}
+        aria-label={label}
+        className={cn(fieldClass, "w-full")}
+      />
+      {show ? (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-40 overflow-y-auto rounded-lg border border-[#28396C]/15 bg-white shadow-lg">
+          {filtered.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onMouseDown={() => { onChange(opt); setOpen(false); }}
+              className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-[#B5E18B]/20"
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -91,17 +139,25 @@ function LevelsSection() {
   const { data: levels } = useQuery({ queryKey: ["levels"], queryFn: listLevels });
   const [newName, setNewName] = useState("");
   const [newFee, setNewFee] = useState("");
+  const [newCycle, setNewCycle] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editFee, setEditFee] = useState("");
+  const [editCycle, setEditCycle] = useState("");
+
+  const allCycles = useMemo(
+    () => [...new Set((levels ?? []).map((l) => l.cycle).filter(Boolean))].sort(),
+    [levels],
+  );
 
   const create = useMutation({
-    mutationFn: (input: { name: string; monthly_fee: number }) => createLevel({ data: input }),
+    mutationFn: (input: { name: string; monthly_fee: number; cycle?: string }) => createLevel({ data: input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
       toast.success("Niveau créé");
       setNewName("");
       setNewFee("");
+      setNewCycle("");
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
   });
@@ -116,7 +172,7 @@ function LevelsSection() {
   });
 
   const update = useMutation({
-    mutationFn: (input: { id: string; name?: string; monthly_fee?: number }) =>
+    mutationFn: (input: { id: string; name?: string; monthly_fee?: number; cycle?: string }) =>
       updateLevel({ data: input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
@@ -132,41 +188,59 @@ function LevelsSection() {
     <Section
       icon={GraduationCap}
       title="Niveaux scolaires"
-      description="Définissez les niveaux et leurs frais mensuels"
+      description="Définissez les niveaux, leur cycle/catégorie et leurs frais mensuels"
       footer={
-        <div className={cn(rowClass, "border-t border-[#28396C]/10 py-4")}>
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Nom du niveau"
-            aria-label="Nom du niveau"
-            className={cn(fieldClass, "flex-1 basis-full sm:basis-auto")}
-          />
-          <div className="flex flex-1 items-center gap-2 sm:flex-none">
-            <input
-              value={newFee}
-              onChange={(e) => setNewFee(e.target.value)}
-              type="number"
-              min="0"
-              inputMode="numeric"
-              placeholder="Frais"
-              aria-label="Frais mensuels"
-              className={cn(fieldClass, "sm:w-28")}
-            />
-            <span className="shrink-0 text-xs text-muted-foreground">MAD</span>
+        <div className={cn(rowClass, "flex-col gap-3 border-t border-[#28396C]/10 py-4 sm:flex-col")}>
+          <div className="flex w-full flex-wrap items-end gap-3">
+            <div className="flex-1 basis-full sm:basis-[180px]">
+              <p className={cn(labelClass, "mb-1")}>Niveau</p>
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="ex. CM2"
+                aria-label="Nom du niveau"
+                className={cn(fieldClass, "w-full")}
+              />
+            </div>
+            <div className="flex-1 basis-full sm:basis-[180px]">
+              <p className={cn(labelClass, "mb-1")}>Cycle / Catégorie</p>
+              <ComboboxInput
+                value={newCycle}
+                onChange={setNewCycle}
+                options={allCycles}
+                placeholder="ex. Primaire"
+                label="Cycle"
+              />
+            </div>
+            <div className="flex-1 basis-full sm:basis-[140px]">
+              <p className={cn(labelClass, "mb-1")}>Frais mensuels</p>
+              <div className="flex items-center gap-2">
+                <input
+                  value={newFee}
+                  onChange={(e) => setNewFee(e.target.value)}
+                  type="number"
+                  min="0"
+                  inputMode="numeric"
+                  placeholder="Frais"
+                  aria-label="Frais mensuels"
+                  className={cn(fieldClass, "w-full")}
+                />
+                <span className="shrink-0 text-xs text-muted-foreground">MAD</span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (canAdd) create.mutate({ name: newName.trim(), monthly_fee: Number(newFee), cycle: newCycle.trim() });
+              }}
+              disabled={!canAdd || create.isPending}
+              className={cn(
+                primaryPill,
+                "w-full shrink-0 justify-center disabled:opacity-50 sm:ml-auto sm:w-auto",
+              )}
+            >
+              <Plus className="h-4 w-4" /> Ajouter
+            </button>
           </div>
-          <button
-            onClick={() => {
-              if (canAdd) create.mutate({ name: newName.trim(), monthly_fee: Number(newFee) });
-            }}
-            disabled={!canAdd || create.isPending}
-            className={cn(
-              primaryPill,
-              "w-full shrink-0 justify-center disabled:opacity-50 sm:ml-auto sm:w-auto",
-            )}
-          >
-            <Plus className="h-4 w-4" /> Ajouter
-          </button>
         </div>
       }
     >
@@ -179,6 +253,13 @@ function LevelsSection() {
                 onChange={(e) => setEditName(e.target.value)}
                 aria-label="Nom du niveau"
                 className={cn(fieldClass, "flex-1 basis-full sm:basis-auto")}
+              />
+              <ComboboxInput
+                value={editCycle}
+                onChange={setEditCycle}
+                options={allCycles}
+                placeholder="Cycle"
+                label="Cycle"
               />
               <div className="flex flex-1 items-center gap-2 sm:flex-none">
                 <input
@@ -195,7 +276,7 @@ function LevelsSection() {
               <div className="ml-auto flex shrink-0 items-center gap-2">
                 <button
                   onClick={() =>
-                    update.mutate({ id: l.id, name: editName.trim(), monthly_fee: Number(editFee) })
+                    update.mutate({ id: l.id, name: editName.trim(), monthly_fee: Number(editFee), cycle: editCycle.trim() })
                   }
                   disabled={update.isPending}
                   className={cn(primaryPill, "px-4 py-2 disabled:opacity-50")}
@@ -212,6 +293,9 @@ function LevelsSection() {
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                 {l.name}
               </span>
+              <span className="shrink-0 text-sm text-muted-foreground">
+                {l.cycle || "—"}
+              </span>
               <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
                 {l.monthly_fee} MAD
               </span>
@@ -221,6 +305,7 @@ function LevelsSection() {
                     setEditId(l.id);
                     setEditName(l.name);
                     setEditFee(String(l.monthly_fee));
+                    setEditCycle(l.cycle);
                   }}
                   className={cn(ghostPill, "px-4 py-2 text-xs")}
                 >
@@ -400,6 +485,160 @@ function ServicesSection() {
         {services.length === 0 ? (
           <p className="px-4 py-6 text-center text-sm text-muted-foreground sm:px-6">
             Aucun service défini
+          </p>
+        ) : null}
+      </div>
+    </Section>
+  );
+}
+
+function FraisSection() {
+  const queryClient = useQueryClient();
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const saved: Service[] = settings?.frais ?? [];
+  const [draft, setDraft] = useState<Service[] | null>(null);
+  const frais = draft ?? saved;
+  const dirty = draft !== null;
+  const [newName, setNewName] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+
+  const save = useMutation({
+    mutationFn: (value: Service[]) => updateSetting({ data: { key: "frais", value } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      setDraft(null);
+      toast.success("Frais mis à jour");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
+
+  const edit = (fn: (list: Service[]) => Service[]) => setDraft(fn(frais));
+
+  const addFrais = () => {
+    if (!newName.trim() || !newPrice) return;
+    edit((list) => [...list, { name: newName.trim(), price: Number(newPrice), enabled: true }]);
+    setNewName("");
+    setNewPrice("");
+  };
+
+  if (!settings) return null;
+
+  const canAdd = newName.trim() !== "" && newPrice !== "";
+
+  return (
+    <Section
+      icon={BadgeDollarSign}
+      title="Les Frais"
+      description="Frais supplémentaires sélectionnables par élève dans le wizard d'inscription"
+      footer={
+        <>
+          <div className={cn(rowClass, "border-t border-[#28396C]/10 py-4")}>
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Nom du frais"
+              aria-label="Nom du frais"
+              className={cn(fieldClass, "flex-1 basis-full sm:basis-auto")}
+            />
+            <div className="flex flex-1 items-center gap-2 sm:flex-none">
+              <input
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value)}
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="Prix"
+                aria-label="Prix du frais"
+                className={cn(fieldClass, "sm:w-28")}
+              />
+              <span className="shrink-0 text-xs text-muted-foreground">MAD</span>
+            </div>
+            <button
+              onClick={addFrais}
+              disabled={!canAdd}
+              className={cn(
+                ghostPill,
+                "w-full shrink-0 justify-center disabled:opacity-50 sm:ml-auto sm:w-auto",
+              )}
+            >
+              <Plus className="h-4 w-4" /> Ajouter
+            </button>
+          </div>
+          {dirty ? (
+            <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#28396C]/10 bg-muted/40 px-4 py-3 sm:px-6">
+              <p className="mr-auto text-xs text-muted-foreground">
+                Modifications non enregistrées
+              </p>
+              <button onClick={() => setDraft(null)} className={cn(ghostPill, "px-4 py-2 text-xs")}>
+                Annuler
+              </button>
+              <button
+                onClick={() => save.mutate(frais)}
+                disabled={save.isPending}
+                className={cn(primaryPill, "px-4 py-2 text-xs disabled:opacity-50")}
+              >
+                <Save className="h-4 w-4" /> {save.isPending ? "Enregistrement..." : "Enregistrer"}
+              </button>
+            </div>
+          ) : null}
+        </>
+      }
+    >
+      <div className="divide-y divide-[#28396C]/8">
+        {frais.map((svc, i) => (
+          <div key={i} className={rowClass}>
+            <input
+              type="checkbox"
+              checked={svc.enabled}
+              onChange={() =>
+                edit((list) =>
+                  list.map((s, idx) => (idx === i ? { ...s, enabled: !s.enabled } : s)),
+                )
+              }
+              className={checkboxClass}
+              aria-label={`Activer ${svc.name}`}
+            />
+            <input
+              value={svc.name}
+              onChange={(e) =>
+                edit((list) =>
+                  list.map((s, idx) => (idx === i ? { ...s, name: e.target.value } : s)),
+                )
+              }
+              aria-label="Nom du frais"
+              className={cn(fieldClass, "min-w-0 flex-1 basis-[10rem]")}
+            />
+            <div className="flex items-center gap-2">
+              <input
+                value={svc.price}
+                onChange={(e) =>
+                  edit((list) =>
+                    list.map((s, idx) => (idx === i ? { ...s, price: Number(e.target.value) } : s)),
+                  )
+                }
+                type="number"
+                min="0"
+                inputMode="numeric"
+                aria-label="Prix du frais"
+                className={cn(fieldClass, "w-24")}
+              />
+              <span className="shrink-0 text-xs text-muted-foreground">MAD</span>
+            </div>
+            <button
+              onClick={() => edit((list) => list.filter((_, idx) => idx !== i))}
+              className={cn(
+                iconButton,
+                "ml-auto text-red-500 hover:bg-red-50 hover:text-red-600 sm:ml-0",
+              )}
+              aria-label={`Supprimer ${svc.name}`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+        {frais.length === 0 ? (
+          <p className="px-4 py-6 text-center text-sm text-muted-foreground sm:px-6">
+            Aucun frais défini
           </p>
         ) : null}
       </div>

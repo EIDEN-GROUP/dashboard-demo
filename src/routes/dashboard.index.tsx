@@ -26,6 +26,7 @@ import {
   Send,
   Clock,
 } from "lucide-react";
+import { AddClientDialog, emptyWizard, type WizardData } from "@/components/add-client-wizard";
 import {
   ResponsiveContainer,
   BarChart,
@@ -102,113 +103,13 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
-function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { t } = useDashboardI18n();
-  const f = t.form;
-  const m = t.home.addClientModal;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={cn(
-          dialogSurface,
-          "max-h-[min(90vh,860px)] w-[min(100vw-1.5rem,640px)] max-w-[min(100vw-1.5rem,640px)] translate-y-[-50%] sm:max-w-[640px]",
-        )}
-      >
-        <DialogDescription className="sr-only">{m.srDesc}</DialogDescription>
-        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
-          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{m.eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
-              {m.title}
-            </DialogTitle>
-          </div>
-          <form
-            className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onOpenChange(false);
-            }}
-          >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="crm-eleve" label={f.studentName}>
-                <Input id="crm-eleve" name="eleve" autoComplete="name" className={softInput} />
-              </Field>
-              <Field id="crm-dob" label={f.birthDate}>
-                <div className="relative">
-                  <Input
-                    id="crm-dob"
-                    name="naissance"
-                    placeholder={f.birthDatePlaceholder}
-                    className={cn(softInput, "pr-10")}
-                  />
-                  <Calendar
-                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
-                    aria-hidden
-                  />
-                </div>
-              </Field>
-              <Field id="crm-pere" label={f.fatherName}>
-                <Input id="crm-pere" name="pere" autoComplete="additional-name" className={softInput} />
-              </Field>
-              <Field id="crm-mere" label={f.motherName}>
-                <Input id="crm-mere" name="mere" autoComplete="additional-name" className={softInput} />
-              </Field>
-              <Field id="crm-cin" label={f.cinPassport}>
-                <Input id="crm-cin" name="cin" className={softInput} />
-              </Field>
-              <Field id="crm-niveau" label={f.level}>
-                <Select name="niveau">
-                  <SelectTrigger id="crm-niveau" className={softSelectTrigger}>
-                    <SelectValue placeholder={t.common.selectLevel} />
-                  </SelectTrigger>
-                  <SelectContent className={softSelectContent}>
-                    <SelectItem value="ps">{f.levels.ps}</SelectItem>
-                    <SelectItem value="ms">{f.levels.ms}</SelectItem>
-                    <SelectItem value="gs">{f.levels.gs}</SelectItem>
-                    <SelectItem value="cp">{f.levels.cp}</SelectItem>
-                    <SelectItem value="ce1">{f.levels.ce1}</SelectItem>
-                    <SelectItem value="ce2">{f.levels.ce2}</SelectItem>
-                    <SelectItem value="cm1">{f.levels.cm1}</SelectItem>
-                    <SelectItem value="cm2">{f.levels.cm2}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field id="crm-email1" label={f.email1}>
-                <Input id="crm-email1" name="email1" type="email" autoComplete="email" className={softInput} />
-              </Field>
-              <Field id="crm-email2" label={f.email2}>
-                <Input id="crm-email2" name="email2" type="email" className={softInput} />
-              </Field>
-              <Field id="crm-tel1" label={f.phone1}>
-                <Input id="crm-tel1" name="tel1" type="tel" autoComplete="tel" className={softInput} />
-              </Field>
-              <Field id="crm-tel2" label={f.phone2}>
-                <Input id="crm-tel2" name="tel2" type="tel" className={softInput} />
-              </Field>
-            </div>
-            <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
-              >
-                {t.common.cancel}
-              </button>
-              <button type="submit" className={cn(primaryPill, "px-5 py-2")}>
-                {m.submit}
-              </button>
-            </div>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
+  const [wizard, setWizard] = useState<WizardData>(emptyWizard);
+  const updateWizard = (patch: Partial<WizardData>) => setWizard((prev) => ({ ...prev, ...patch }));
   const [grain, setGrain] = useState<Grain>("mensuel");
   const [year, setYear] = useState(String(new Date().getFullYear()));
 
@@ -361,7 +262,13 @@ function CrmDash() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <NouveauClientModal open={addClientOpen} onOpenChange={setAddClientOpen} />
+      <AddClientDialog
+        open={addClientOpen}
+        onOpenChange={setAddClientOpen}
+        wizard={wizard}
+        updateWizard={updateWizard}
+        setWizard={setWizard}
+      />
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>

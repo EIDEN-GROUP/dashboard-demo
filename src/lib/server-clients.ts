@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import type { ChildInfo } from "@/lib/database-types";
 
 export type ClientInput = {
   parent_name: string;
@@ -10,8 +11,14 @@ export type ClientInput = {
   phone?: string;
   phone2?: string;
   cin?: string;
+  cin_mother?: string;
   father_name?: string;
   mother_name?: string;
+  profession_father?: string;
+  profession_mother?: string;
+  address?: string;
+  child_names?: ChildInfo[];
+  subscribed_frais?: string[];
   dob?: string;
   level?: string;
   crm_stage?: "nouveau" | "converti";
@@ -64,8 +71,14 @@ export const createClient = createServerFn({ method: "POST" })
         phone: data.phone ?? "",
         phone2: data.phone2 ?? "",
         cin: data.cin ?? "",
+        cin_mother: data.cin_mother ?? "",
         father_name: data.father_name ?? "",
         mother_name: data.mother_name ?? "",
+        profession_father: data.profession_father ?? "",
+        profession_mother: data.profession_mother ?? "",
+        address: data.address ?? "",
+        child_names: data.child_names ?? [],
+        subscribed_frais: data.subscribed_frais ?? [],
         dob: data.dob ?? "",
         level: data.level ?? "",
         crm_stage: data.crm_stage ?? "nouveau",

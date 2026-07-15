@@ -13,11 +13,11 @@ export const listLevels = createServerFn({ method: "GET" })
   });
 
 export const createLevel = createServerFn({ method: "POST" })
-  .inputValidator((input: { name: string; monthly_fee: number }) => input)
+  .inputValidator((input: { name: string; monthly_fee: number; cycle?: string }) => input)
   .handler(async ({ data }) => {
     const { data: result, error } = await supabaseAdmin
       .from("levels")
-      .insert({ name: data.name, monthly_fee: data.monthly_fee })
+      .insert({ name: data.name, monthly_fee: data.monthly_fee, cycle: data.cycle ?? "" })
       .select()
       .single();
     if (error) throw new Error(error.message);
@@ -25,7 +25,7 @@ export const createLevel = createServerFn({ method: "POST" })
   });
 
 export const updateLevel = createServerFn({ method: "POST" })
-  .inputValidator((input: { id: string; name?: string; monthly_fee?: number }) => input)
+  .inputValidator((input: { id: string; name?: string; monthly_fee?: number; cycle?: string }) => input)
   .handler(async ({ data }) => {
     const { data: result, error } = await supabaseAdmin
       .from("levels")

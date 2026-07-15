@@ -1,0 +1,596 @@
+import { useMemo, useState, type ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Plus,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  IdCard,
+  Mail,
+  Briefcase,
+  BookOpen,
+  Check,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
+import {
+  softCard,
+  softInput as inputClass,
+  softSelectTrigger as selectTriggerClass,
+  softSelectContent,
+  dialogSurface,
+  labelClass,
+  primaryPill,
+  ghostPill,
+  eyebrowClass,
+} from "@/lib/dash-ui";
+import { createClient } from "@/lib/server-clients";
+import { getSettings, listLevels } from "@/lib/server-settings";
+import { toast } from "sonner";
+
+export type ChildFormData = { name: string; dob: string; cycle: string; level: string; services: string[]; frais: string[] };
+export type WizardData = {
+  step: number;
+  father_name: string;
+  mother_name: string;
+  cin: string;
+  cin_mother: string;
+  email: string;
+  email2: string;
+  phone: string;
+  phone2: string;
+  profession_father: string;
+  profession_mother: string;
+  address: string;
+  children: ChildFormData[];
+};
+
+function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className={labelClass}>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function remiseAuto(fratrie: number) {
+  if (fratrie >= 4) return 15;
+  if (fratrie >= 3) return 10;
+  return 0;
+}
+
+export function emptyChild(): ChildFormData {
+  return { name: "", dob: "", cycle: "", level: "", services: [], frais: [] };
+}
+
+export function emptyWizard(): WizardData {
+  return {
+    step: 0,
+    father_name: "", mother_name: "",
+    cin: "", cin_mother: "",
+    email: "", email2: "", phone: "", phone2: "",
+    profession_father: "", profession_mother: "", address: "",
+    children: [emptyChild()],
+  };
+}
+
+const STEP_LABELS = ["Parents", "Identité", "Contact", "Profil", "Élèves", "Récapitulatif"];
+
+export function AddClientDialog({
+  open,
+  onOpenChange,
+  wizard,
+  updateWizard,
+  setWizard,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  wizard: WizardData;
+  updateWizard: (patch: Partial<WizardData>) => void;
+  setWizard: (w: WizardData | ((prev: WizardData) => WizardData)) => void;
+}) {
+  const { t } = useDashboardI18n();
+  const a = t.familles.addModal;
+  const queryClient = useQueryClient();
+  const { data: levels } = useQuery({ queryKey: ["levels"], queryFn: listLevels });
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
+  const frais: Array<{ name: string; price: number; enabled: boolean }> = settings?.frais ?? [];
+  const [busy, setBusy] = useState(false);
+
+  const allCycles = useMemo(
+    () => [...new Set((levels ?? []).map((l) => l.cycle).filter(Boolean))].sort(),
+    [levels],
+  );
+  const levelsByCycle = useMemo(() => {
+    const map: Record<string, typeof levels> = {};
+    for (const l of levels ?? []) {
+      const c = l.cycle || "Sans cycle";
+      if (!map[c]) map[c] = [];
+      map[c].push(l);
+    }
+    return map;
+  }, [levels]);
+
+  const step = wizard.step;
+  const totalSteps = 6;
+  const children = wizard.children;
+  const fratrie = children.length;
+  const remise = remiseAuto(fratrie);
+
+  const totalFromLevels = useMemo(() => {
+    if (!levels) return 0;
+    return children.reduce((sum, c) => {
+      const lv = levels.find((l) => l.name === c.level);
+      return sum + (lv?.monthly_fee ?? 0);
+    }, 0);
+  }, [children, levels]);
+
+  const totalServices = useMemo(() => {
+    return children.reduce((sum, c) => {
+      return sum + c.services.reduce((s, svcName) => {
+        const svc = services.find((x) => x.name === svcName);
+        return s + (svc?.price ?? 0);
+      }, 0);
+    }, 0);
+  }, [children, services]);
+
+  const totalSelectedFrais = useMemo(() => {
+    return children.reduce((sum, c) => {
+      return sum + (c.frais ?? []).reduce((s, name) => {
+        const f = frais.find((x) => x.name === name);
+        return s + (f?.price ?? 0);
+      }, 0);
+    }, 0);
+  }, [children, frais]);
+
+  const totalMonthly = totalFromLevels + totalServices + totalSelectedFrais;
+
+  const canNext = useMemo(() => {
+    switch (step) {
+      case 0: return wizard.father_name.trim() !== "" && wizard.mother_name.trim() !== "";
+      case 1: return true;
+      case 2: return true;
+      case 3: return true;
+      case 4: return children.length > 0 && children.every((c) => c.name.trim() !== "" && c.level !== "");
+      case 5: return true;
+      default: return false;
+    }
+  }, [step, wizard, children]);
+
+  const submit = async () => {
+    setBusy(true);
+    const first = children[0] ?? { name: "", dob: "", cycle: "", level: "", services: [] };
+    try {
+      await createClient({
+        data: {
+          father_name: wizard.father_name,
+          mother_name: wizard.mother_name,
+          parent_name: `${wizard.father_name} / ${wizard.mother_name}`,
+          cin: wizard.cin,
+          cin_mother: wizard.cin_mother,
+          email: wizard.email,
+          email2: wizard.email2,
+          phone: wizard.phone,
+          phone2: wizard.phone2,
+          profession_father: wizard.profession_father,
+          profession_mother: wizard.profession_mother,
+          address: wizard.address,
+          child_name: first.name,
+          dob: first.dob,
+          level: first.level,
+          child_names: children,
+          monthly_fee: totalMonthly,
+          fratrie,
+          remise,
+          subscribed_services: [],
+          payment_day: 1,
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      toast.success("Famille créée");
+      setWizard(emptyWizard());
+      onOpenChange(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const prevStep = () => updateWizard({ step: step - 1 });
+  const nextStep = () => updateWizard({ step: step + 1 });
+  const addChild = () => setWizard((prev) => ({ ...prev, children: [...prev.children, emptyChild()] }));
+  const removeChild = (i: number) => setWizard((prev) => ({ ...prev, children: prev.children.filter((_, idx) => idx !== i) }));
+  const updChild = (i: number, patch: Partial<ChildFormData>) =>
+    setWizard((prev) => ({
+      ...prev,
+      children: prev.children.map((c, idx) => (idx === i ? { ...c, ...patch } : c)),
+    }));
+
+  const enabledFrais = frais.filter((f) => f.enabled);
+
+  const steps = [
+    <div key="step0" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Field id="w-father" label="Prénom et nom du père">
+        <Input
+          id="w-father"
+          value={wizard.father_name}
+          onChange={(e) => updateWizard({ father_name: e.target.value })}
+          placeholder="ex. Ahmed Benali"
+          className={inputClass}
+        />
+      </Field>
+      <Field id="w-mother" label="Prénom et nom de la mère">
+        <Input
+          id="w-mother"
+          value={wizard.mother_name}
+          onChange={(e) => updateWizard({ mother_name: e.target.value })}
+          placeholder="ex. Fatima Benali"
+          className={inputClass}
+        />
+      </Field>
+    </div>,
+
+    <div key="step1" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Field id="w-cin" label="CIN ou passeport du père">
+        <Input
+          id="w-cin"
+          value={wizard.cin}
+          onChange={(e) => updateWizard({ cin: e.target.value })}
+          placeholder="ex. AB123456"
+          className={inputClass}
+        />
+      </Field>
+      <Field id="w-cin-mother" label="CIN ou passeport de la mère">
+        <Input
+          id="w-cin-mother"
+          value={wizard.cin_mother}
+          onChange={(e) => updateWizard({ cin_mother: e.target.value })}
+          placeholder="ex. CD789012"
+          className={inputClass}
+        />
+      </Field>
+    </div>,
+
+    <div key="step2" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Field id="w-email" label="Email du père">
+        <Input
+          id="w-email"
+          type="email"
+          value={wizard.email}
+          onChange={(e) => updateWizard({ email: e.target.value })}
+          className={inputClass}
+        />
+      </Field>
+      <Field id="w-email2" label="Email de la mère">
+        <Input
+          id="w-email2"
+          type="email"
+          value={wizard.email2}
+          onChange={(e) => updateWizard({ email2: e.target.value })}
+          className={inputClass}
+        />
+      </Field>
+      <Field id="w-phone" label="Téléphone 1">
+        <Input
+          id="w-phone"
+          type="tel"
+          value={wizard.phone}
+          onChange={(e) => updateWizard({ phone: e.target.value })}
+          className={inputClass}
+        />
+      </Field>
+      <Field id="w-phone2" label="Téléphone 2">
+        <Input
+          id="w-phone2"
+          type="tel"
+          value={wizard.phone2}
+          onChange={(e) => updateWizard({ phone2: e.target.value })}
+          className={inputClass}
+        />
+      </Field>
+    </div>,
+
+    <div key="step3" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Field id="w-prof-father" label="Profession du père">
+        <Input
+          id="w-prof-father"
+          value={wizard.profession_father}
+          onChange={(e) => updateWizard({ profession_father: e.target.value })}
+          placeholder="ex. Ingénieur"
+          className={inputClass}
+        />
+      </Field>
+      <Field id="w-prof-mother" label="Profession de la mère">
+        <Input
+          id="w-prof-mother"
+          value={wizard.profession_mother}
+          onChange={(e) => updateWizard({ profession_mother: e.target.value })}
+          placeholder="ex. Enseignante"
+          className={inputClass}
+        />
+      </Field>
+      <div className="sm:col-span-2">
+        <Field id="w-address" label="Adresse">
+          <Input
+            id="w-address"
+            value={wizard.address}
+            onChange={(e) => updateWizard({ address: e.target.value })}
+            placeholder="ex. 12 Rue de la Liberté, Casablanca"
+            className={inputClass}
+          />
+        </Field>
+      </div>
+    </div>,
+
+    <div key="step4" className="space-y-6">
+      {children.map((child, i) => (
+        <div key={i} className={cn(softCard, "relative p-4")}>
+          {children.length > 1 ? (
+            <button
+              type="button"
+              onClick={() => removeChild(i)}
+              className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full text-muted-foreground transition hover:bg-[#E25C5C]/10 hover:text-[#E25C5C]"
+              aria-label={`Supprimer ${child.name || `l'élève ${i + 1}`}`}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
+          <p className={cn(eyebrowClass, "mb-4")}>Élève {i + 1}</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field id={`c-name-${i}`} label="Nom d'élève">
+              <Input
+                id={`c-name-${i}`}
+                value={child.name}
+                onChange={(e) => updChild(i, { name: e.target.value })}
+                placeholder="Prénom et nom"
+                className={inputClass}
+              />
+            </Field>
+            <Field id={`c-dob-${i}`} label="Date de naissance">
+              <Input
+                id={`c-dob-${i}`}
+                type="date"
+                value={child.dob}
+                onChange={(e) => updChild(i, { dob: e.target.value })}
+                className={inputClass}
+              />
+            </Field>
+            <Field id={`c-cycle-${i}`} label="Cycle">
+              <Select
+                value={child.cycle}
+                onValueChange={(v) => updChild(i, { cycle: v, level: "" })}
+              >
+                <SelectTrigger id={`c-cycle-${i}`} className={selectTriggerClass}>
+                  <SelectValue placeholder="Choisir un cycle" />
+                </SelectTrigger>
+                <SelectContent className={softSelectContent}>
+                  {allCycles.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field id={`c-level-${i}`} label="Niveau">
+              <Select
+                value={child.level}
+                onValueChange={(v) => updChild(i, { level: v })}
+                disabled={!child.cycle}
+              >
+                <SelectTrigger id={`c-level-${i}`} className={selectTriggerClass}>
+                  <SelectValue placeholder={child.cycle ? "Choisir un niveau" : "Sélectionnez d'abord le cycle"} />
+                </SelectTrigger>
+                <SelectContent className={softSelectContent}>
+                  {(levelsByCycle[child.cycle] ?? []).map((lv) => (
+                    <SelectItem key={lv.id} value={lv.name}>
+                      {lv.name} — {lv.monthly_fee} MAD
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="sm:col-span-2">
+              <Label className={labelClass}>Services souscrits</Label>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {services.filter((s) => s.enabled).map((s) => (
+                  <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={child.services.includes(s.name)}
+                      onChange={() =>
+                        updChild(i, {
+                          services: child.services.includes(s.name)
+                            ? child.services.filter((x) => x !== s.name)
+                            : [...child.services, s.name],
+                        })
+                      }
+                      className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
+                    />
+                    {s.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <Label className={labelClass}>Frais supplémentaires</Label>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {frais.filter((f) => f.enabled).map((f) => (
+                  <label key={f.name} className="flex items-center gap-2 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={child.frais.includes(f.name)}
+                      onChange={() =>
+                        updChild(i, {
+                          frais: child.frais.includes(f.name)
+                            ? child.frais.filter((x) => x !== f.name)
+                            : [...child.frais, f.name],
+                        })
+                      }
+                      className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
+                    />
+                    {f.name} — {f.price} MAD
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+      <button type="button" onClick={addChild} className={cn(ghostPill, "w-full justify-center gap-2")}>
+        <Plus className="h-4 w-4" /> Ajouter un élève
+      </button>
+    </div>,
+
+    <div key="step5" className="space-y-4">
+      <div className={cn(softCard, "divide-y divide-[#28396C]/8 p-4")}>
+        <div className="pb-3">
+          <p className={eyebrowClass}>Parents</p>
+          <p className="mt-1 text-sm text-foreground">{wizard.father_name} / {wizard.mother_name}</p>
+        </div>
+        <div className="py-3">
+          <p className={eyebrowClass}>Contact</p>
+          <p className="mt-1 text-sm text-foreground">{wizard.email || "—"} · {wizard.phone || "—"}</p>
+        </div>
+        <div className="py-3">
+          <p className={eyebrowClass}>Adresse</p>
+          <p className="mt-1 text-sm text-foreground">{wizard.address || "—"}</p>
+        </div>
+        <div className="py-3">
+          <p className={eyebrowClass}>Élèves inscrits ({children.length})</p>
+          <ul className="mt-1 space-y-1">
+            {children.map((c, i) => (
+              <li key={i} className="text-sm text-foreground">
+                {c.name} — {c.level || "Niveau non défini"}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="pt-3">
+          <p className={eyebrowClass}>Détail des frais mensuels</p>
+          <div className="mt-1 space-y-1">
+            {children.map((c, i) => {
+              const lv = levels?.find((l) => l.name === c.level);
+              return lv ? (
+                <p key={i} className="text-sm text-muted-foreground">
+                  {c.name} ({lv.name}) : {lv.monthly_fee} MAD
+                </p>
+              ) : null;
+            })}
+            {children.map((c, i) => {
+              const hasSvc = c.services.length > 0;
+              const hasFrais = (c.frais ?? []).length > 0;
+              if (!hasSvc && !hasFrais) return null;
+              return (
+                <div key={`extras-${i}`} className="ml-4 space-y-0.5">
+                  {c.services.map((svcName) => {
+                    const svc = services.find((s) => s.name === svcName);
+                    return svc ? (
+                      <p key={svcName} className="text-xs text-muted-foreground">
+                        ↳ {c.name} — {svc.name} : +{svc.price} MAD
+                      </p>
+                    ) : null;
+                  })}
+                  {(c.frais ?? []).map((fName) => {
+                    const f = frais.find((x) => x.name === fName);
+                    return f ? (
+                      <p key={fName} className="text-xs text-muted-foreground">
+                        ↳ {c.name} — {f.name} : +{f.price} MAD
+                      </p>
+                    ) : null;
+                  })}
+                </div>
+              );
+            })}
+
+          </div>
+
+          <div className="mt-3 border-t border-[#28396C]/8 pt-3">
+            <p className="mt-1 font-display text-xl font-semibold text-foreground">
+              Total : {totalMonthly} MAD
+            </p>
+            {remise > 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Réduction fratrie ({fratrie} enfants) : -{remise} %
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>,
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onOpenChange(false); }}>
+      <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,640px)] max-w-[640px]")}>
+        <DialogDescription className="sr-only">{a.srDesc}</DialogDescription>
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.eyebrow}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{a.title}</DialogTitle>
+            <div className="mt-3 flex items-center gap-2">
+              {Array.from({ length: totalSteps }).map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1 flex-1 rounded-full transition-colors duration-300",
+                    i <= step ? "bg-[#B5E18B]" : "bg-[#28396C]/10",
+                  )}
+                />
+              ))}
+            </div>
+            <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Étape {step + 1} / {totalSteps} — {STEP_LABELS[step]}
+            </p>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5">
+            {steps[step]}
+          </div>
+          <div className="flex shrink-0 items-center justify-between gap-3 border-t border-[#28396C]/10 px-6 py-4">
+            <div>
+              {step > 0 ? (
+                <button type="button" onClick={prevStep} className={cn(ghostPill, "gap-2")}>
+                  <ChevronLeft className="h-4 w-4" /> Précédent
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setWizard(emptyWizard()); onOpenChange(false); }}
+                  className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                >
+                  {t.common.cancel}
+                </button>
+              )}
+            </div>
+            {step < totalSteps - 1 ? (
+              <button type="button" onClick={nextStep} disabled={!canNext} className={cn(primaryPill, "gap-2 disabled:opacity-50")}>
+                Suivant <ChevronRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <button type="button" onClick={submit} disabled={busy} className={cn(primaryPill, "gap-2 disabled:opacity-60")}>
+                {busy ? "..." : a.submit} {!busy ? <Check className="h-4 w-4" /> : null}
+              </button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
