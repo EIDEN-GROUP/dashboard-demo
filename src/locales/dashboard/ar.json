@@ -9,10 +9,20 @@
   },
   "nav": {
     "dashboard": "لوحة التحكم",
-"calendar": "التقويم",
+    "calendar": "التقويم",
     "familles": "أولياء الأمور",
     "paiements": "الأداء",
     "affiches": "ملصقات الموظفين",
+    "rapports": "التقارير",
+    "messagerie": "الرسائل",
+    "settings": "الإعدادات"
+  },
+  "navShort": {
+    "dashboard": "الرئيسية",
+    "calendar": "التقويم",
+    "familles": "الأولياء",
+    "paiements": "الأداء",
+    "affiches": "الملصقات",
     "rapports": "التقارير",
     "messagerie": "الرسائل",
     "settings": "الإعدادات"

@@ -391,8 +391,8 @@ function PaymentDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,640px)] max-w-[640px]")}>
         <DialogDescription className="sr-only">Détail du paiement {row.id.slice(0, 8)}</DialogDescription>
-        <div className="border-t-4 border-t-[#B5E18B]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Paiement
@@ -404,7 +404,7 @@ function PaymentDetailDialog({
             {status ? <span className={statusPill(status)}>{STATUS_LABEL[status]}</span> : null}
           </div>
 
-          <div className="max-h-[62vh] overflow-y-auto scroll-touch px-6 py-5">
+          <div className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5">
             <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               <InfoRow label="Élève" value={c?.child_name ?? ""} />
               <InfoRow label="Niveau" value={c?.level ?? ""} />

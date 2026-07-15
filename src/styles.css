@@ -50,10 +50,7 @@
   /* EIDEN Group   Brand Identity System v2 (Outfit / DM Serif / Cormorant / Inter) */
   --font-display: "Outfit", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
-  --animate-brand-mark-pulse: brand-mark-pulse 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
-  --animate-brand-halo: brand-halo 2.6s cubic-bezier(0.37, 0, 0.63, 1) infinite;
   --animate-brand-progress: brand-progress 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-  --animate-brand-fade-in: brand-fade-in 0.45s ease-out both;
 }
 
 :root {
@@ -478,51 +475,13 @@
   }
 }
 
-/* Respiration douce du logo   amplitude réduite + easing sinusoïdal (pas de à-coup). */
-@keyframes brand-mark-pulse {
-  0%,
-  100% {
-    opacity: 0.92;
-    transform: scale(0.985) translateZ(0);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.015) translateZ(0);
-  }
-}
-
-/* Halo qui se dilate lentement derrière le logo. */
-@keyframes brand-halo {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.12);
-  }
-}
-
-/* Barre de progression indéterminée   va-et-vient continu. */
+/* Barre de progression indéterminée   va-et-vient continu (rideau de transition). */
 @keyframes brand-progress {
   0% {
     transform: translateX(-100%);
   }
   100% {
     transform: translateX(320%);
-  }
-}
-
-/* Apparition en fondu du loader (évite le "flash" au montage). */
-@keyframes brand-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 

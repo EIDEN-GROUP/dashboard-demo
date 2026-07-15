@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Pencil,
   Plus,
+  Trash2,
   Search,
   GraduationCap,
   CalendarDays,
@@ -49,11 +50,17 @@ import {
 import { listClients, createClient, updateClient, deleteClient, type ClientInput } from "@/lib/server-clients";
 import { getSettings } from "@/lib/server-settings";
 import { createPayment, updatePaymentInvoice } from "@/lib/server-payments";
-import { sendClientMessage, sendBroadcast, sendEmailNotification } from "@/lib/server-whatsapp";
+import { sendClientMessage, sendBroadcast, sendPaymentReceipt } from "@/lib/server-whatsapp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/familles")({
   head: () => ({ meta: [{ title: "Parents   CRM" }] }),
+  // `?statut=impaye|retard` lets the dashboard's Impayé / En retard cards deep-link
+  // straight into the filtered list.
+  validateSearch: (search: Record<string, unknown>): { statut?: PaymentStatus } => {
+    const s = search.statut;
+    return s === "paye" || s === "impaye" || s === "retard" ? { statut: s } : {};
+  },
   component: CrmParentsPage,
 });
 
@@ -218,14 +225,30 @@ function CrmParentsPage() {
   const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
   const svcNames = services.filter((s) => s.enabled).map((s) => s.name);
 
+  // Seeded from ?statut= so "Impayé" / "En retard" on the dashboard open this list pre-filtered.
+  const { statut } = Route.useSearch();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("tous");
+  const [statusFilter, setStatusFilter] = useState<string>(statut ?? "tous");
   const [serviceFilter, setServiceFilter] = useState<string>("tous");
+
+  useEffect(() => {
+    if (statut) setStatusFilter(statut);
+  }, [statut]);
 
   const [addOpen, setAddOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+
+  const removeClient = useMutation({
+    mutationFn: (id: string) => deleteClient({ data: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      toast.success("Fiche supprimée");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
 
   const clients: FlatClient[] = useMemo(() => {
     return (rawClients as any[] ?? []).map((r: any) => ({
@@ -241,7 +264,9 @@ function CrmParentsPage() {
   // Base = recherche + service (sert au graphique) ; filtered ajoute le statut (sert au tableau)
   const base = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (svcNames.length === 0) return [];
+    // Wait for settings to arrive, but don't blank the list just because the school
+    // has no services configured   that hid every client.
+    if (!settings) return [];
     return clients.filter((c) => {
       if (serviceFilter === "transport" && !c.has_transport) return false;
       if (serviceFilter === "cantine" && !c.has_cantine) return false;
@@ -399,7 +424,7 @@ function CrmParentsPage() {
                 <th className="px-4 py-3">Remise fratrie</th>
                 <th className="px-4 py-3">Statut</th>
                 <th className="px-4 py-3">{t.familles.table.monthly}</th>
-                <th className="px-4 py-3 w-16">{t.familles.table.actions}</th>
+                <th className="px-4 py-3 w-36">{t.familles.table.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#28396C]/8">
@@ -447,14 +472,45 @@ function CrmParentsPage() {
                     ) : null}
                   </td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={() => setEditId(c.id)}
-                      className={iconButton}
-                      aria-label={interpolate(t.familles.editAria, { name: c.child })}
-                    >
-                      <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {/* Recording a payment is the most frequent action on a row, so it
+                          lives here rather than only behind the fiche. */}
+                      <button
+                        type="button"
+                        onClick={() => setPaymentId(c.id)}
+                        className={cn(
+                          iconButton,
+                          "border-transparent bg-[#B5E18B] text-[#28396C] hover:bg-[#B5E18B] hover:brightness-105",
+                        )}
+                        title="Enregistrer un paiement"
+                        aria-label={`Enregistrer un paiement pour ${c.child_name}`}
+                      >
+                        <Plus className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditId(c.id)}
+                        className={iconButton}
+                        title="Modifier"
+                        aria-label={interpolate(t.familles.editAria, { name: c.child_name })}
+                      >
+                        <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Supprimer définitivement la fiche de ${c.child_name} (${c.parent_name}) ?`)) {
+                            removeClient.mutate(c.id);
+                          }
+                        }}
+                        disabled={removeClient.isPending}
+                        className={cn(iconButton, "text-[#E25C5C] hover:bg-[#E25C5C]/10 hover:text-[#E25C5C] disabled:opacity-50")}
+                        title="Supprimer"
+                        aria-label={`Supprimer la fiche de ${c.child_name}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -551,8 +607,8 @@ function DetailClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,680px)] max-w-[680px]")}>
         <DialogDescription className="sr-only">Fiche complète de {client.child_name}</DialogDescription>
-        <div className="border-t-4 border-t-[#B5E18B]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Fiche élève</p>
               <DialogTitle className="mt-1 text-left font-display text-xl font-semibold tracking-tight text-foreground">
@@ -567,7 +623,7 @@ function DetailClientDialog({
             </div>
           </div>
 
-          <div className="max-h-[62vh] overflow-y-auto scroll-touch px-6 py-5">
+          <div className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5">
             <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               <SectionTitle icon={GraduationCap}>Scolarité</SectionTitle>
               <InfoRow label="Nom de l'élève" value={client.child_name} />
@@ -607,7 +663,7 @@ function DetailClientDialog({
             </div>
           </div>
 
-          <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-[#28396C]/10 px-6 py-4">
+          <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-3 border-t border-[#28396C]/10 bg-card px-6 py-4">
             <button type="button" onClick={onPayment} className={primaryPill}>
               <Plus className="h-4 w-4" />
               Enregistrer un paiement
@@ -655,13 +711,13 @@ function AddClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "max-w-[640px]")}>
         <DialogDescription className="sr-only">{a.srDesc}</DialogDescription>
-        <div className="border-t-4 border-t-[#B5E18B]">
-          <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{a.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{a.title}</DialogTitle>
           </div>
           <form
-            className="max-h-[calc(90vh-10rem)] overflow-y-auto px-6 py-5"
+            className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5"
             onSubmit={async (e) => {
               e.preventDefault();
               setBusy(true);
@@ -791,41 +847,15 @@ function PaymentDialog({
         },
       });
       if (clientEmail) {
-        await sendEmailNotification({
+        await sendPaymentReceipt({
           data: {
             to: clientEmail,
-            subject: `Reçu de paiement ${payment.receipt}`,
-            html: [
-              `<h2>Reçu de paiement</h2>`,
-              `<p>Bonjour ${clientLabel},</p>`,
-              `<p>Nous vous confirmons la réception de votre paiement.</p>`,
-              `<table>`,
-              `<tr><td style="padding:4px 12px 4px 0;font-weight:600">Reçu n°</td><td>${payment.receipt}</td></tr>`,
-              `<tr><td style="padding:4px 12px 4px 0;font-weight:600">Montant</td><td>${payment.amount} MAD</td></tr>`,
-              `<tr><td style="padding:4px 12px 4px 0;font-weight:600">Date</td><td>${payment.date}</td></tr>`,
-              `<tr><td style="padding:4px 12px 4px 0;font-weight:600">Mode</td><td>${payment.mode}</td></tr>`,
-              `<tr><td style="padding:4px 12px 4px 0;font-weight:600">Période</td><td>${payment.period}</td></tr>`,
-              `</table>`,
-              `<p>Merci pour votre confiance.</p>`,
-              `<p>Cordialement,<br/>L'équipe Gestio</p>`,
-            ].join("\n"),
-            text: [
-              `Reçu de paiement ${payment.receipt}`,
-              ``,
-              `Bonjour ${clientLabel},`,
-              ``,
-              `Nous vous confirmons la réception de votre paiement.`,
-              ``,
-              `Reçu n°: ${payment.receipt}`,
-              `Montant: ${payment.amount} MAD`,
-              `Date: ${payment.date}`,
-              `Mode: ${payment.mode}`,
-              `Période: ${payment.period}`,
-              ``,
-              `Merci pour votre confiance.`,
-              `Cordialement,`,
-              `L'équipe Gestio`,
-            ].join("\n"),
+            parentName: clientLabel,
+            receipt: payment.receipt,
+            amount: Number(payment.amount),
+            date: String(payment.date),
+            mode: String(payment.mode),
+            period: String(payment.period),
           },
         });
       }
@@ -931,13 +961,13 @@ function EditClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,640px)] max-w-[640px]")}>
         <DialogDescription className="sr-only">{interpolate(e.srDesc, { name: client.child_name })}</DialogDescription>
-        <div className="border-t-4 border-t-[#B5E18B]">
-          <div className="border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{e.eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">{e.title}</DialogTitle>
           </div>
           <form
-            className="max-h-[65vh] space-y-4 overflow-y-auto scroll-touch px-6 py-5"
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto scroll-touch px-6 py-5"
             onSubmit={async (ev) => {
               ev.preventDefault();
               setBusy(true);

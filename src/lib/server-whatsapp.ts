@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import {
+  renderSchoolNotificationEmail,
+  renderPaymentReceiptEmail,
+} from "@/lib/email-templates";
 
 const WA_API_VERSION = process.env.WHATSAPP_API_VERSION ?? "v22.0";
 const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID ?? "";
@@ -150,10 +154,33 @@ export const deleteMessage = createServerFn({ method: "POST" })
   });
 
 export const sendEmailNotification = createServerFn({ method: "POST" })
-  .inputValidator((input: { to: string; subject: string; html: string; text?: string }) => input)
+  .inputValidator(
+    (input: {
+      to: string;
+      subject: string;
+      /** Plain text. Rendered into the branded template. */
+      message?: string;
+      parentName?: string;
+      /** Escape hatch: pre-rendered HTML, used as-is (no branding applied). */
+      html?: string;
+      text?: string;
+    }) => input,
+  )
   .handler(async ({ data }) => {
     const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
     const SUPABASE_ANON = process.env.SUPABASE_ANON ?? "";
+
+    // Branding happens here, not at the call sites, so every dashboard email
+    // carries the site identity even if a new caller forgets.
+    const rendered = data.message
+      ? renderSchoolNotificationEmail({
+          message: data.message,
+          title: data.subject,
+          parentName: data.parentName,
+        })
+      : null;
+    const html = rendered?.html ?? data.html ?? "";
+    const text = rendered?.text ?? data.text ?? "";
 
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
@@ -165,8 +192,8 @@ export const sendEmailNotification = createServerFn({ method: "POST" })
         body: JSON.stringify({
           to: data.to,
           subject: data.subject,
-          html: data.html,
-          text: data.text ?? "",
+          html,
+          text,
         }),
       });
 
@@ -188,6 +215,64 @@ export const sendEmailNotification = createServerFn({ method: "POST" })
         recipient: data.to,
         subject: data.subject,
         type: "custom",
+        status: "failed",
+        error_msg: err instanceof Error ? err.message : "Unknown error",
+      });
+      return { ok: false, error: err instanceof Error ? err.message : "Unknown error" };
+    }
+  });
+
+/** Branded payment receipt. Rendered server-side so the template never ships to the browser. */
+export const sendPaymentReceipt = createServerFn({ method: "POST" })
+  .inputValidator(
+    (input: {
+      to: string;
+      parentName: string;
+      receipt: string;
+      amount: number;
+      date: string;
+      mode: string;
+      period: string;
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
+    const SUPABASE_ANON = process.env.SUPABASE_ANON ?? "";
+    const mail = renderPaymentReceiptEmail(data);
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+        },
+        body: JSON.stringify({
+          to: data.to,
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Edge function: ${res.status} ${text}`);
+      }
+
+      await supabaseAdmin.from("email_logs").insert({
+        recipient: data.to,
+        subject: mail.subject,
+        type: "receipt",
+        status: "sent",
+      });
+
+      return { ok: true };
+    } catch (err) {
+      await supabaseAdmin.from("email_logs").insert({
+        recipient: data.to,
+        subject: mail.subject,
+        type: "receipt",
         status: "failed",
         error_msg: err instanceof Error ? err.message : "Unknown error",
       });

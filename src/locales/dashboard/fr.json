@@ -9,13 +9,23 @@
   },
   "nav": {
     "dashboard": "Tableau de bord",
-"calendar": "Calendrier",
+    "calendar": "Calendrier",
     "familles": "Parents",
     "paiements": "Paiement",
     "affiches": "Affiches du personnel",
     "rapports": "Rapports",
     "messagerie": "Messagerie",
     "settings": "Paramètres"
+  },
+  "navShort": {
+    "dashboard": "Accueil",
+    "calendar": "Agenda",
+    "familles": "Parents",
+    "paiements": "Paiement",
+    "affiches": "Affiches",
+    "rapports": "Rapports",
+    "messagerie": "Messages",
+    "settings": "Réglages"
   },
   "common": {
     "cancel": "Annuler",

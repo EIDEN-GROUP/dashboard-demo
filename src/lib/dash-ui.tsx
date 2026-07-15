@@ -14,9 +14,14 @@ export const softCard =
 export const softCardHover =
   "rounded-3xl border border-[#28396C]/10 bg-card shadow-[0_18px_45px_-28px_rgba(40,57,108,0.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_28px_60px_-28px_rgba(40,57,108,0.45)]";
 
-/** Text input   rounded, brass focus ring. */
+/**
+ * Text input   rounded, brass focus ring.
+ * Carries its own `border` width and `w-full`: Tailwind's preflight resets every
+ * element to `border: 0 solid`, so a bare `<input>` styled only with a border
+ * *colour* renders with no visible box.
+ */
 export const softInput =
-  "rounded-xl border-[#28396C]/15 bg-card shadow-none focus-visible:border-[#6BA53A] focus-visible:ring-2 focus-visible:ring-[#B5E18B]/40";
+  "w-full min-w-0 rounded-xl border border-[#28396C]/15 bg-card shadow-none focus-visible:border-[#6BA53A] focus-visible:ring-2 focus-visible:ring-[#B5E18B]/40";
 
 /** Select trigger   matches softInput height/rounding. */
 export const softSelectTrigger =
@@ -49,9 +54,14 @@ export const ghostPill =
 export const iconButton =
   "grid h-9 w-9 place-items-center rounded-xl border border-[#28396C]/15 bg-card text-muted-foreground transition hover:bg-[#B5E18B]/15 hover:text-foreground";
 
-/** Dialog surface   soft, rounded, elevated. */
+/**
+ * Dialog surface   soft, rounded, elevated.
+ * `flex flex-col` so a header / scrolling body / footer stack can size itself against
+ * the capped height. Give the body `min-h-0 flex-1 overflow-y-auto` rather than a `vh`
+ * max-height: a `vh` body ignores this cap and pushes the footer out of the clipped box.
+ */
 export const dialogSurface =
-  "gap-0 overflow-hidden rounded-3xl border border-[#28396C]/10 bg-card p-0 shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)] sm:rounded-3xl " +
+  "flex flex-col gap-0 overflow-hidden rounded-3xl border border-[#28396C]/10 bg-card p-0 shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)] sm:rounded-3xl " +
   "max-h-[min(90vh,720px)] w-[min(100vw-1.5rem,560px)] max-w-[min(100vw-1.5rem,560px)] " +
   "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:border [&>button]:border-[#28396C]/15 [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0";
 

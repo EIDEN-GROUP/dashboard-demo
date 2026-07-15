@@ -188,7 +188,7 @@ const chartTooltip = dashTooltip;
 
 /** Même enveloppe que `NouveauClientModal` (dashboard.index)   min-w-0 pour scroll horizontal des tableaux sur mobile */
 const listeDialogContent = cn(
-  "grid min-w-0 grid-cols-1 gap-0 overflow-hidden rounded-3xl border border-[#28396C]/10 bg-card p-0 shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)] sm:rounded-3xl",
+  "flex min-w-0 flex-col gap-0 overflow-hidden rounded-3xl border border-[#28396C]/10 bg-card p-0 shadow-[0_35px_80px_-40px_rgba(40,57,108,0.5)] sm:rounded-3xl",
   "max-h-[min(90vh,860px)] w-[min(100vw-1.5rem,640px)] max-w-[min(100vw-1.5rem,640px)] translate-y-[-50%] sm:max-w-[640px]",
   "[&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:border [&>button]:border-[#28396C]/15 [&>button]:bg-card [&>button]:opacity-100 [&>button]:hover:bg-muted [&>button]:focus:ring-0 [&>button]:focus:ring-offset-0",
 );
@@ -234,7 +234,7 @@ function ListeFamillesModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={listeDialogContent}>
         <DialogDescription className="sr-only min-w-0">{r.modalSrDesc}</DialogDescription>
-        <div className="min-w-0 max-w-full border-t-4 border-t-primary">
+        <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col border-t-4 border-t-primary">
           <div className="border-b border-border px-6 pb-4 pt-6 pr-14">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</p>
             <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
@@ -276,7 +276,7 @@ function ListeFamillesModal({
               />
             </div>
           </div>
-          <div className="max-h-[calc(90vh-15.5rem)] min-w-0 w-full max-w-full overflow-x-auto overflow-y-auto scroll-touch border-b border-border">
+          <div className="min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-auto overflow-y-auto scroll-touch border-b border-border">
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead className="sticky top-0 z-10 border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <tr>

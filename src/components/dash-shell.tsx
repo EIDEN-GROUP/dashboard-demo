@@ -61,7 +61,13 @@ import {
   primaryPill,
 } from "@/lib/dash-ui";
 
-export type NavItem = { to: string; label: string; icon: any };
+export type NavItem = {
+  to: string;
+  label: string;
+  /** Condensed label for the mobile tab bar, where the full label would ellipsise. */
+  shortLabel?: string;
+  icon: any;
+};
 
 type PanelTab = "alertes" | "whatsapp";
 
@@ -165,7 +171,9 @@ function ShellNotifications() {
           </SheetHeader>
 
           {!selected ? (
-            <div className="flex items-center justify-between gap-2 border-b border-[#28396C]/10 px-5 py-3">
+            <div className="flex flex-col gap-2.5 border-b border-[#28396C]/10 px-5 py-3">
+              {/* Tabs and actions sit on separate rows: at the sheet's width, all four
+                  controls on one line wrap "Tout effacer" and clip "Envoyer". */}
               <div className="flex gap-1">
                 {([{ key: "alertes" as const, label: "Notifications", count: received.length, dot: "bg-[#E25C5C]" },
                    { key: "whatsapp" as const, label: "WhatsApp", count: failedCount || sentCount, dot: failedCount > 0 ? "bg-[#E25C5C]" : "bg-[#25D366]" }] as const).map((tb) => (
@@ -179,12 +187,12 @@ function ShellNotifications() {
               <div className="flex items-center gap-2">
                 {tab === "alertes" && received.length > 0 ? (
                   <button type="button" onClick={() => clearMutation.mutate()}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#E25C5C]/30 px-3.5 py-1.5 text-xs font-semibold text-[#E25C5C] transition hover:bg-[#E25C5C]/10">
-                    Tout effacer
+                    className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#E25C5C]/30 px-3.5 py-1.5 text-xs font-semibold text-[#E25C5C] transition hover:bg-[#E25C5C]/10">
+                    <Trash2 className="h-3.5 w-3.5" /> Tout effacer
                   </button>
                 ) : null}
                 <button type="button" onClick={() => setSendOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#B5E18B] px-3.5 py-1.5 text-xs font-bold text-[#28396C] transition hover:brightness-105">
+                  className="ml-auto inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#B5E18B] px-4 py-1.5 text-xs font-bold text-[#28396C] transition hover:brightness-105">
                   <Send className="h-3.5 w-3.5" /> Envoyer
                 </button>
               </div>
@@ -332,7 +340,14 @@ function SendMessageModal({ open, onOpenChange }: { open: boolean; onOpenChange:
           const wa = await sendClientMessage({ data: { clientId: selectedId, content } });
           if (!wa.ok) throw new Error(wa.error ?? "Erreur WhatsApp");
         } else {
-          const em = await sendEmailNotification({ data: { to: client.email, subject: "Message de l'école", html: content.replace(/\n/g, "<br>"), text: content } });
+          const em = await sendEmailNotification({
+            data: {
+              to: client.email,
+              subject: "Message de l'école",
+              message: content,
+              parentName: client.parent_name,
+            },
+          });
           if (!em.ok) throw new Error(em.error ?? "Erreur email");
         }
       } else {
@@ -484,7 +499,7 @@ function MobileBottomNav({
               </span>
               <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 1.75} />
               <span className={cn( "w-full max-w-full truncate px-0.5 text-center font-semibold leading-tight", labelClass, active ? "text-foreground" : "font-medium text-muted-foreground", )}>
-                {n.label}
+                {n.shortLabel ?? n.label}
               </span>
             </Link>
           );
@@ -644,7 +659,8 @@ export function DashShell({
           ) : null}
         </header>
 
-        <main data-dashboard-main dir={shellDir} className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-24 lg:p-8 lg:pb-8">
+        {/* pb clears the fixed bottom nav *and* the language button floating above it. */}
+        <main data-dashboard-main dir={shellDir} className="min-h-0 flex-1 overflow-y-auto scroll-touch p-4 pb-36 lg:p-8 lg:pb-8">
           {children}
         </main>
 
