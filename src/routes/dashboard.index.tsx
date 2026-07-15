@@ -29,8 +29,6 @@ import {
 import {
   ResponsiveContainer,
   BarChart,
-  AreaChart,
-  Area,
   Bar,
   XAxis,
   YAxis,
@@ -81,11 +79,6 @@ export const Route = createFileRoute("/dashboard/")({
 type Grain = "mensuel" | "annuel";
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-type Range = "1S" | "1M" | "3M" | "1A";
-
-/** How many months each range button shows. "1S" (one week) still lands inside a month. */
-const RANGE_MONTHS: Record<Range, number> = { "1S": 1, "1M": 1, "3M": 3, "1A": 12 };
-
 type SeriesKey = "encaisse" | "impaye" | "retard";
 
 const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
@@ -216,7 +209,6 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
 function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
-  const [range, setRange] = useState<Range>("1A");
   const [grain, setGrain] = useState<Grain>("mensuel");
   const [year, setYear] = useState(String(new Date().getFullYear()));
 
@@ -252,25 +244,7 @@ function CrmDash() {
   });
 
   const dbPayments = payments as unknown as Array<{ id: string; amount: number; date: string; mode: string; period: string; invoice_sent: boolean; clients: { parent_name: string; child_name: string; phone: string; email: string; level: string; monthly_fee: number; payment_status: string; subscribed_services: string[] } }>;
-  const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
-
   const chartData = barData as InvoicePoint[];
-
-  /** 1S/1M/3M/1A now actually cut the window: last N months of the year's series. */
-  const areaData = useMemo(() => {
-    const months = monthlyData as InvoicePoint[];
-    const take = RANGE_MONTHS[range];
-    const thisYear = String(new Date().getFullYear()) === year;
-    // Anchor the window on the current month when looking at the current year.
-    const end = thisYear ? new Date().getMonth() + 1 : months.length;
-    const start = Math.max(0, end - take);
-    return months.slice(start, end);
-  }, [monthlyData, range, year]);
-
-  const rangeTotal = useMemo(
-    () => areaData.reduce((sum, p) => sum + (p.encaisse ?? 0), 0),
-    [areaData],
-  );
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
@@ -608,82 +582,6 @@ function CrmDash() {
               </li>
             </ul>
           </div>
-        </div>
-      </div>
-
-      {/* Encaissements mensuels   courbe d'activité avec plages 1S / 1M / 3M / 1A */}
-      <div className={cn(softCard, "min-w-0 p-5 sm:p-6")}>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className={eyebrowClass}>Mon activité</p>
-            <h2 className="mt-1 font-display text-xl text-foreground">
-              Encaissements <span className="font-normal italic text-muted-foreground">mensuels</span>
-            </h2>
-              <div className="mt-2 flex items-end gap-2">
-                <p className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                  {rangeTotal.toLocaleString("fr-FR")} <span className="text-sm font-normal text-muted-foreground">MAD</span>
-                </p>
-                <span className="pb-1 text-xs text-muted-foreground">encaissé sur {range}</span>
-              </div>
-          </div>
-          <div className="flex items-center gap-1 rounded-full border border-[#28396C]/10 bg-muted/60 p-1">
-            {rangeButtons.map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRange(r)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  range === r ? "bg-[#28396C] text-white shadow-sm" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="mt-4 h-56 w-full min-w-0 sm:h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={areaData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-              <defs>
-                {SERIES_META.map((s) => (
-                  <linearGradient key={s.key} id={`fill-${s.key}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={s.color} stopOpacity={0.18} />
-                    <stop offset="100%" stopColor={s.color} stopOpacity={0.03} />
-                  </linearGradient>
-                ))}
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
-              <XAxis dataKey="bucket" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis
-                stroke="var(--muted-foreground)"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                width={64}
-                tickFormatter={(v: number) => v.toLocaleString("fr-FR")}
-              />
-              <Tooltip
-                contentStyle={dashTooltip}
-                cursor={{ stroke: "rgba(40,57,108,0.25)", strokeWidth: 1 }}
-                formatter={(v: number, n) => [`${Number(v).toLocaleString("fr-FR")} MAD`, n]}
-              />
-              {/* `linear` keeps the angular, ticker-like profile of the reference   `monotone` rounds it off. */}
-              {SERIES_META.filter((s) => series[s.key]).map((s) => (
-                <Area
-                  key={s.key}
-                  type="linear"
-                  dataKey={s.key}
-                  name={s.label}
-                  stroke={s.color}
-                  strokeWidth={2}
-                  fill={`url(#fill-${s.key})`}
-                  dot={false}
-                  activeDot={{ r: 4, fill: s.color, stroke: "#fff", strokeWidth: 2 }}
-                />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
         </div>
       </div>
 

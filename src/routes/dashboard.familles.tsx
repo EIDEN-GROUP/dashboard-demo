@@ -33,6 +33,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip as RTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { cn } from "@/lib/utils";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 import {
@@ -46,6 +53,8 @@ import {
   iconButton,
   statusPill,
   STATUS_COLORS,
+  dashTooltip,
+  renderPieLabel,
 } from "@/lib/dash-ui";
 import { listClients, createClient, updateClient, deleteClient, type ClientInput } from "@/lib/server-clients";
 import { getSettings } from "@/lib/server-settings";
@@ -55,12 +64,6 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/familles")({
   head: () => ({ meta: [{ title: "Parents   CRM" }] }),
-  // `?statut=impaye|retard` lets the dashboard's Impayé / En retard cards deep-link
-  // straight into the filtered list.
-  validateSearch: (search: Record<string, unknown>): { statut?: PaymentStatus } => {
-    const s = search.statut;
-    return s === "paye" || s === "impaye" || s === "retard" ? { statut: s } : {};
-  },
   component: CrmParentsPage,
 });
 
@@ -225,15 +228,9 @@ function CrmParentsPage() {
   const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
   const svcNames = services.filter((s) => s.enabled).map((s) => s.name);
 
-  // Seeded from ?statut= so "Impayé" / "En retard" on the dashboard open this list pre-filtered.
-  const { statut } = Route.useSearch();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(statut ?? "tous");
+  const [niveauFilter, setNiveauFilter] = useState<string>("tous");
   const [serviceFilter, setServiceFilter] = useState<string>("tous");
-
-  useEffect(() => {
-    if (statut) setStatusFilter(statut);
-  }, [statut]);
 
   const [addOpen, setAddOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -279,20 +276,38 @@ function CrmParentsPage() {
     });
   }, [clients, search, serviceFilter, svcNames]);
 
-  const filtered = useMemo(
-    () => base.filter((c) => statusFilter === "tous" || c.payment_status === statusFilter),
-    [base, statusFilter],
+  const niveaux = useMemo(
+    () => [...new Set(base.map((c) => c.level).filter(Boolean))].sort(),
+    [base],
   );
 
-  // Répartition pour le graphique circulaire
+  const filtered = useMemo(
+    () => base.filter((c) => niveauFilter === "tous" || c.level === niveauFilter),
+    [base, niveauFilter],
+  );
+
+  const LEVEL_COLORS = [
+    "#28396C", "#B5E18B", "#D2624A", "#F4C542", "#7BA5D9",
+    "#E8A87C", "#95D5B2", "#C77DFF", "#F4845F", "#52B788",
+  ];
+
   const donut = useMemo(() => {
-    const counts = { paye: 0, impaye: 0, retard: 0 };
-    base.forEach((c) => { counts[c.payment_status ?? "impaye"] += 1; });
-    return [
-      { name: "Payé", value: counts.paye, color: STATUS_COLORS.paye },
-      { name: "Impayé", value: counts.impaye, color: STATUS_COLORS.impaye },
-      { name: "En retard", value: counts.retard, color: STATUS_COLORS.retard },
-    ];
+    const counts: Record<string, number> = {};
+    base.forEach((c) => {
+      const lv = c.level || "Non défini";
+      counts[lv] = (counts[lv] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([a], [b]) => {
+        if (a === "Non défini") return 1;
+        if (b === "Non défini") return -1;
+        return a.localeCompare(b);
+      })
+      .map(([name, value], i) => ({
+        name,
+        value,
+        color: LEVEL_COLORS[i % LEVEL_COLORS.length],
+      }));
   }, [base]);
   const donutTotal = donut.reduce((s, d) => s + d.value, 0);
 
@@ -335,16 +350,16 @@ function CrmParentsPage() {
               />
             </div>
             <div>
-              <Label className={labelClass}>Statut de paiement</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par statut">
+              <Label className={labelClass}>Niveau</Label>
+              <Select value={niveauFilter} onValueChange={setNiveauFilter}>
+                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par niveau">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={softSelectContent}>
-                  <SelectItem value="tous">Tous les statuts</SelectItem>
-                  <SelectItem value="paye">{PAYMENT_LABEL.paye}</SelectItem>
-                  <SelectItem value="impaye">{PAYMENT_LABEL.impaye}</SelectItem>
-                  <SelectItem value="retard">{PAYMENT_LABEL.retard}</SelectItem>
+                  <SelectItem value="tous">Tous les niveaux</SelectItem>
+                  {niveaux.map((n) => (
+                    <SelectItem key={n} value={n}>{n}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -372,38 +387,51 @@ function CrmParentsPage() {
           </p>
         </section>
 
-        {/* Graphique circulaire */}
+        {/* Graphique circulaire — répartition par niveau */}
         <section className={cn(softCard, "flex flex-col p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Analyse</p>
-          <div className="mt-3 flex items-baseline gap-2">
-            <p className="font-display text-3xl font-semibold tabular-nums text-foreground">{donutTotal}</p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">familles</p>
-          </div>
-          <ul className="mt-4 space-y-2">
-            {donut.map((d) => {
-              const share = donutTotal > 0 ? Math.round((d.value / donutTotal) * 100) : 0;
-              return (
-                <li key={d.name} className="rounded-2xl bg-muted/50 px-3 py-2">
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="flex items-center gap-2 font-medium text-foreground">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
-                      {d.name}
-                    </span>
-                    <span className="shrink-0 font-semibold tabular-nums text-foreground">
-                      {d.value}
-                      <span className="ml-1.5 font-normal text-muted-foreground">{share}%</span>
-                    </span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#28396C]/10">
-                    <div
-                      className="h-full rounded-full transition-[width] duration-700 ease-out"
-                      style={{ width: `${share}%`, backgroundColor: d.color }}
+          {donutTotal > 0 ? (
+            <>
+              <div className="mt-1 flex items-center justify-center">
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={donut}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={48}
+                      outerRadius={78}
+                      dataKey="value"
+                      strokeWidth={0}
+                      label={renderPieLabel}
+                    >
+                      {donut.map((d) => (
+                        <Cell key={d.name} fill={d.color} />
+                      ))}
+                    </Pie>
+                    <RTooltip
+                      contentStyle={dashTooltip}
+                      formatter={(value: number, name: string) => [`${value} élève${value > 1 ? "s" : ""}`, name]}
                     />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+                {donut.map((d) => {
+                  const share = Math.round((d.value / donutTotal) * 100);
+                  return (
+                    <div key={d.name} className="flex items-center gap-2 text-xs">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span className="font-medium text-foreground">{d.name}</span>
+                      <span className="tabular-nums text-muted-foreground">
+                        {d.value} <span className="text-[10px]">({share}%)</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : null}
         </section>
       </div>
 
@@ -422,7 +450,6 @@ function CrmParentsPage() {
                 <th className="px-4 py-3">{t.familles.table.contact}</th>
                 <th className="px-4 py-3">Services</th>
                 <th className="px-4 py-3">Remise fratrie</th>
-                <th className="px-4 py-3">Statut</th>
                 <th className="px-4 py-3">{t.familles.table.monthly}</th>
                 <th className="px-4 py-3 w-36">{t.familles.table.actions}</th>
               </tr>
@@ -456,11 +483,6 @@ function CrmParentsPage() {
                   <td className="px-4 py-3">
                     <RemiseBadge client={c} />
                   </td>
-                  <td className="px-4 py-3">
-                    <span className={cn("inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide", c.payment_status === "paye" ? "bg-[#B5E18B]/30 text-[#3E6420]" : c.payment_status === "retard" ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]")}>
-                      {PAYMENT_LABEL[c.payment_status ?? "impaye"]}
-                    </span>
-                  </td>
                   <td className="px-4 py-3 tabular-nums text-foreground/90">
                     <span className="block font-semibold text-foreground">
                       {(c.monthly_fee ?? 0)} {t.common.mad}
@@ -473,20 +495,6 @@ function CrmParentsPage() {
                   </td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
-                      {/* Recording a payment is the most frequent action on a row, so it
-                          lives here rather than only behind the fiche. */}
-                      <button
-                        type="button"
-                        onClick={() => setPaymentId(c.id)}
-                        className={cn(
-                          iconButton,
-                          "border-transparent bg-[#B5E18B] text-[#28396C] hover:bg-[#B5E18B] hover:brightness-105",
-                        )}
-                        title="Enregistrer un paiement"
-                        aria-label={`Enregistrer un paiement pour ${c.child_name}`}
-                      >
-                        <Plus className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
                       <button
                         type="button"
                         onClick={() => setEditId(c.id)}
@@ -616,9 +624,9 @@ function DetailClientDialog({
               </DialogTitle>
             </div>
             <div className="text-right">
-              <p className={labelClass}>Statut</p>
-              <span className={cn("mt-1 inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide", client.payment_status === "paye" ? "bg-[#B5E18B]/30 text-[#3E6420]" : client.payment_status === "retard" ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]")}>
-                {PAYMENT_LABEL[client.payment_status ?? "impaye"]}
+              <p className={labelClass}>Niveau</p>
+              <span className="mt-1 inline-block rounded-full bg-[#B5E18B]/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#3E6420]">
+                {dash(client.level)}
               </span>
             </div>
           </div>
@@ -832,18 +840,32 @@ function PaymentDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const monthOptions = useMemo(() => {
+    const now = new Date();
+    const opts: { value: string; label: string }[] = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+      const value = `${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+      opts.push({ value, label });
+    }
+    return opts;
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setBusy(true);
     const fd = new FormData(e.currentTarget);
     try {
+      const period = String(fd.get("period") || "");
       const payment = await createPayment({
         data: {
           client_id: clientId,
           amount: Number(fd.get("montant") ?? 0),
           date: String(fd.get("date") || new Date().toISOString().split("T")[0]),
           mode: String(fd.get("mode") || "especes") as any,
+          period: period || undefined,
         },
       });
       if (clientEmail) {
@@ -900,6 +922,18 @@ function PaymentDialog({
                   <SelectItem value="virement">{f.paymentModes.transfer}</SelectItem>
                   <SelectItem value="carte">{f.paymentModes.card}</SelectItem>
                   <SelectItem value="cheque">{f.paymentModes.check}</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field id="pay-period" label="Mois concerné">
+              <Select name="period" defaultValue="">
+                <SelectTrigger id="pay-period" className={selectTriggerClass}>
+                  <SelectValue placeholder="Mois en cours" />
+                </SelectTrigger>
+                <SelectContent className={softSelectContent}>
+                  {monthOptions.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>

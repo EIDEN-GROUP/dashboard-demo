@@ -16,12 +16,6 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { softInput as inputClass, dialogSurface, labelClass } from "@/lib/dash-ui";
-import {
-  listCalendarExceptions,
-  createCalendarException,
-  deleteCalendarException,
-  type CalendarException,
-} from "@/lib/server-calendar-exceptions";
 import { listPlanifications, createPlanification, type PlanificationInput } from "@/lib/server-planifications";
 import {
   listHolidays,
@@ -128,11 +122,6 @@ function CrmCalendrier() {
   const [openIso, setOpenIso] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: dbExceptions = [] } = useQuery({
-    queryKey: ["calendar-exceptions"],
-    queryFn: () => listCalendarExceptions(),
-  });
-
   const { data: planifications = [] } = useQuery({
     queryKey: ["planifications"],
     queryFn: () => listPlanifications() as Promise<Planif[]>,
@@ -147,12 +136,6 @@ function CrmCalendrier() {
     queryKey: ["school-vacations"],
     queryFn: () => listSchoolVacations(),
   });
-
-  const exceptionsByDate = useMemo(() => {
-    const map: Record<string, CalendarException> = {};
-    for (const ex of dbExceptions) map[ex.date] = ex;
-    return map;
-  }, [dbExceptions]);
 
   const planifsByDate = useMemo(() => {
     const map: Record<string, Planif[]> = {};
@@ -170,7 +153,6 @@ function CrmCalendrier() {
   }, [holidays]);
 
   const forceRefetch = () => {
-    queryClient.refetchQueries({ queryKey: ["calendar-exceptions"] });
     queryClient.refetchQueries({ queryKey: ["planifications"] });
     queryClient.refetchQueries({ queryKey: ["holidays"] });
     queryClient.refetchQueries({ queryKey: ["school-vacations"] });
@@ -180,18 +162,6 @@ function CrmCalendrier() {
     const msg = err instanceof Error ? err.message : String(err);
     toast.error(`Erreur: ${msg}`);
   };
-
-  const createMutation = useMutation({
-    mutationFn: (input: { data: { date: string; label: string } }) => createCalendarException(input),
-    onSuccess: () => { forceRefetch(); toast.success("Exception ajoutée"); },
-    onError: handleMutError,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteCalendarException({ data: id }),
-    onSuccess: () => { forceRefetch(); toast.success("Exception supprimée"); },
-    onError: handleMutError,
-  });
 
   const createPlanifMutation = useMutation({
     mutationFn: (input: { data: PlanificationInput }) => createPlanification(input),
@@ -267,10 +237,6 @@ function CrmCalendrier() {
     return list;
   }, [year, month]);
 
-  const exceptionsDuMois = cells
-    .filter((c) => !c.isOutside && exceptionsByDate[c.iso])
-    .map((c) => ({ ...c, ex: exceptionsByDate[c.iso] }));
-
   const planifsDuMois = cells
     .filter((c) => !c.isOutside && planifsByDate[c.iso])
     .flatMap((c) => (planifsByDate[c.iso] ?? []).map((p) => ({ ...p, day: c.day })));
@@ -302,9 +268,6 @@ function CrmCalendrier() {
         </span>
         <span className="inline-flex items-center gap-2 rounded-full bg-[#CFC27A]/40 px-3 py-1.5 text-xs font-semibold text-[#7A6E2E]">
           <span className="h-2.5 w-2.5 rounded-full bg-[#CFC27A]" /> Vacances ({schoolVacations.length})
-        </span>
-        <span className="inline-flex items-center gap-2 rounded-full bg-[#D2624A]/15 px-3 py-1.5 text-xs font-semibold text-[#9C3B26]">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#D2624A]" /> Exception ({dbExceptions.length})
         </span>
         <span className="inline-flex items-center gap-2 rounded-full bg-[#28396C]/10 px-3 py-1.5 text-xs font-semibold text-[#28396C]">
           <span className="h-2.5 w-2.5 rounded-full bg-[#8B5CF6]" /> Planification ({planifications.length})
@@ -366,7 +329,6 @@ function CrmCalendrier() {
 
             <div className="grid grid-cols-7 gap-px bg-[#28396C]/[0.07]">
               {cells.map((c) => {
-                const ex = exceptionsByDate[c.iso];
                 const plans = planifsByDate[c.iso];
                 const hol = holidaysByDate[c.iso];
                 const vac = vacLabelForIso(c.iso, schoolVacations);
@@ -413,14 +375,6 @@ function CrmCalendrier() {
                           dot="bg-[#CFC27A]"
                         />
                       )}
-                      {ex && (
-                        <EventChip
-                          title={ex.label}
-                          kind="Exception"
-                          accent="border-l-[#D2624A]"
-                          dot="bg-[#D2624A]"
-                        />
-                      )}
                       {plans?.map((p) => (
                         <EventChip
                           key={p.id}
@@ -432,11 +386,11 @@ function CrmCalendrier() {
                       ))}
                     </div>
 
-                    {(hol || vac || ex || plans?.length) && (
+                    {(hol || vac || plans?.length) && (
                       <span
                         className={cn(
                           "absolute bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full sm:hidden",
-                          hol ? "bg-[#6BA53A]" : vac ? "bg-[#CFC27A]" : ex ? "bg-[#D2624A]" : "bg-[#8B5CF6]",
+                          hol ? "bg-[#6BA53A]" : vac ? "bg-[#CFC27A]" : "bg-[#8B5CF6]",
                         )}
                       />
                     )}
@@ -447,7 +401,6 @@ function CrmCalendrier() {
           </div>
 
           {(holidaysDuMois.length > 0 ||
-            exceptionsDuMois.length > 0 ||
             planifsDuMois.length > 0) && (
             <div className="mt-5 space-y-2 border-t border-[#28396C]/10 pt-4">
               {holidaysDuMois.map((c) => (
@@ -475,22 +428,6 @@ function CrmCalendrier() {
                   <span className="text-xs text-muted-foreground">{p.time.slice(0, 5)}</span>
                 </p>
               ))}
-              {exceptionsDuMois.map((c) => (
-                <p key={`x-${c.day}`} className="flex items-center gap-2 text-sm text-foreground">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#D2624A]/15 text-[10px] font-bold text-[#9C3B26]">
-                    {c.day}
-                  </span>
-                  <span className="font-medium">{c.ex.label}</span>
-                  <span className="text-xs text-muted-foreground">exception</span>
-                  <button
-                    type="button"
-                    onClick={() => deleteMutation.mutate(c.ex.id)}
-                    className="ml-auto grid h-7 w-7 place-items-center rounded-full text-muted-foreground transition hover:bg-[#D2624A]/10 hover:text-[#9C3B26]"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </p>
-              ))}
             </div>
           )}
         </div>
@@ -500,13 +437,8 @@ function CrmCalendrier() {
         iso={openIso}
         holiday={openIso ? (holidaysByDate[openIso] ?? null) : null}
         vacLabel={openIso ? vacLabelForIso(openIso, schoolVacations) : null}
-        exception={openIso ? (exceptionsByDate[openIso] ?? null) : null}
         planifs={openIso ? (planifsByDate[openIso] ?? []) : []}
         onClose={() => setOpenIso(null)}
-        onSaveException={(label) => {
-          if (openIso) createMutation.mutate({ data: { date: openIso, label } });
-        }}
-        onDeleteException={(id) => deleteMutation.mutate(id)}
         onSavePlanification={(input) => {
           if (openIso) createPlanifMutation.mutate({ data: { ...input, date: openIso } });
         }}
@@ -523,17 +455,14 @@ function CrmCalendrier() {
   );
 }
 
-type DayMode = "holiday" | "vacation" | "exception" | "planification";
+type DayMode = "holiday" | "vacation" | "planification";
 
 function DayDetailModal({
   iso,
   holiday,
   vacLabel,
-  exception,
   planifs,
   onClose,
-  onSaveException,
-  onDeleteException,
   onSavePlanification,
   onSaveHoliday,
   onDeleteHoliday,
@@ -543,11 +472,8 @@ function DayDetailModal({
   iso: string | null;
   holiday: Holiday | null;
   vacLabel: string | null;
-  exception: CalendarException | null;
   planifs: Planif[];
   onClose: () => void;
-  onSaveException: (label: string) => void;
-  onDeleteException: (id: string) => void;
   onSavePlanification: (input: Omit<PlanificationInput, "date">) => void;
   onSaveHoliday: (label: string) => void;
   onDeleteHoliday: (id: string) => void;
@@ -558,7 +484,6 @@ function DayDetailModal({
   const [hLabel, setHlabel] = useState("");
   const [vEnd, setVend] = useState("");
   const [vLabel, setVlabel] = useState("");
-  const [eLabel, setElabel] = useState("");
   const [pTitle, setPtitle] = useState("");
   const [pTime, setPtime] = useState("09:00");
   const [pDetail, setPdetail] = useState("");
@@ -578,14 +503,12 @@ function DayDetailModal({
     setHlabel("");
     setVend(iso ?? "");
     setVlabel("");
-    setElabel(exception?.label ?? "");
     setPtitle("");
     setPtime("09:00");
     setPdetail("");
     setPtone("violet");
     if (holiday) setMode("holiday");
     else if (vacLabel) setMode("vacation");
-    else if (exception) setMode("exception");
     else if (planifs.length > 0) setMode("planification");
     else setMode("holiday");
   }
@@ -593,7 +516,6 @@ function DayDetailModal({
   const tabs: { key: DayMode; label: string }[] = [
     { key: "holiday", label: "Jour férié" },
     { key: "vacation", label: "Vacances" },
-    { key: "exception", label: "Exception" },
     { key: "planification", label: "Planification" },
   ];
 
@@ -617,7 +539,7 @@ function DayDetailModal({
             )}
           </div>
 
-          {(holiday || vacLabel || exception || planifs.length > 0) && (
+          {(holiday || vacLabel || planifs.length > 0) && (
             <div className="space-y-2 border-t border-[#28396C]/10 px-6 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                 Événements
@@ -641,19 +563,6 @@ function DayDetailModal({
                   <Sun className="h-4 w-4 shrink-0 text-[#CFC27A]" />
                   <span className="text-sm font-medium text-foreground">{vacLabel}</span>
                   <span className="ml-auto text-xs text-muted-foreground">vacances</span>
-                </div>
-              )}
-              {exception && (
-                <div className="flex items-center gap-2 rounded-xl border border-[#D2624A]/20 bg-[#D2624A]/10 px-3 py-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-[#D2624A]" />
-                  <span className="text-sm font-medium text-foreground">{exception.label}</span>
-                  <button
-                    type="button"
-                    onClick={() => onDeleteException(exception.id)}
-                    className="ml-auto grid h-7 w-7 place-items-center rounded-full text-muted-foreground transition hover:bg-[#D2624A]/10 hover:text-[#9C3B26]"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
                 </div>
               )}
               {planifs.map((p) => (
@@ -762,38 +671,6 @@ function DayDetailModal({
                   className="rounded-full bg-[#CFC27A] px-4 py-1.5 text-sm font-medium text-[#4A4020] transition hover:bg-[#B8A95A] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Ajouter la vacance
-                </button>
-              </form>
-            )}
-
-            {mode === "exception" && (
-              <form
-                className="mt-3 space-y-3"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const clean = eLabel.trim();
-                  if (!clean) return;
-                  onSaveException(clean);
-                  setElabel("");
-                }}
-              >
-                <div className="space-y-1">
-                  <Label htmlFor="modal-e-label" className={labelClass}>Intitulé</Label>
-                  <Input
-                    id="modal-e-label"
-                    value={eLabel}
-                    onChange={(e) => setElabel(e.target.value)}
-                    placeholder="Ex. : Journée portes ouvertes"
-                    className={inputClass}
-                    autoFocus={mode === "exception"}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!eLabel.trim()}
-                  className="rounded-full bg-[#D2624A] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[#9C3B26] disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Ajouter l'exception
                 </button>
               </form>
             )}
