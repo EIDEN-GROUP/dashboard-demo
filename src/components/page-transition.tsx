@@ -165,9 +165,9 @@ export function PageTransition() {
             className="relative flex flex-col items-center gap-4 px-6 text-center"
           >
             {/* Brand sticker: the same graduation mark as the header, on a soft tile. */}
-            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur-sm">
-              <GraduationCap className="h-8 w-8 text-[#B5E18B]" strokeWidth={1.75} />
-            </span>
+            <div className="grid shrink-0 place-items-center rounded-2xl">
+                <img src="/public/edu-logo.png" alt="Edu logo" className="h-30 w-30" style={{ filter: "brightness(100)" }}/>
+            </div>
 
             <div className="space-y-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#B5E18B]/80">

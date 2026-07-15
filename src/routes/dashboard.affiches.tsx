@@ -503,8 +503,8 @@ function AddEmployeDialog({
                 adresse: "",
                 contrat: String(fd.get("contrat") || "CDI"),
                 salaire: Number(fd.get("salaire") || 0),
-                congeDebut: String(fd.get("congeDebut") || ""),
-                congeFin: String(fd.get("congeFin") || ""),
+                congeDebut: "",
+                congeFin: "",
                 statut,
               });
               onOpenChange(false);
@@ -557,12 +557,6 @@ function AddEmployeDialog({
                   defaultValue={0}
                   className={inputClass}
                 />
-              </Field>
-              <Field id="ae-conge-debut" label="Congé   début">
-                <Input id="ae-conge-debut" name="congeDebut" type="date" className={inputClass} />
-              </Field>
-              <Field id="ae-conge-fin" label="Congé   fin">
-                <Input id="ae-conge-fin" name="congeFin" type="date" className={inputClass} />
               </Field>
             </div>
             <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5">

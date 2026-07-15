@@ -676,18 +676,15 @@ function FraisSection() {
 function SiblingDiscountSection() {
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
-  const [enabled, setEnabled] = useState(false);
   const [value, setValue] = useState("10");
   const [maxKids, setMaxKids] = useState("99");
 
   useEffect(() => {
     if (settings?.sibling_discount) {
-      setEnabled(settings.sibling_discount.enabled ?? false);
       setValue(String(settings.sibling_discount.value ?? 10));
       setMaxKids(String(settings.sibling_discount.max_kids ?? 99));
     }
   }, [
-    settings?.sibling_discount?.enabled,
     settings?.sibling_discount?.value,
     settings?.sibling_discount?.max_kids,
   ]);
@@ -710,16 +707,6 @@ function SiblingDiscountSection() {
       description="Réduction pour les parents avec plusieurs enfants"
     >
       <div className="space-y-5 px-4 py-5 sm:px-6">
-        <label className="flex items-center gap-2.5 text-sm text-foreground">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => setEnabled(e.target.checked)}
-            className={checkboxClass}
-          />
-          Activer la réduction
-        </label>
-
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label htmlFor="sibling-value" className={labelClass}>
@@ -734,8 +721,7 @@ function SiblingDiscountSection() {
                 min="0"
                 max="100"
                 inputMode="numeric"
-                disabled={!enabled}
-                className={cn(fieldClass, "w-24 disabled:opacity-50")}
+                className={cn(fieldClass, "w-24")}
               />
               <span className="shrink-0 text-sm text-muted-foreground">%</span>
             </div>
@@ -753,8 +739,7 @@ function SiblingDiscountSection() {
                 type="number"
                 min="1"
                 inputMode="numeric"
-                disabled={!enabled}
-                className={cn(fieldClass, "w-24 disabled:opacity-50")}
+                className={cn(fieldClass, "w-24")}
               />
               <span className="shrink-0 text-sm text-muted-foreground">enfants</span>
             </div>
@@ -765,7 +750,7 @@ function SiblingDiscountSection() {
           <button
             onClick={() =>
               save.mutate({
-                enabled,
+                enabled: true,
                 type: "percentage",
                 value: Number(value),
                 max_kids: Number(maxKids),
