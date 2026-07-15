@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listLevels,
@@ -9,6 +10,7 @@ import {
   getSettings,
   updateSetting,
 } from "@/lib/server-settings";
+import { uploadSchoolFile, deleteSchoolFile } from "@/lib/server-storage";
 import { cn } from "@/lib/utils";
 import {
   softCard,
@@ -20,7 +22,7 @@ import {
   iconButton,
 } from "@/lib/dash-ui";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign } from "lucide-react";
+import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign, Upload, FileText, Image as ImageIcon, GripVertical, Maximize2 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "Paramètres - CRM" }] }),
@@ -82,6 +84,8 @@ function SettingsPage() {
         <FraisSection />
         <SiblingDiscountSection />
         <PaymentDueSection />
+        <DocumentsSection />
+        <PdfTemplateEditorSection />
       </div>
     </div>
   );
@@ -140,10 +144,12 @@ function LevelsSection() {
   const [newName, setNewName] = useState("");
   const [newFee, setNewFee] = useState("");
   const [newCycle, setNewCycle] = useState("");
+  const [newMax, setNewMax] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editFee, setEditFee] = useState("");
   const [editCycle, setEditCycle] = useState("");
+  const [editMax, setEditMax] = useState("");
 
   const allCycles = useMemo(
     () => [...new Set((levels ?? []).map((l) => l.cycle).filter(Boolean))].sort(),
@@ -151,7 +157,7 @@ function LevelsSection() {
   );
 
   const create = useMutation({
-    mutationFn: (input: { name: string; monthly_fee: number; cycle?: string }) => createLevel({ data: input }),
+    mutationFn: (input: { name: string; monthly_fee: number; cycle?: string; max_students?: number }) => createLevel({ data: input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
       toast.success("Niveau créé");
@@ -172,7 +178,7 @@ function LevelsSection() {
   });
 
   const update = useMutation({
-    mutationFn: (input: { id: string; name?: string; monthly_fee?: number; cycle?: string }) =>
+    mutationFn: (input: { id: string; name?: string; monthly_fee?: number; cycle?: string; max_students?: number }) =>
       updateLevel({ data: input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
@@ -228,9 +234,22 @@ function LevelsSection() {
                 <span className="shrink-0 text-xs text-muted-foreground">MAD</span>
               </div>
             </div>
+            <div className="flex-1 basis-full sm:basis-[100px]">
+              <p className={cn(labelClass, "mb-1")}>Max élèves</p>
+              <input
+                value={newMax}
+                onChange={(e) => setNewMax(e.target.value)}
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="0"
+                aria-label="Limite d'élèves"
+                className={cn(fieldClass, "w-full")}
+              />
+            </div>
             <button
               onClick={() => {
-                if (canAdd) create.mutate({ name: newName.trim(), monthly_fee: Number(newFee), cycle: newCycle.trim() });
+                if (canAdd) create.mutate({ name: newName.trim(), monthly_fee: Number(newFee), cycle: newCycle.trim(), max_students: Number(newMax) || 0 });
               }}
               disabled={!canAdd || create.isPending}
               className={cn(
@@ -273,11 +292,23 @@ function LevelsSection() {
                 />
                 <span className="shrink-0 text-xs text-muted-foreground">MAD</span>
               </div>
-              <div className="ml-auto flex shrink-0 items-center gap-2">
-                <button
-                  onClick={() =>
-                    update.mutate({ id: l.id, name: editName.trim(), monthly_fee: Number(editFee), cycle: editCycle.trim() })
-                  }
+              <div className="flex shrink-0 items-center gap-2">
+              <input
+                value={editMax}
+                onChange={(e) => setEditMax(e.target.value)}
+                type="number"
+                min="0"
+                inputMode="numeric"
+                aria-label="Limite d'élèves"
+                className={cn(fieldClass, "w-20")}
+              />
+              <span className="text-xs text-muted-foreground">élèves</span>
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <button
+                onClick={() =>
+                  update.mutate({ id: l.id, name: editName.trim(), monthly_fee: Number(editFee), cycle: editCycle.trim(), max_students: Number(editMax) || 0 })
+                }
                   disabled={update.isPending}
                   className={cn(primaryPill, "px-4 py-2 disabled:opacity-50")}
                 >
@@ -299,6 +330,9 @@ function LevelsSection() {
               <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
                 {l.monthly_fee} MAD
               </span>
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground/70">
+                {l.max_students > 0 ? `${l.max_students} max` : "—"}
+              </span>
               <div className="ml-auto flex shrink-0 items-center gap-2">
                 <button
                   onClick={() => {
@@ -306,6 +340,7 @@ function LevelsSection() {
                     setEditName(l.name);
                     setEditFee(String(l.monthly_fee));
                     setEditCycle(l.cycle);
+                    setEditMax(String(l.max_students));
                   }}
                   className={cn(ghostPill, "px-4 py-2 text-xs")}
                 >
@@ -843,6 +878,301 @@ function PaymentDueSection() {
           </button>
         </div>
       </div>
+    </Section>
+  );
+}
+
+type DocMeta = { url: string; filename: string; updated_at: string };
+type ReceiptField = { key: string; x: number; y: number };
+
+function DocumentsSection() {
+  const queryClient = useQueryClient();
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const template: DocMeta = settings?.pdf_template ?? { url: "", filename: "", updated_at: "" };
+  const stamp: DocMeta = settings?.stamp ?? { url: "", filename: "", updated_at: "" };
+
+  const upload = useMutation({
+    mutationFn: (input: { key: string; content: string; filename: string; contentType: string }) =>
+      uploadSchoolFile({ data: input }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Fichier uploadé");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
+
+  const remove = useMutation({
+    mutationFn: (key: string) => deleteSchoolFile({ data: key }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Fichier supprimé");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
+
+  const handleFile = (key: string, file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      upload.mutate({ key, content: base64, filename: file.name, contentType: file.type });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  if (!settings) return null;
+
+  return (
+    <Section
+      icon={FileText}
+      title="Documents"
+      description="Template PDF du reçu et tampon de l'école (PNG) — utilisés dans l'éditeur ci-dessous"
+    >
+      <div className="divide-y divide-[#28396C]/8">
+        <div className={rowClass}>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <p className="text-sm font-medium text-foreground">Template facture / reçu</p>
+            <p className="text-xs text-muted-foreground">
+              {template.filename ? template.filename : "Aucun fichier uploadé"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {template.url ? (
+              <a href={template.url} target="_blank" rel="noreferrer" className={cn(ghostPill, "px-3 py-1.5 text-xs")}>
+                <FileText className="h-3.5 w-3.5" /> Voir
+              </a>
+            ) : null}
+            <label className={cn(primaryPill, "cursor-pointer px-3 py-1.5 text-xs")}>
+              <Upload className="h-3.5 w-3.5" /> Uploader
+              <input
+                type="file"
+                accept="application/pdf"
+                className="sr-only"
+                onChange={(e) => handleFile("pdf_template", e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {template.url ? (
+              <button onClick={() => remove.mutate("pdf_template")} className={cn(ghostPill, "px-3 py-1.5 text-xs text-red-500")}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <div className={rowClass}>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <p className="text-sm font-medium text-foreground">Tampon de l'école</p>
+            <p className="text-xs text-muted-foreground">
+              {stamp.filename ? stamp.filename : "Aucun fichier uploadé"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {stamp.url ? (
+              <a href={stamp.url} target="_blank" rel="noreferrer" className={cn(ghostPill, "px-3 py-1.5 text-xs")}>
+                <ImageIcon className="h-3.5 w-3.5" /> Voir
+              </a>
+            ) : null}
+            <label className={cn(primaryPill, "cursor-pointer px-3 py-1.5 text-xs")}>
+              <Upload className="h-3.5 w-3.5" /> Uploader
+              <input
+                type="file"
+                accept="image/png"
+                className="sr-only"
+                onChange={(e) => handleFile("stamp", e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {stamp.url ? (
+              <button onClick={() => remove.mutate("stamp")} className={cn(ghostPill, "px-3 py-1.5 text-xs text-red-500")}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function PdfTemplateEditorSection() {
+  const queryClient = useQueryClient();
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const template: DocMeta = settings?.pdf_template ?? { url: "", filename: "", updated_at: "" };
+  const savedFields: ReceiptField[] = settings?.receipt_fields ?? [];
+  const [fields, setFields] = useState<ReceiptField[] | null>(null);
+  const current = fields ?? savedFields;
+  const dirty = fields !== null;
+  const [open, setOpen] = useState(false);
+  const [dragging, setDragging] = useState<number | null>(null);
+
+  const save = useMutation({
+    mutationFn: (value: ReceiptField[]) => updateSetting({ data: { key: "receipt_fields", value } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      setFields(null);
+      toast.success("Configuration du template sauvegardée");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
+
+  const allPlaceholders = [
+    "school_name", "school_address", "school_phone",
+    "receipt_number", "date", "parent_name", "children_names",
+    "period", "monthly_fee", "remise", "discount_amount",
+    "amount_due", "amount_paid", "payment_date", "remaining", "payment_mode",
+    "stamp",
+  ];
+
+  const placedKeys = new Set(current.map((f) => f.key));
+  const available = allPlaceholders.filter((p) => !placedKeys.has(p));
+
+  const addField = (key: string) => {
+    setFields((prev) => [...(prev ?? savedFields), { key, x: 50, y: 50 }]);
+  };
+
+  const removeField = (idx: number) => {
+    setFields((prev) => (prev ?? savedFields).filter((_, i) => i !== idx));
+  };
+
+  const updatePos = (idx: number, x: number, y: number) => {
+    setFields((prev) =>
+      (prev ?? savedFields).map((f, i) => (i === idx ? { ...f, x, y } : f)),
+    );
+  };
+
+  const handleMouseDown = (idx: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    setDragging(idx);
+    const container = (e.currentTarget as HTMLElement).parentElement;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const field = current[idx];
+    const startPctX = field.x;
+    const startPctY = field.y;
+
+    const onMove = (ev: MouseEvent) => {
+      const dx = ((ev.clientX - startX) / rect.width) * 100;
+      const dy = ((ev.clientY - startY) / rect.height) * 100;
+      updatePos(idx, Math.max(0, Math.min(100, startPctX + dx)), Math.max(0, Math.min(100, startPctY + dy)));
+    };
+    const onUp = () => {
+      setDragging(null);
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
+  if (!settings) return null;
+
+  const editor = (
+    <div className="absolute inset-0 flex items-start justify-center overflow-hidden bg-[#e8e8e8]">
+      <div className="relative h-full shadow-2xl" style={{ aspectRatio: "1/1.414" }}>
+        <embed
+          src={`${template.url}#toolbar=0&navpanes=0&view=FitH`}
+          type="application/pdf"
+          className="h-full w-full"
+          style={{ pointerEvents: "none" }}
+        />
+      {current.map((f, i) => (
+        <div
+          key={f.key}
+          onMouseDown={(e) => handleMouseDown(i, e)}
+          className={cn(
+            "absolute z-10 flex cursor-grab items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-mono font-medium shadow-sm transition-shadow",
+            dragging === i ? "shadow-md ring-2 ring-[#6BA53A] cursor-grabbing" : "hover:shadow-md",
+            f.key === "stamp" ? "bg-[#E25C5C]/15 text-[#E25C5C] ring-[#E25C5C]" : "bg-white/90 text-[#28396C] ring-[#6BA53A]",
+          )}
+          style={{ left: `${f.x}%`, top: `${f.y}%`, transform: "translate(-50%, -50%)" }}
+        >
+          <GripVertical className="h-3 w-3 shrink-0 opacity-60" />
+          <span className="truncate max-w-[120px]">{'{'}{f.key}{'}'}</span>
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() => removeField(i)}
+            className="ml-0.5 grid h-4 w-4 place-items-center rounded-full hover:bg-black/10"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <Section
+      icon={FileText}
+      title="Configuration du reçu PDF"
+      description="Placez les champs directement sur le template PDF. Le champ stamp positionne le tampon de l'école."
+    >
+      <div className="space-y-4 px-4 py-5 sm:px-6">
+        {!template.url ? (
+          <p className="text-sm text-muted-foreground">
+            Uploader d'abord un template PDF dans la section «Documents» ci-dessus.
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-foreground">
+              {current.length} champ(s) positionné(s) sur le template.
+              {dirty ? " Modifications non enregistrées." : ""}
+            </p>
+            <button
+              onClick={() => setOpen(true)}
+              className={cn(primaryPill, "gap-2")}
+            >
+              <Maximize2 className="h-4 w-4" /> Ouvrir l'éditeur
+            </button>
+          </>
+        )}
+      </div>
+
+      {open && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-[#e8e8e8]" style={{ isolation: "isolate" }}>
+          <div className="sr-only" role="dialog" aria-modal="true" aria-label="Configuration du reçu PDF" />
+
+          {/* Floating top bar */}
+          <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between bg-white/90 px-4 py-2 shadow-sm backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">
+                {current.length} champ{current.length !== 1 ? "s" : ""}
+                {dirty ? " · Modifié" : ""}
+              </span>
+              {available.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => { if (e.target.value) addField(e.target.value); e.target.value = ""; }}
+                  className={cn(ghostPill, "px-2 py-1 text-xs")}
+                >
+                  <option value="">+ Ajouter un champ</option>
+                  {available.map((p) => (
+                    <option key={p} value={p}>{'{'}{p}{'}'}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {dirty && (
+                <>
+                  <button onClick={() => { setFields(null); setOpen(false); }} className={cn(ghostPill, "px-2 py-1 text-xs")}>Annuler</button>
+                  <button
+                    onClick={() => save.mutate(current)}
+                    disabled={save.isPending}
+                    className={cn(primaryPill, "px-2 py-1 text-xs disabled:opacity-50")}
+                  >
+                    <Save className="h-3 w-3" /> {save.isPending ? "..." : "Enregistrer"}
+                  </button>
+                </>
+              )}
+              <button onClick={() => setOpen(false)} className={cn(iconButton, "h-7 w-7 p-0")} aria-label="Fermer"><X className="h-4 w-4" /></button>
+            </div>
+          </div>
+
+          {editor}
+        </div>,
+        document.body
+      )}
     </Section>
   );
 }

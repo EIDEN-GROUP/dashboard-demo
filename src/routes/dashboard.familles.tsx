@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useEffect, type ReactNode } from "react";
+import { useMemo, useState, useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Pencil,
@@ -18,6 +18,11 @@ import {
   Package,
   Briefcase,
   BookOpen,
+  Upload,
+  Download,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Dialog,
@@ -25,6 +30,11 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -52,6 +62,7 @@ import {
   dialogSurface,
   labelClass,
   primaryPill,
+  ghostPill,
   iconButton,
   statusPill,
   STATUS_COLORS,
@@ -59,10 +70,11 @@ import {
   renderPieLabel,
   eyebrowClass,
 } from "@/lib/dash-ui";
-import { listClients, createClient, updateClient, deleteClient, type ClientInput } from "@/lib/server-clients";
+import { listClients, createClient, updateClient, deleteClient, getClient, importClientsCsv, type ClientInput } from "@/lib/server-clients";
 import { getSettings } from "@/lib/server-settings";
 import { AddClientDialog, emptyChild, emptyWizard, type WizardData, type ChildFormData } from "@/components/add-client-wizard";
 import { createPayment, updatePaymentInvoice } from "@/lib/server-payments";
+import { generateReceiptPdf } from "@/lib/server-receipt";
 import { sendClientMessage, sendBroadcast, sendPaymentReceipt } from "@/lib/server-whatsapp";
 import { toast } from "sonner";
 
@@ -332,6 +344,54 @@ function CrmParentsPage() {
   const edit = editId ? clients.find((c) => c.id === editId) : null;
   const paymentClient = paymentId ? clients.find((c) => c.id === paymentId) : null;
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const importCsv = useMutation({
+    mutationFn: importClientsCsv,
+    onSuccess: (r) => {
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      toast.success(`${r.imported} client(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
+      if (r.errors.length) r.errors.forEach((e) => toast.error(e));
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur import CSV"),
+  });
+
+  function handleExportCsv() {
+    const cols = [
+      "parent_name", "child_name", "child_names", "email", "phone", "address",
+      "level", "monthly_fee", "remise", "payment_day", "fratrie",
+      "transport", "cantine", "garderie", "activites", "notes",
+    ];
+    const header = cols.join(",");
+    const body = clients.map((c) => {
+      const childNames = JSON.stringify(c.child_names ?? []);
+      const esc = (v: unknown) => {
+        const s = String(v ?? "");
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      return cols.map((col) => {
+        if (col === "child_names") return esc(childNames);
+        return esc((c as Record<string, unknown>)[col]);
+      }).join(",");
+    }).join("\n");
+    const csv = `${header}\n${body}`;
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "clients.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportCsv(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      importCsv.mutate({ data: { csvText: text } });
+    };
+    reader.readAsText(file);
+  }
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -345,10 +405,26 @@ function CrmParentsPage() {
             Fiches élèves complètes   scolarité, contacts, santé et suivi des paiements mensuels.
           </p>
         </div>
-        <button type="button" onClick={() => setAddOpen(true)} className={primaryPill}>
-          <Plus className="h-4 w-4" />
-          {t.familles.addClient}
-        </button>
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImportCsv(f); e.target.value = ""; }}
+          />
+          <button type="button" onClick={handleExportCsv} className={cn(ghostPill, "gap-1.5")} title="Exporter en CSV">
+            <Download className="h-3.5 w-3.5" /> CSV
+          </button>
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={importCsv.isPending} className={cn(ghostPill, "gap-1.5 disabled:opacity-50")} title="Importer un CSV">
+            {importCsv.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+            CSV
+          </button>
+          <button type="button" onClick={() => setAddOpen(true)} className={primaryPill}>
+            <Plus className="h-4 w-4" />
+            {t.familles.addClient}
+          </button>
+        </div>
       </header>
 
       {/* Filtres */}
@@ -771,18 +847,52 @@ function PaymentDialog({
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const schoolYearStart = currentMonth >= 9 ? currentYear : currentYear - 1;
+  const [schoolYear, setSchoolYear] = useState(schoolYearStart);
 
-  const monthOptions = useMemo(() => {
-    const now = new Date();
-    const opts: { value: string; label: string }[] = [];
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const label = d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
-      const value = `${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-      opts.push({ value, label });
-    }
-    return opts;
-  }, []);
+  const SCHOOL_MONTHS = [
+    { num: 9, short: "Sep", long: "Septembre" },
+    { num: 10, short: "Oct", long: "Octobre" },
+    { num: 11, short: "Nov", long: "Novembre" },
+    { num: 12, short: "Déc", long: "Décembre" },
+    { num: 1, short: "Jan", long: "Janvier" },
+    { num: 2, short: "Fév", long: "Février" },
+    { num: 3, short: "Mar", long: "Mars" },
+    { num: 4, short: "Avr", long: "Avril" },
+    { num: 5, short: "Mai", long: "Mai" },
+    { num: 6, short: "Juin", long: "Juin" },
+  ];
+
+  function monthCalYear(num: number, sy: number) {
+    return num >= 9 ? sy : sy + 1;
+  }
+
+  function isFutureMonth(num: number, sy: number) {
+    const yr = monthCalYear(num, sy);
+    if (yr > currentYear) return true;
+    if (yr < currentYear) return false;
+    return num > currentMonth;
+  }
+
+  function selectMonth(num: number) {
+    const yr = monthCalYear(num, schoolYear);
+    const value = `${String(num).padStart(2, "0")}/${yr}`;
+    setSelectedPeriod(value);
+  }
+
+  function formatPeriod(value: string) {
+    if (!value) return "Mois en cours";
+    const [m, y] = value.split("/");
+    const month = SCHOOL_MONTHS.find((s) => s.num === Number(m));
+    return month ? `${month.long} ${y}` : value;
+  }
+
+  function prevSchoolYear() { setSchoolYear((y) => y - 1); }
+  function nextSchoolYear() { setSchoolYear((y) => Math.min(y + 1, currentYear)); }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -801,6 +911,33 @@ function PaymentDialog({
         },
       });
       if (clientEmail) {
+        const clientData = await getClient({ data: clientId });
+        const children = (clientData as any)?.child_names ?? [];
+        const pdfResult = await generateReceiptPdf({
+          data: {
+            clientId,
+            paymentId: payment.id,
+            data: {
+              school_name: "",
+              school_address: "",
+              school_phone: "",
+              receipt_number: payment.receipt,
+              date: String(payment.date),
+              parent_name: clientLabel,
+              children_names: children.map((c: any) => c.name).join(", "),
+              period: String(payment.period),
+              monthly_fee: String((clientData as any)?.monthly_fee ?? 0),
+              remise: String((clientData as any)?.remise ?? 0),
+              discount_amount: String(Math.round(((clientData as any)?.monthly_fee ?? 0) * ((clientData as any)?.remise ?? 0) / 100)),
+              amount_due: String(payment.amount),
+              amount_paid: String(payment.amount),
+              payment_date: String(payment.date),
+              remaining: "0",
+              payment_mode: String(payment.mode),
+              stamp: "true",
+            },
+          },
+        });
         await sendPaymentReceipt({
           data: {
             to: clientEmail,
@@ -810,6 +947,7 @@ function PaymentDialog({
             date: String(payment.date),
             mode: String(payment.mode),
             period: String(payment.period),
+            pdfUrl: pdfResult.url,
           },
         });
       }
@@ -858,16 +996,47 @@ function PaymentDialog({
               </Select>
             </Field>
             <Field id="pay-period" label="Mois concerné">
-              <Select name="period" defaultValue="">
-                <SelectTrigger id="pay-period" className={selectTriggerClass}>
-                  <SelectValue placeholder="Mois en cours" />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  {monthOptions.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className={cn(selectTriggerClass, "w-full justify-start text-left font-normal")}>
+                    {selectedPeriod ? formatPeriod(selectedPeriod) : "Mois en cours"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[280px] p-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <button type="button" onClick={prevSchoolYear} className="grid h-7 w-7 place-items-center rounded-md hover:bg-muted">
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="text-sm font-medium">{schoolYear}/{schoolYear + 1}</span>
+                    <button type="button" onClick={nextSchoolYear} className="grid h-7 w-7 place-items-center rounded-md hover:bg-muted disabled:opacity-30" disabled={schoolYear >= currentYear}>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1">
+                    {SCHOOL_MONTHS.map((m) => {
+                      const yr = monthCalYear(m.num, schoolYear);
+                      const val = `${String(m.num).padStart(2, "0")}/${yr}`;
+                      const future = isFutureMonth(m.num, schoolYear);
+                      return (
+                        <button
+                          key={m.num}
+                          type="button"
+                          onClick={() => selectMonth(m.num)}
+                          disabled={future}
+                          className={cn(
+                            "rounded-md px-1 py-2 text-sm transition-colors",
+                            selectedPeriod === val ? "bg-[#6BA53A] text-white font-semibold" : "hover:bg-muted",
+                            future && "text-muted-foreground/30 cursor-not-allowed",
+                          )}
+                        >
+                          {m.short}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <input type="hidden" name="period" value={selectedPeriod} />
             </Field>
             {error ? <p className="text-xs text-red-600">{error}</p> : null}
             <div className="flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">

@@ -233,6 +233,7 @@ export const sendPaymentReceipt = createServerFn({ method: "POST" })
       date: string;
       mode: string;
       period: string;
+      pdfUrl?: string;
     }) => input,
   )
   .handler(async ({ data }) => {
