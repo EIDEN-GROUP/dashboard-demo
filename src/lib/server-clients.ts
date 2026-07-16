@@ -35,6 +35,141 @@ export type ClientInput = {
   subscribed_services?: string[];
 };
 
+function parseCsv(text: string): Record<string, string>[] {
+  const lines: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === "\n" && !inQuotes) {
+      lines.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim()) lines.push(current);
+
+  if (lines.length < 2) return [];
+  const headers = parseCsvLine(lines[0]);
+  const result: Record<string, string>[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) continue;
+    const values = parseCsvLine(trimmed);
+    const row: Record<string, string> = {};
+    headers.forEach((h, j) => { row[h.trim()] = (values[j] ?? "").trim(); });
+    result.push(row);
+  }
+  return result;
+}
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function toBool(v: string): boolean {
+  return ["true", "1", "oui", "yes", "on"].includes(v.toLowerCase());
+}
+
+function tryParseJsonArray<T>(v: string): T[] {
+  try {
+    const parsed = JSON.parse(v);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export const importClientsCsv = createServerFn({ method: "POST" })
+  .inputValidator((input: { csvText: string }) => input)
+  .handler(async ({ data }) => {
+    const rows = parseCsv(data.csvText);
+    let imported = 0;
+    const errors: string[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const parentName = r["parent_name"] || r["Parent"] || "";
+      if (!parentName) {
+        errors.push(`Ligne ${i + 2}: parent_name manquant`);
+        continue;
+      }
+
+      const childNamesRaw = r["child_names"];
+      let childNames: ChildInfo[] = [];
+      if (childNamesRaw) {
+        childNames = tryParseJsonArray<ChildInfo>(childNamesRaw);
+      } else {
+        childNames = [{ name: r["child_name"] || r["Enfant"] || "", dob: "", cycle: "", level: r["level"] || r["Niveau"] || "", services: [], frais: [] }];
+      }
+
+      const input: ClientInput = {
+        parent_name: parentName,
+        child_name: childNames.map((c) => c.name).join(", "),
+        child_age: r["child_age"] || "",
+        email: r["email"] || r["Email"] || "",
+        email2: r["email2"] || "",
+        phone: r["phone"] || r["Téléphone"] || r["Telephone"] || "",
+        phone2: r["phone2"] || "",
+        cin: r["cin"] || r["CIN"] || "",
+        cin_mother: r["cin_mother"] || "",
+        father_name: r["father_name"] || r["Père"] || r["Pere"] || "",
+        mother_name: r["mother_name"] || r["Mère"] || r["Mere"] || "",
+        profession_father: r["profession_father"] || "",
+        profession_mother: r["profession_mother"] || "",
+        address: r["address"] || r["Adresse"] || "",
+        child_names: childNames,
+        subscribed_frais: tryParseJsonArray<string>(r["subscribed_frais"] || "[]"),
+        dob: r["dob"] || r["Date de naissance"] || "",
+        level: r["level"] || r["Niveau"] || "",
+        crm_stage: (r["crm_stage"] === "converti" ? "converti" : "nouveau") as "nouveau" | "converti",
+        monthly_fee: Number(r["monthly_fee"] || r["Frais mensuels"] || 0),
+        payment_day: Number(r["payment_day"] || r["Jour de paiement"] || 1),
+        notes: r["notes"] || r["Notes"] || "",
+        whatsapp_optin: r["whatsapp_optin"] ? toBool(r["whatsapp_optin"]) : true,
+        transport: r["transport"] ? toBool(r["transport"]) : false,
+        cantine: r["cantine"] ? toBool(r["cantine"]) : false,
+        garderie: r["garderie"] ? toBool(r["garderie"]) : false,
+        activites: r["activites"] ? toBool(r["activites"]) : false,
+        fratrie: Number(r["fratrie"] || 1),
+        remise: Number(r["remise"] || 0),
+        subscribed_services: tryParseJsonArray<string>(r["subscribed_services"] || "[]"),
+      };
+
+      try {
+        await supabaseAdmin.from("clients").insert(input);
+        imported++;
+      } catch (e) {
+        errors.push(`Ligne ${i + 2}: ${e instanceof Error ? e.message : "Erreur inconnue"}`);
+      }
+    }
+
+    return { imported, errors };
+  });
+
 export const listClients = createServerFn({ method: "GET" })
   .handler(async () => {
     const { data, error } = await supabaseAdmin

@@ -306,6 +306,7 @@ export function renderPaymentReceiptEmail(opts: {
   date: string;
   mode: string;
   period: string;
+  pdfUrl?: string;
 }): RenderedEmail {
   const amountLabel = `${opts.amount.toLocaleString("fr-FR")} MAD`;
   const modeLabel = MODE_LABEL[opts.mode] ?? opts.mode;
@@ -324,6 +325,15 @@ export function renderPaymentReceiptEmail(opts: {
     </p>
 
     ${detailTable(rows)}
+
+    ${opts.pdfUrl ? `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:22px;">
+      <tr><td style="background-color:${C.emerald};border:2px solid ${C.emeraldDk};border-radius:8px;">
+        <a href="${escapeHtml(opts.pdfUrl)}" style="display:inline-block;padding:13px 24px;font:800 13px/1 -apple-system,Arial,sans-serif;color:${C.white};text-decoration:none;">
+          Télécharger le reçu PDF →
+        </a>
+      </td></tr>
+    </table>` : ""}
 
     <p style="margin:26px 0 0;font:400 13px/1.6 -apple-system,Arial,sans-serif;color:${C.muted};">
       Ce reçu fait foi de paiement. Conservez-le pour vos archives.<br />L'équipe pédagogique
