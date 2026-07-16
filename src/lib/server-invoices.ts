@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-export type InvoiceStatus = "paye" | "impaye" | "retard";
+export type InvoiceStatus = "paye" | "en_attente" | "retard";
 
 export type Invoice = {
   id: string;
@@ -19,12 +19,12 @@ export type Invoice = {
 export type InvoicePoint = {
   bucket: string;
   encaisse: number;
-  impaye: number;
+  en_attente: number;
   retard: number;
   du: number;
   paiements: number;
   countPaye: number;
-  countImpaye: number;
+  countEnAttente: number;
   countRetard: number;
 };
 
@@ -73,12 +73,12 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
     const empty = (bucket: string): InvoicePoint => ({
       bucket,
       encaisse: 0,
-      impaye: 0,
+      en_attente: 0,
       retard: 0,
       du: 0,
       paiements: 0,
       countPaye: 0,
-      countImpaye: 0,
+      countEnAttente: 0,
       countRetard: 0,
     });
 
@@ -92,9 +92,9 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
       if (r.status === "retard") {
         point.retard += outstanding;
         point.countRetard += 1;
-      } else if (r.status === "impaye") {
-        point.impaye += outstanding;
-        point.countImpaye += 1;
+      } else if (r.status === "en_attente") {
+        point.en_attente += outstanding;
+        point.countEnAttente += 1;
       } else {
         point.countPaye += 1;
       }
@@ -103,7 +103,7 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
     const round = (p: InvoicePoint): InvoicePoint => ({
       ...p,
       encaisse: Math.round(p.encaisse),
-      impaye: Math.round(p.impaye),
+      en_attente: Math.round(p.en_attente),
       retard: Math.round(p.retard),
       du: Math.round(p.du),
     });
@@ -167,12 +167,12 @@ export const getOutstanding = createServerFn({ method: "GET" }).handler(async ()
   const { data, error } = await supabaseAdmin
     .from("invoices")
     .select("amount_due, amount_paid, status")
-    .in("status", ["impaye", "retard"]);
+    .in("status", ["en_attente", "retard"]);
   if (error) throw new Error(error.message);
 
-  let impayeTotal = 0;
+  let enAttenteTotal = 0;
   let retardTotal = 0;
-  let impayeCount = 0;
+  let enAttenteCount = 0;
   let retardCount = 0;
   for (const r of (data ?? []) as Array<{
     amount_due: number;
@@ -184,14 +184,14 @@ export const getOutstanding = createServerFn({ method: "GET" }).handler(async ()
       retardTotal += outstanding;
       retardCount += 1;
     } else {
-      impayeTotal += outstanding;
-      impayeCount += 1;
+      enAttenteTotal += outstanding;
+      enAttenteCount += 1;
     }
   }
   return {
-    impayeTotal: Math.round(impayeTotal),
+    enAttenteTotal: Math.round(enAttenteTotal),
     retardTotal: Math.round(retardTotal),
-    impayeCount,
+    enAttenteCount,
     retardCount,
   };
 });

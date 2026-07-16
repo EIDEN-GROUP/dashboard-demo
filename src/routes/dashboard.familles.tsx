@@ -87,11 +87,11 @@ export const Route = createFileRoute("/dashboard/familles")({
   component: CrmParentsPage,
 });
 
-type PaymentStatus = "paye" | "impaye" | "retard";
+type PaymentStatus = "paye" | "en_attente" | "retard";
 
 const PAYMENT_LABEL: Record<PaymentStatus, string> = {
   paye: "Payé",
-  impaye: "Impayé",
+  en_attente: "En attente",
   retard: "En retard",
 };
 
@@ -248,7 +248,7 @@ function StatusSelect({
       </SelectTrigger>
       <SelectContent className={softSelectContent}>
         <SelectItem value="paye">{PAYMENT_LABEL.paye}</SelectItem>
-        <SelectItem value="impaye">{PAYMENT_LABEL.impaye}</SelectItem>
+        <SelectItem value="en_attente">{PAYMENT_LABEL.en_attente}</SelectItem>
         <SelectItem value="retard">{PAYMENT_LABEL.retard}</SelectItem>
       </SelectContent>
     </Select>
@@ -425,14 +425,12 @@ function CrmParentsPage() {
   const importCsv = useMutation({
     mutationFn: (input: { csvText: string }) => importClientsCsv({ data: input }),
     onSuccess: (r) => {
-      alert("import success: " + r.imported + " imported, " + r.errors.length + " errors");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(`${r.imported} client(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
       if (r.errors.length) r.errors.forEach((e) => toast.error(e));
       setPreviewRows(null);
     },
     onError: (err) => {
-      alert("import error: " + (err instanceof Error ? err.message : JSON.stringify(err)));
       console.error("CSV import error:", err);
       toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
       setPreviewRows(null);
@@ -522,10 +520,37 @@ function CrmParentsPage() {
   }
 
   function confirmImportCsv() {
-    if (!csvText) { alert("csvText is empty"); return; }
-    alert("confirmImportCsv called, csvText length: " + csvText.length);
+    if (!csvText) return;
     importCsv.mutate({ csvText });
   }
+
+  const validateWarnings = useMemo(() => {
+    if (!previewRows || !previewHeaders.length) return [];
+    const warnings: string[] = [];
+    const h = previewHeaders.map((x) => x.toLowerCase());
+
+    const nameCol = previewHeaders.find((x) =>
+      ["parent_name", "parent", "nom parent", "nom_parent"].includes(x.toLowerCase())
+    );
+    if (!nameCol) warnings.push("Colonne manquante : parent_name / Parent");
+
+    const recommended = [
+      { label: "child_name / Enfant", keys: ["child_name", "enfant"] },
+      { label: "email / Email", keys: ["email"] },
+      { label: "phone / Téléphone", keys: ["phone", "telephone", "téléphone", "tel"] },
+      { label: "level / Niveau", keys: ["level", "niveau"] },
+      { label: "monthly_fee / Frais mensuels", keys: ["monthly_fee", "frais mensuels", "frais_mensuels"] },
+    ];
+    recommended.forEach((r) => {
+      if (!r.keys.some((k) => h.includes(k))) warnings.push(`Colonne conseillée manquante : ${r.label}`);
+    });
+
+    if (nameCol) {
+      const missing = previewRows.filter((row) => !(row[nameCol] ?? "").trim()).length;
+      if (missing) warnings.push(`${missing} ligne(s) sans parent`);
+    }
+    return warnings;
+  }, [previewRows, previewHeaders]);
 
   return (
     <div className="space-y-6">
@@ -946,6 +971,20 @@ function CrmParentsPage() {
           <DialogDescription className="text-sm text-muted-foreground">
             {previewRows ? `${previewRows.length} client(s) détecté(s). Vérifiez les données avant de confirmer l'import.` : ""}
           </DialogDescription>
+          {validateWarnings.length > 0 ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              {validateWarnings.map((w, i) => (
+                <p key={i} className="flex items-center gap-1.5">
+                  <span className="shrink-0">⚠️</span> {w}
+                </p>
+              ))}
+              <p className="mt-1 text-[10px] text-amber-600">L'import peut tout de même être tenté avec les données disponibles.</p>
+            </div>
+          ) : previewRows ? (
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+              Toutes les colonnes recommandées sont présentes.
+            </div>
+          ) : null}
           <div className="flex-1 overflow-auto rounded-md border">
             <table className="w-full text-xs">
               <thead>

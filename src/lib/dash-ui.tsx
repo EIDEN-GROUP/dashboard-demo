@@ -73,18 +73,18 @@ export const dashTooltip = {
   color: "var(--foreground)",
 } as const;
 
-/** Status colours   payé / impayé / en retard (shared across pages). */
+/** Status colours   payé / en attente / en retard (shared across pages). */
 export const STATUS_COLORS = {
   paye: "#6BA53A",
-  impaye: "#E8A13C",
+  en_attente: "#E8A13C",
   retard: "#E25C5C",
 } as const;
 
 /** Rounded status pill with a soft tinted background. */
-export function statusPill(tone: "paye" | "impaye" | "retard" | "neutral") {
+export function statusPill(tone: "paye" | "en_attente" | "retard" | "neutral") {
   const map = {
     paye: "bg-[#B5E18B]/30 text-[#3E6420]",
-    impaye: "bg-[#F4E3C0] text-[#8A5A16]",
+    en_attente: "bg-[#F4E3C0] text-[#8A5A16]",
     retard: "bg-[#F6D8D8] text-[#9A2F2F]",
     neutral: "bg-muted text-foreground/80",
   } as const;

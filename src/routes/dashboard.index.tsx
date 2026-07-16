@@ -80,14 +80,11 @@ export const Route = createFileRoute("/dashboard/")({
 type Grain = "mensuel" | "trimestriel" | "annuel";
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-type SeriesKey = "encaisse" | "impaye" | "retard" | "attente";
-
-/** Tone already used for "en attente" pills across the dashboard (on #F4E3C0). */
-const PENDING_COLOR = "#8A5A16";
+type SeriesKey = "encaisse" | "en_attente" | "retard";
 
 const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
   { key: "encaisse", label: "Encaissé", color: "#28396C" },
-  { key: "impaye", label: "Impayé", color: STATUS_COLORS.impaye },
+  { key: "en_attente", label: "En attente", color: STATUS_COLORS.en_attente },
   { key: "retard", label: "En retard", color: STATUS_COLORS.retard },
   // "En attente" is impayé + retard, so it deliberately overlaps the two series
   // above: it reads as the single "left to collect" column next to Encaissé.
@@ -129,7 +126,7 @@ function CrmDash() {
   // Which money series are drawn. Clicking a legend chip toggles one on/off.
   const [series, setSeries] = useState<Record<SeriesKey, boolean>>({
     encaisse: true,
-    impaye: true,
+    en_attente: true,
     retard: true,
     attente: true,
   });
@@ -169,11 +166,11 @@ function CrmDash() {
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
-    const c = { paye: 0, impaye: 0, retard: 0 };
+    const c = { paye: 0, en_attente: 0, retard: 0 };
     (clients as any[]).forEach((cl: any) => {
       if (cl.payment_status === "paye") c.paye++;
       else if (cl.payment_status === "retard") c.retard++;
-      else c.impaye++;
+      else if (cl.payment_status === "en_attente") c.en_attente++;
     });
     return c;
   }, [clients]);
@@ -182,14 +179,14 @@ function CrmDash() {
   // retard au plus récent   c'est la file de relance affichée sous les paiements.
   const pendingDues = useMemo(() => {
     return (clients as any[])
-      .filter((c: any) => c.payment_status === "impaye" || c.payment_status === "retard")
+      .filter((c: any) => c.payment_status === "en_attente" || c.payment_status === "retard")
       .map((c: any) => {
         const net = Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100));
         return {
           id: c.id as string,
           name: (c.parent_name || c.child_name || "") as string,
           level: (c.level || "") as string,
-          status: c.payment_status as "impaye" | "retard",
+          status: c.payment_status as "en_attente" | "retard",
           days: c.payment_status === "retard" ? daysOverdue(c.payment_day) : 0,
           amount: (c.debt ?? 0) > 0 ? (c.debt as number) : net,
         };
@@ -215,7 +212,7 @@ function CrmDash() {
       note: `Frais mensuels · ${p.clients?.child_name ?? ""}`,
       date: p.date || " ",
       amount: String(p.amount),
-      status: (p.clients?.payment_status ?? "impaye") as "paye" | "impaye" | "retard",
+      status: (p.clients?.payment_status ?? "en_attente") as "paye" | "en_attente" | "retard",
     }));
   }, [dbPayments]);
 
@@ -223,7 +220,7 @@ function CrmDash() {
   const totalClients = (clients as any[]).length;
   const paidCount = statusCounts.paye;
   const overdueCount = statusCounts.retard;
-  const unpaidCount = statusCounts.impaye;
+  const unpaidCount = statusCounts.en_attente;
   const totalRevenue = stats?.total_revenue ?? 0;
 
   // Each card opens the client list already filtered to the status it counts,
@@ -267,16 +264,16 @@ function CrmDash() {
     },
     {
       k: "04",
-      label: "Impayé",
+      label: "En attente",
       value: String(unpaidCount),
       sub: "facture en attente",
-      accent: STATUS_COLORS.impaye,
+      accent: STATUS_COLORS.en_attente,
       tint: "rgba(232,161,60,0.14)",
       icon: AlertCircle,
       to: "/dashboard/familles",
-      search: { statut: "impaye" },
+      search: { statut: "en_attente" },
       // Analyse express : montant total en attente de recouvrement.
-      extra: `${(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD en attente`,
+      extra: `${pendingDues.length} famille(s) en attente`,
     },
   ] as const;
 
@@ -524,19 +521,19 @@ function CrmDash() {
               <li>
                 <Link
                   to="/dashboard/familles"
-                  search={{ statut: "impaye" }}
+                  search={{ statut: "en_attente" }}
                   className="block px-5 py-5 transition-colors hover:bg-[#F4E3C0]/40 sm:px-6"
                 >
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.impaye }} />
-                    Impayé
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.en_attente }} />
+                    En attente
                     <ArrowRight className="ml-auto h-3.5 w-3.5" />
                   </p>
                   <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
-                    {(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD
+                    {(outstanding?.enAttenteTotal ?? 0).toLocaleString("fr-FR")} MAD
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {outstanding?.impayeCount ?? 0} facture(s) en attente
+                    {outstanding?.enAttenteCount ?? 0} facture(s) en attente
                   </p>
                 </Link>
               </li>
@@ -611,7 +608,7 @@ function CrmDash() {
                   <p className="text-[11px] text-muted-foreground">{p.date}</p>
                 </div>
                 <span className={statusPill(p.status)}>
-                  {p.status === "paye" ? "Payé" : p.status === "retard" ? "En retard" : "Impayé"}
+                  {p.status === "paye" ? "Payé" : p.status === "retard" ? "En retard" : "En attente"}
                 </span>
               </li>
             ))}

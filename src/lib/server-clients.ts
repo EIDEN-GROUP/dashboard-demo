@@ -138,24 +138,30 @@ export const importClientsCsv = createServerFn({ method: "POST" })
         dob: r["dob"] || r["Date de naissance"] || "",
         level: r["level"] || r["Niveau"] || "",
         crm_stage: (r["crm_stage"] === "converti" ? "converti" : "nouveau") as "nouveau" | "converti",
-        monthly_fee: Number(r["monthly_fee"] || r["Frais mensuels"] || 0),
-        payment_day: Number(r["payment_day"] || r["Jour de paiement"] || 1),
+        monthly_fee: Number(r["monthly_fee"] || r["Frais mensuels"] || 0) || 0,
+        payment_day: Number(r["payment_day"] || r["Jour de paiement"] || 1) || 1,
         notes: r["notes"] || r["Notes"] || "",
         whatsapp_optin: r["whatsapp_optin"] ? toBool(r["whatsapp_optin"]) : true,
         transport: r["transport"] ? toBool(r["transport"]) : false,
         cantine: r["cantine"] ? toBool(r["cantine"]) : false,
         garderie: r["garderie"] ? toBool(r["garderie"]) : false,
         activites: r["activites"] ? toBool(r["activites"]) : false,
-        fratrie: Number(r["fratrie"] || 1),
-        remise: Number(r["remise"] || 0),
+        fratrie: (() => {
+          const v = r["fratrie"] || "1";
+          const n = v.toLowerCase() === "true" ? 1 : v.toLowerCase() === "false" ? 0 : Number(v);
+          return Number.isFinite(n) ? n : 1;
+        })(),
+        remise: Number(r["remise"] || 0) || 0,
         subscribed_services: tryParseJsonArray<string>(r["subscribed_services"] || "[]"),
       };
 
       try {
-        await supabaseAdmin.from("clients").insert(input);
+        const { error: insertError } = await supabaseAdmin.from("clients").insert(input);
+        if (insertError) throw insertError;
         imported++;
       } catch (e) {
-        errors.push(`Ligne ${i + 2}: ${e instanceof Error ? e.message : "Erreur inconnue"}`);
+        const msg = e instanceof Error ? e.message : typeof e === "object" && e !== null ? (e as Record<string, unknown>).message || JSON.stringify(e) : String(e);
+        errors.push(`Ligne ${i + 2}: ${msg}`);
       }
     }
 
