@@ -425,8 +425,12 @@ function CrmParentsPage() {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(`${r.imported} client(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
       if (r.errors.length) r.errors.forEach((e) => toast.error(e));
+      setPreviewRows(null);
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur import CSV"),
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
+      setPreviewRows(null);
+    },
   });
 
   function handleExportCsv() {
@@ -457,13 +461,63 @@ function CrmParentsPage() {
     URL.revokeObjectURL(url);
   }
 
+  const [previewRows, setPreviewRows] = useState<Record<string, string>[] | null>(null);
+  const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
+  const [csvText, setCsvText] = useState("");
+
+  function parseCsvClient(text: string): { headers: string[]; rows: Record<string, string>[] } {
+    let t = text;
+    if (t.charCodeAt(0) === 0xfeff) t = t.slice(1);
+    t = t.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+    const lines: string[] = t.split("\n").filter((l) => l.trim());
+    if (lines.length < 2) return { headers: [], rows: [] };
+
+    function splitLine(line: string): string[] {
+      const res: string[] = [];
+      let cur = "", q = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (q && line[i + 1] === '"') { cur += '"'; i++; }
+          else q = !q;
+        } else if (c === "," && !q) { res.push(cur); cur = ""; }
+        else cur += c;
+      }
+      res.push(cur);
+      return res;
+    }
+
+    const headers = splitLine(lines[0]).map((h) => h.trim());
+    const rows: Record<string, string>[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = splitLine(lines[i]);
+      const row: Record<string, string> = {};
+      headers.forEach((h, j) => { row[h] = (vals[j] ?? "").trim(); });
+      rows.push(row);
+    }
+    return { headers, rows };
+  }
+
   function handleImportCsv(file: File) {
     const reader = new FileReader();
     reader.onload = () => {
       const text = reader.result as string;
-      importCsv.mutate({ data: { csvText: text } });
+      const { headers, rows } = parseCsvClient(text);
+      if (rows.length === 0) {
+        toast.error("Aucune ligne valide dans le fichier CSV");
+        return;
+      }
+      setPreviewHeaders(headers);
+      setPreviewRows(rows);
+      setCsvText(text);
     };
     reader.readAsText(file);
+  }
+
+  function confirmImportCsv() {
+    if (!csvText) return;
+    importCsv.mutate({ data: { csvText } });
   }
 
   return (
@@ -825,6 +879,52 @@ function CrmParentsPage() {
           onOpenChange={(o) => !o && setEditId(null)}
         />
       ) : null}
+
+      <Dialog open={!!previewRows} onOpenChange={(o) => !o && setPreviewRows(null)}>
+        <DialogContent className="max-w-[90vw] max-h-[85vh] flex flex-col">
+          <DialogTitle className="text-lg font-semibold">Aperçu des données CSV</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            {previewRows ? `${previewRows.length} client(s) détecté(s). Vérifiez les données avant de confirmer l'import.` : ""}
+          </DialogDescription>
+          <div className="flex-1 overflow-auto rounded-md border">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-muted/50">
+                  {previewHeaders.map((h, i) => (
+                    <th key={i} className="whitespace-nowrap px-3 py-2 text-left font-semibold text-foreground">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {previewRows?.map((row, ri) => (
+                  <tr key={ri} className="border-t border-border odd:bg-card">
+                    {previewHeaders.map((h, ci) => (
+                      <td key={ci} className="max-w-[200px] truncate px-3 py-1.5 text-foreground" title={row[h]}>{row[h]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex flex-wrap justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setPreviewRows(null)}
+              className="rounded-full border border-border bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={confirmImportCsv}
+              disabled={importCsv.isPending}
+              className="rounded-full bg-[#6BA53A] px-5 py-2 text-sm font-medium text-white hover:bg-[#5a9232] disabled:opacity-60"
+            >
+              {importCsv.isPending ? "Import en cours…" : `Importer ${previewRows?.length ?? 0} client(s)`}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

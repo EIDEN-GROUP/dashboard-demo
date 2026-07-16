@@ -36,6 +36,12 @@ export type ClientInput = {
 };
 
 function parseCsv(text: string): Record<string, string>[] {
+  // Strip BOM
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+
+  // Normalise line endings: \r\n → \n, then \r → \n
+  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
   const lines: string[] = [];
   let current = "";
   let inQuotes = false;
