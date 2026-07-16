@@ -410,8 +410,6 @@
       "admins": "المديرون",
       "demandes": "الطلبات"
     },
-    "switchToCenter": "الانتقال إلى لوحة تحكم المركز",
-    "switchToSuperadmin": "الانتقال إلى فضاء المشرف العام",
     "accessDenied": "الوصول مخصص للمشرف العام",
     "loading": "جارٍ التحميل…",
     "overview": {

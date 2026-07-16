@@ -39,8 +39,6 @@ function SuperadminLayout() {
       brandColor="primary"
       variant="topnav"
       topNav={topNav}
-      switchTo="/dashboard"
-      switchLabel={t.superadmin.switchToCenter}
       hideNotifications
       dir={dir}
     >

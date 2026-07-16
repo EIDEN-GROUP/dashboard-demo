@@ -30,7 +30,6 @@ import {
 import { toast } from "sonner";
 import {
   LogOut,
-  ArrowLeftRight,
   Bell,
   MessageCircle,
   Check,
@@ -518,8 +517,6 @@ export function DashShell({
   topNav,
   secondaryNav,
   variant = "sidebar",
-  switchTo,
-  switchLabel,
   hideNotifications,
   dir,
   children,
@@ -530,9 +527,6 @@ export function DashShell({
   topNav?: NavItem[];
   secondaryNav?: NavItem[];
   variant?: "sidebar" | "topnav";
-  /** Second workspace link (e.g. admin). Omit to hide the switch control. */
-  switchTo?: string;
-  switchLabel?: string;
   /** Hide the alerts/WhatsApp sheet (admin-centric   superadmin shell hides it). */
   hideNotifications?: boolean;
   dir?: "ltr" | "rtl";
@@ -566,12 +560,6 @@ export function DashShell({
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 items-center">
                 <img src="/edu-logo.png" alt={`${brand} logo`} className="h-15 w-15" />
               </Link>
-              {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-[#B5E18B]/15">
-                  <ArrowLeftRight className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{switchLabel}</span>
-                </Link>
-              ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-2 pt-0.5">
               {hideNotifications ? null : <ShellNotifications />}
@@ -590,12 +578,6 @@ export function DashShell({
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex items-center">
                 <img src="/edu-logo.png" alt={`${brand} logo`} className="h-15 w-15" />
               </Link>
-              {switchTo && switchLabel ? (
-                <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-[#B5E18B]/15 w-fit" >
-                  <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{switchLabel}</span>
-                </Link>
-              ) : null}
             </div>
 
             <nav className="scroll-touch flex justify-center gap-1 overflow-x-auto rounded-full border border-[#28396C]/10 bg-white/80 p-1 shadow-sm lg:py-1">
@@ -680,12 +662,6 @@ export function DashShell({
               <GraduationCap className="h-[20px] w-[20px] text-[#B5E18B]" />
             </span>
           </div>
-          {switchTo && switchLabel ? (
-            <Link to={switchTo} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm border border-dashed border-border text-foreground/90 hover:bg-muted/80" >
-              <ArrowLeftRight className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="min-w-0 truncate">{switchLabel}</span>
-            </Link>
-          ) : null}
         </div>
         <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto scroll-touch p-3">
           {nav.map((n) => {

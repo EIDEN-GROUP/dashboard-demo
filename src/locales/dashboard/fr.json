@@ -410,8 +410,6 @@
       "admins": "Admins",
       "demandes": "Demandes"
     },
-    "switchToCenter": "Aller au tableau de bord du centre",
-    "switchToSuperadmin": "Aller à l'espace superadmin",
     "accessDenied": "Accès réservé au superadmin",
     "loading": "Chargement…",
     "overview": {
