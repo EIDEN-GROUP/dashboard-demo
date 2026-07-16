@@ -86,6 +86,9 @@ const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
   { key: "encaisse", label: "Encaissé", color: "#28396C" },
   { key: "en_attente", label: "En attente", color: STATUS_COLORS.en_attente },
   { key: "retard", label: "En retard", color: STATUS_COLORS.retard },
+  // "En attente" is impayé + retard, so it deliberately overlaps the two series
+  // above: it reads as the single "left to collect" column next to Encaissé.
+  { key: "attente", label: "En attente", color: PENDING_COLOR },
 ];
 
 type QuickAction =
@@ -125,6 +128,7 @@ function CrmDash() {
     encaisse: true,
     en_attente: true,
     retard: true,
+    attente: true,
   });
   const toggleSeries = (k: SeriesKey) =>
     setSeries((s) => {
@@ -152,7 +156,13 @@ function CrmDash() {
   });
 
   const dbPayments = payments as unknown as Array<{ id: string; amount: number; date: string; mode: string; period: string; invoice_sent: boolean; clients: { parent_name: string; child_name: string; phone: string; email: string; level: string; monthly_fee: number; payment_status: string; subscribed_services: string[] } }>;
-  const chartData = barData as InvoicePoint[];
+  // "En attente" is what the bucket still owes: the unpaid amount whether or not
+  // the due date has passed. Derived here rather than in the ledger query   it is
+  // exactly impayé + retard, which getInvoiceAnalytics already returns.
+  const chartData = useMemo(
+    () => (barData as InvoicePoint[]).map((p) => ({ ...p, attente: p.impaye + p.retard })),
+    [barData],
+  );
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
@@ -188,6 +198,12 @@ function CrmDash() {
     () => pendingDues.reduce((s, d) => s + d.amount, 0),
     [pendingDues],
   );
+
+  // The "En attente" KPI reads off the invoices ledger, like the Impayé / En retard
+  // rows it sits under, so the column sums consistently   and matches the chart's
+  // "En attente" bars, which come from the same query.
+  const attenteTotal = (outstanding?.impayeTotal ?? 0) + (outstanding?.retardTotal ?? 0);
+  const attenteCount = (outstanding?.impayeCount ?? 0) + (outstanding?.retardCount ?? 0);
 
   // Last 4 payments
   const lastPayments = useMemo(() => {
@@ -543,9 +559,15 @@ function CrmDash() {
               </li>
 
               <li className="px-5 py-5 sm:px-6">
-                <p className="text-xs text-muted-foreground">Familles actives</p>
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: PENDING_COLOR }} />
+                  En attente
+                </p>
                 <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
-                  {stats?.active_clients ?? 0}
+                  {attenteTotal.toLocaleString("fr-FR")} MAD
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {attenteCount} facture(s) à recouvrer
                 </p>
               </li>
             </ul>

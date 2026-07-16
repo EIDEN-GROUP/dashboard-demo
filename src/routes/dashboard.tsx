@@ -3,7 +3,7 @@ import { DashShell } from "@/components/dash-shell";
 import { useDashboardI18n, useDashboardNav } from "@/lib/landing-i18n";
 
 function DashboardLayout() {
-  const { dir } = useDashboardI18n();
+  const { t, dir } = useDashboardI18n();
   const { topNav, brand } = useDashboardNav();
 
   return (

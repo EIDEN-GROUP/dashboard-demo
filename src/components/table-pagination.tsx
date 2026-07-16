@@ -8,7 +8,7 @@ export const TABLE_PAGE_SIZE = 5;
 /**
  * Découpe une liste déjà filtrée en pages.
  *
- * `resetKey` : passer les filtres/recherche concaténés — un changement renvoie
+ * `resetKey` : passer les filtres/recherche concaténés   un changement renvoie
  * en page 1, sinon on peut atterrir sur une page vide après avoir filtré.
  * Le clamp couvre le cas d'une liste qui rétrécit (suppression d'une ligne).
  */
