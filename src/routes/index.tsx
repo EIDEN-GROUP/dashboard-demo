@@ -166,7 +166,7 @@ function Header() {
             to="/"
             className="flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors text-[#28396C] hover:text-[#28396C]/80"
           >
-                <img src="/public/edu-logo.png" alt="Edu logo" className="h-20 w-auto" />
+                <img src="/edu-logo.png" alt="Edu logo" className="h-20 w-auto" />
           </Link>
           <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
             {[
