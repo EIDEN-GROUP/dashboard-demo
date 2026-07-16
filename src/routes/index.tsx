@@ -378,119 +378,121 @@ function Hero() {
   ];
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_60%,#ECF5D8_100%)] py-12 lg:py-20">
-      {/* Dynamic Background */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,_rgba(181,225,139,0.35)_0%,_transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_75%,_rgba(40,57,108,0.08)_0%,_transparent_50%)]" />
-        {/* Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(to right, #28396C 1px, transparent 1px), linear-gradient(to bottom, #28396C 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)" }} />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Dynamic Background */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,_rgba(181,225,139,0.35)_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_75%,_rgba(40,57,108,0.08)_0%,_transparent_50%)]" />
+          {/* Grid overlay */}
+          <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "linear-gradient(to right, #28396C 1px, transparent 1px), linear-gradient(to bottom, #28396C 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 35%, #000 40%, transparent 100%)" }} />
 
-        <motion.div
-          animate={!reduceMotion ? { scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] } : {}}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-[#B5E18B]/40 blur-[120px]"
-        />
-        <motion.div
-          animate={!reduceMotion ? { scale: [1.2, 1, 1.2], opacity: [0.1, 0.2, 0.1] } : {}}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-[#28396C]/15 blur-[120px]"
-        />
-
-        {/* Floating glass tiles */}
-        <motion.div
-          animate={!reduceMotion ? { y: [0, -14, 0], rotate: [6, 10, 6] } : {}}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-          className="glass-tile absolute right-[6%] top-16 hidden h-20 w-20 rotate-6 lg:block"
-        >
-          <span className="absolute left-4 top-4 h-3.5 w-3.5 rounded-md bg-[#B5E18B]" />
-          <span className="absolute bottom-4 right-4 h-3.5 w-6 rounded-md bg-[#28396C]/70" />
-        </motion.div>
-        <motion.div
-          animate={!reduceMotion ? { y: [0, 12, 0], rotate: [-8, -12, -8] } : {}}
-          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-          className="glass-tile absolute left-[42%] top-28 hidden h-16 w-16 -rotate-8 xl:block"
-        >
-          <span className="absolute left-3.5 top-3.5 h-3 w-3 rounded-full bg-[#EAE6BC]" />
-          <span className="absolute bottom-3.5 right-3.5 h-3 w-3 rounded-sm bg-[#B5E18B]" />
-        </motion.div>
-      </div>
-
-      <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          {/* Copy Area */}
           <motion.div
-            initial="hidden"
-            animate="show"
-            variants={{ show: { transition: { staggerChildren: 0.1 } } }}
+            animate={!reduceMotion ? { scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] } : {}}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute -left-20 top-0 h-96 w-96 rounded-full bg-[#B5E18B]/40 blur-[120px]"
+          />
+          <motion.div
+            animate={!reduceMotion ? { scale: [1.2, 1, 1.2], opacity: [0.1, 0.2, 0.1] } : {}}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+            className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-[#28396C]/15 blur-[120px]"
+          />
+
+          {/* Floating glass tiles */}
+          <motion.div
+            animate={!reduceMotion ? { y: [0, -14, 0], rotate: [6, 10, 6] } : {}}
+            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-tile absolute right-[6%] top-16 hidden h-20 w-20 rotate-6 lg:block"
           >
+            <span className="absolute left-4 top-4 h-3.5 w-3.5 rounded-md bg-[#B5E18B]" />
+            <span className="absolute bottom-4 right-4 h-3.5 w-6 rounded-md bg-[#28396C]/70" />
+          </motion.div>
+          <motion.div
+            animate={!reduceMotion ? { y: [0, 12, 0], rotate: [-8, -12, -8] } : {}}
+            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+            className="glass-tile absolute left-[42%] top-28 hidden h-16 w-16 -rotate-8 xl:block"
+          >
+            <span className="absolute left-3.5 top-3.5 h-3 w-3 rounded-full bg-[#EAE6BC]" />
+            <span className="absolute bottom-3.5 right-3.5 h-3 w-3 rounded-sm bg-[#B5E18B]" />
+          </motion.div>
+        </div>
 
-            <motion.h1 variants={fadeUp} className="mt-8 text-balance text-3xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl">
-              {t.hero.titleLine1} <br />
-              <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, &nbsp;
-              {t.hero.titleLine2}
-            </motion.h1>
+        <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            {/* Copy Area */}
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.1 } } }}
+            >
 
-            <motion.p variants={fadeUp} className="mt-6 max-w-lg text-sm leading-relaxed text-[#28396C]/70 sm:text-medium">
-              {t.hero.subtitle}
-            </motion.p>
+              <motion.h1 variants={fadeUp} className="mt-8 text-balance text-3xl font-black leading-[1.1] tracking-tight text-[#28396C] sm:text-6xl">
+                {t.hero.titleLine1} <br />
+                <span className="bg-gradient-to-r from-[#6BA53A] to-[#28396C] bg-clip-text text-transparent">{t.hero.titleHighlight}</span>, &nbsp;
+                {t.hero.titleLine2}
+              </motion.h1>
 
-            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
-               <div className="flex -space-x-3">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-[#28396C] grid place-items-center text-[10px] font-bold text-[#FBFDF2] shadow-lg">
-                       {["FB", "KM", "SR", "AM"][i-1]}
-                    </div>
-                  ))}
-               </div>
-               <div className="text-sm">
-                  <div className="flex items-center gap-0.5 text-[#F0B429]">
-                    {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
-                  </div>
-                  <p className="mt-1 text-[#28396C]/75">{t.hero.socialProof}</p>
-               </div>
-            </motion.div>
+              <motion.p variants={fadeUp} className="mt-6 max-w-lg text-sm leading-relaxed text-[#28396C]/70 sm:text-medium">
+                {t.hero.subtitle}
+              </motion.p>
 
-            <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => scrollToId("contact")}
-                className="group landing-cta-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-black uppercase tracking-wide transition-all"
-              >
-                {t.hero.ctaPrimary}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => scrollToId("demo")}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#28396C]/20 bg-white/80 px-8 py-4 text-sm font-bold text-[#28396C] shadow-sm backdrop-blur transition hover:border-[#28396C]/40 hover:bg-white"
-              >
-                {t.hero.ctaSecondary}
-                <MousePointerClick className="h-4 w-4" />
-              </motion.button>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
-              {trustItems.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/60 px-3 py-1.5 text-xs font-medium text-[#28396C]/75 backdrop-blur">
-                   <Icon className="h-3.5 w-3.5 text-[#6BA53A]" />
-                   {text}
+              <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-6">
+                <div className="flex -space-x-3">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-[#28396C] grid place-items-center text-[10px] font-bold text-[#FBFDF2] shadow-lg">
+                        {["FB", "KM", "SR", "AM"][i-1]}
+                      </div>
+                    ))}
                 </div>
-              ))}
-            </motion.div>
-          </motion.div>
+                <div className="text-sm">
+                    <div className="flex items-center gap-0.5 text-[#F0B429]">
+                      {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                    </div>
+                    <p className="mt-1 text-[#28396C]/75">{t.hero.socialProof}</p>
+                </div>
+              </motion.div>
 
-          {/* Visual Area */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="relative lg:ml-8"
-          >
-            <HeroDashboardShowcase />
-          </motion.div>
+              <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => scrollToId("contact")}
+                  className="group landing-cta-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-black uppercase tracking-wide transition-all"
+                >
+                  {t.hero.ctaPrimary}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => scrollToId("demo")}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#28396C]/20 bg-white/80 px-8 py-4 text-sm font-bold text-[#28396C] shadow-sm backdrop-blur transition hover:border-[#28396C]/40 hover:bg-white"
+                >
+                  {t.hero.ctaSecondary}
+                  <MousePointerClick className="h-4 w-4" />
+                </motion.button>
+              </motion.div>
+
+              <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-4">
+                {trustItems.map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-2 rounded-full border border-[#28396C]/10 bg-white/60 px-3 py-1.5 text-xs font-medium text-[#28396C]/75 backdrop-blur">
+                    <Icon className="h-3.5 w-3.5 text-[#6BA53A]" />
+                    {text}
+                  </div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* Visual Area */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="relative lg:ml-8"
+            >
+              <HeroDashboardShowcase />
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
