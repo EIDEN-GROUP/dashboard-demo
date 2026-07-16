@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getDashboardStats } from "@/lib/server-dashboard";
 import { listPayments } from "@/lib/server-payments";
 import { listClients } from "@/lib/server-clients";
-import { sendBroadcast } from "@/lib/server-whatsapp";
+import { sendBroadcast, sendClientMessage } from "@/lib/server-whatsapp";
 import {
   getInvoiceAnalytics,
   getOutstanding,
@@ -216,6 +216,9 @@ function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChang
 function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
+  const [relanceIds, setRelanceIds] = useState<string[]>([]);
+  const [relanceExpanded, setRelanceExpanded] = useState(false);
+  const [relancePeriode, setRelancePeriode] = useState("Mai 2026 — frais mensuels");
   const [range, setRange] = useState<Range>("1A");
   const [grain, setGrain] = useState<Grain>("mensuel");
   const [year, setYear] = useState(String(new Date().getFullYear()));
@@ -352,10 +355,48 @@ function CrmDash() {
 
   const queryClient = useQueryClient();
 
+  // Relance rapide: pick who gets the reminder instead of blasting every overdue
+  // client. Empty selection keeps the old behaviour (all overdue clients).
+  const relanceCandidates = useMemo(
+    () => (clients as any[]).filter((c: any) => c.payment_status !== "paye"),
+    [clients],
+  );
+  const relanceShown = relanceExpanded ? relanceCandidates : relanceCandidates.slice(0, 4);
+  const toggleRelance = (id: string) =>
+    setRelanceIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
   const relanceMutation = useMutation({
-    mutationFn: () => sendBroadcast({ data: { content: "Rappel de paiement", filterOverdue: true } }),
-    onSuccess: (res) => {
-      toast.success(`Rappel envoyé à ${res.success} clients`);
+    mutationFn: async () => {
+      const content = relancePeriode.trim()
+        ? `Rappel de paiement — ${relancePeriode.trim()}`
+        : "Rappel de paiement";
+
+      // No selection => previous behaviour: every overdue client.
+      if (relanceIds.length === 0) {
+        return sendBroadcast({ data: { content, filterOverdue: true } });
+      }
+
+      // Sequential, not Promise.all: WAHA drives one WhatsApp session, and
+      // parallel bursts are exactly the pattern that gets numbers banned.
+      let success = 0;
+      const errors: string[] = [];
+      for (const clientId of relanceIds) {
+        const res = await sendClientMessage({ data: { clientId, content } });
+        if (res.ok) success += 1;
+        else errors.push(res.error ?? "échec");
+      }
+      return { ok: true, success, failed: relanceIds.length - success, errors };
+    },
+    onSuccess: (res: any) => {
+      if (res.success === 0) {
+        toast.error(res.errors?.[0] ?? "Aucun rappel envoyé");
+      } else {
+        toast.success(
+          `Rappel envoyé à ${res.success} client${res.success > 1 ? "s" : ""}` +
+            (res.failed ? ` (${res.failed} échec${res.failed > 1 ? "s" : ""})` : ""),
+        );
+      }
+      setRelanceIds([]);
       queryClient.invalidateQueries({ queryKey: ["message-history"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -737,20 +778,47 @@ function CrmDash() {
                 </Link>
               </div>
               <h3 className="mt-1 font-display text-lg font-semibold">Rappel de paiement</h3>
-              <div className="mt-4 flex items-center gap-2">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80">
-                  <Plus className="h-4 w-4" />
-                </span>
-                {(clients as any[]).filter((c: any) => c.payment_status !== "paye").slice(0, 4).map((c: any) => c.parent_name).map((name: string) => (
-                  <span
-                    key={name}
-                    title={name}
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#B5E18B] text-xs font-bold text-[#28396C] ring-2 ring-[#28396C]"
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {relanceCandidates.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setRelanceExpanded((v) => !v)}
+                    title={relanceExpanded ? "Afficher moins" : `Afficher les ${relanceCandidates.length} clients`}
+                    aria-expanded={relanceExpanded}
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80 transition hover:border-white/80 hover:text-white"
                   >
-                    {initials(name)}
-                  </span>
-                ))}
+                    <Plus className={cn("h-4 w-4 transition-transform", relanceExpanded && "rotate-45")} />
+                  </button>
+                )}
+                {relanceShown.map((c: any) => {
+                  const selected = relanceIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleRelance(c.id)}
+                      title={`${c.parent_name}${selected ? " — sélectionné" : ""}`}
+                      aria-pressed={selected}
+                      className={cn(
+                        "grid h-11 w-11 shrink-0 place-items-center rounded-full text-xs font-bold transition",
+                        selected
+                          ? "bg-white text-[#28396C] ring-2 ring-[#B5E18B] ring-offset-2 ring-offset-[#28396C]"
+                          : "bg-[#B5E18B] text-[#28396C] ring-2 ring-[#28396C] opacity-70 hover:opacity-100",
+                      )}
+                    >
+                      {initials(c.parent_name)}
+                    </button>
+                  );
+                })}
+                {relanceCandidates.length === 0 && (
+                  <p className="text-xs text-white/60">Aucun client à relancer.</p>
+                )}
               </div>
+              <p className="mt-3 text-[11px] text-white/70">
+                {relanceIds.length > 0
+                  ? `${relanceIds.length} client${relanceIds.length > 1 ? "s" : ""} sélectionné${relanceIds.length > 1 ? "s" : ""}`
+                  : "Cliquez sur un parent pour le relancer, ou envoyez à tous les retards."}
+              </p>
             </div>
             <form
               className="space-y-3 p-5"
@@ -765,13 +833,22 @@ function CrmDash() {
                 </Label>
                 <Input
                   id="relance-periode"
-                  defaultValue="Mai 2026   frais mensuels"
+                  value={relancePeriode}
+                  onChange={(e) => setRelancePeriode(e.target.value)}
                   className={cn(softInput, "mt-1.5")}
                 />
               </div>
-              <button type="submit" disabled={relanceMutation.isPending} className={cn(primaryPill, "w-full justify-center")}>
+              <button
+                type="submit"
+                disabled={relanceMutation.isPending || relanceCandidates.length === 0}
+                className={cn(primaryPill, "w-full justify-center")}
+              >
                 <Send className="h-4 w-4" />
-                {relanceMutation.isPending ? "Envoi..." : "Envoyer le rappel"}
+                {relanceMutation.isPending
+                  ? "Envoi..."
+                  : relanceIds.length > 0
+                    ? `Envoyer à ${relanceIds.length} sélectionné${relanceIds.length > 1 ? "s" : ""}`
+                    : "Envoyer à tous les retards"}
               </button>
             </form>
           </div>
