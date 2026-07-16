@@ -19,7 +19,22 @@ const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET ?? "";
 
 type SendResult = { ok: boolean; waId?: string; error?: string };
 
-async function sendViaN8n(cleanPhone: string, content: string): Promise<SendResult> {
+/**
+ * Attachment for the n8n/WAHA path. `url` must be reachable from the WAHA
+ * container itself — WAHA fetches it server-side, so blob:/data:/localhost URLs
+ * will not work. The file is sent with `content` as its caption.
+ */
+export type WhatsAppDocument = {
+  url: string;
+  filename?: string;
+  mimetype?: string;
+};
+
+async function sendViaN8n(
+  cleanPhone: string,
+  content: string,
+  document?: WhatsAppDocument,
+): Promise<SendResult> {
   try {
     const res = await fetch(N8N_WEBHOOK_URL, {
       method: "POST",
@@ -27,7 +42,7 @@ async function sendViaN8n(cleanPhone: string, content: string): Promise<SendResu
         "Content-Type": "application/json",
         ...(N8N_WEBHOOK_SECRET ? { "X-Webhook-Secret": N8N_WEBHOOK_SECRET } : {}),
       },
-      body: JSON.stringify({ phone: cleanPhone, content }),
+      body: JSON.stringify({ phone: cleanPhone, content, ...(document ? { document } : {}) }),
     });
 
     // n8n may answer with no body / non-JSON on a bare "Respond to Webhook".
@@ -74,7 +89,11 @@ async function sendViaMeta(cleanPhone: string, content: string): Promise<SendRes
   }
 }
 
-export async function sendWhatsAppMessage(phone: string, content: string): Promise<SendResult> {
+export async function sendWhatsAppMessage(
+  phone: string,
+  content: string,
+  document?: WhatsAppDocument,
+): Promise<SendResult> {
   const cleanPhone = phone.replace(/\D/g, "");
   if (cleanPhone.length < 8) {
     return { ok: false, error: "Numéro de téléphone invalide" };
@@ -82,7 +101,16 @@ export async function sendWhatsAppMessage(phone: string, content: string): Promi
 
   // Prefer the n8n/WAHA path when configured; otherwise fall back to Meta.
   if (N8N_WEBHOOK_URL) {
-    return sendViaN8n(cleanPhone, content);
+    return sendViaN8n(cleanPhone, content, document);
+  }
+  // Fail loudly rather than sending the caption without its attachment: the
+  // Meta path has no document support here, and a silent text-only send would
+  // look like success while losing the file.
+  if (document) {
+    return {
+      ok: false,
+      error: "Envoi de document indisponible via l'API Meta — configurer N8N_WEBHOOK_URL",
+    };
   }
   return sendViaMeta(cleanPhone, content);
 }

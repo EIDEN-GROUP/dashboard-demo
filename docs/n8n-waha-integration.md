@@ -62,6 +62,41 @@ X-Webhook-Secret: $N8N_WEBHOOK_SECRET     # omitted if the secret is empty
 { "phone": "212600000000", "content": "..." }
 ```
 
+### Sending a document (PDF) — added 2026-07-16
+
+Add an optional `document`. Present → WAHA `sendFile` with `content` as the
+**caption**, so the file and the text arrive as **one** WhatsApp, not two.
+Absent → plain `sendText`. Both verified over public HTTPS.
+
+```
+POST https://n8n.eiden-group.com/webhook/whatsapp-send
+Content-Type: application/json
+X-Webhook-Secret: <secret>
+{
+  "phone": "0691422346",                       // 06… or 212… both fine
+  "content": "Reçu de paiement ci-joint",      // becomes the caption
+  "document": {
+    "url": "https://files.eiden-group.com/…/recu.pdf",   // REQUIRED
+    "filename": "recu-2026-07.pdf",            // optional, default document.pdf
+    "mimetype": "application/pdf"              // optional, default application/pdf
+  }
+}
+→ 200 {"ok":true,"waId":"3EB0…"}
+```
+
+- ⚠️ **`url` must be fetchable by the WAHA container itself** — WAHA downloads it
+  server-side. `blob:`, `data:`, `localhost` and browser-only URLs will not work.
+  It must be public (or reachable on `docker_eiden-net`).
+- ⚠️ **WAHA's `file` is an OBJECT** — `{mimetype, url, filename}`. Passing `file`
+  as a bare URL string with `filename` at the top level is wrong and fails; that
+  mistake was in a draft workflow and is the easiest one to make here.
+- The app mirrors this: `sendWhatsAppMessage(phone, content, document?)`. On the
+  **Meta** path a document returns an explicit error rather than sending the
+  caption alone — a silent text-only send would look like success while dropping
+  the file.
+- **Nothing in this repo generates a PDF** (no pdf library, no url column —
+  `payments.receipt` is a receipt *number*). The caller must supply a hosted URL.
+
 - `phone` is **digits only** — `phone.replace(/\D/g, "")`, so no `+`, no `@c.us`.
   WAHA wants a `chatId`, so n8n must append `@c.us` itself.
 - Response is parsed as JSON, with a `.catch(() => ({}))` fallback.
