@@ -303,48 +303,65 @@ function CrmPaiementsPage() {
 
       <section className={cn(softCard, "overflow-hidden")}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-left text-sm">
+          {/* Même grille que le tableau Familles : filet vertical posé au niveau du
+              tableau, pour qu'une colonne ajoutée l'hérite sans oubli. */}
+          <table
+            className={cn(
+              "w-full min-w-[820px] text-left text-sm",
+              "[&_th]:border-r [&_th]:border-[#28396C]/15",
+              "[&_td]:border-r [&_td]:border-[#28396C]/8",
+            )}
+          >
+            {/* Alignement : texte à gauche, montant à droite en chiffres tabulaires,
+                badges centrés. Élève et Niveau restent dans la recherche, l'export
+                CSV et la fiche détail   seules les colonnes sont retirées. */}
             <thead>
-              <tr className="border-b border-[#28396C]/10 bg-muted/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">{t.paiements.table.parent}</th>
-                <th className="px-4 py-3">Élève</th>
-                <th className="px-4 py-3">Niveau</th>
-                <th className="px-4 py-3">{t.paiements.table.amount}</th>
-                <th className="px-4 py-3">{t.paiements.table.date}</th>
-                <th className="px-4 py-3">{t.paiements.table.mode}</th>
-                <th className="px-4 py-3">Statut</th>
-                <th className="px-4 py-3">N° de reçu</th>
-                <th className="px-4 py-3">Reçu de paiement</th>
+              <tr className="border-b border-[#28396C]/15 bg-muted/60 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="whitespace-nowrap px-4 py-3.5">{t.paiements.table.parent}</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-right">{t.paiements.table.amount}</th>
+                <th className="whitespace-nowrap px-4 py-3.5">{t.paiements.table.date}</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-center">{t.paiements.table.mode}</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-center">Statut</th>
+                <th className="whitespace-nowrap px-4 py-3.5">N° de reçu</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-center">Reçu de paiement</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#28396C]/8">
               {pager.pageItems.map((r) => {
                 const c = r.clients;
                 const status = c?.payment_status as PaymentStatus | undefined;
+                // Rappel visuel du statut en tête de ligne : payé / impayé / en
+                // retard se repèrent sans traverser jusqu'à la colonne Statut.
+                // Sans statut connu, pas de filet coloré plutôt qu'une couleur
+                // arbitraire   la largeur reste réservée, l'alignement tient.
+                const accent = status ? STATUS_COLORS[status] : "transparent";
                 return (
                 <tr
                   key={r.id}
                   onClick={() => setDetailId(r.id)}
                   className="cursor-pointer transition-colors hover:bg-[#B5E18B]/10"
                 >
-                  <td className="px-4 py-3 font-medium text-foreground">{c?.parent_name ?? ""}</td>
-                  <td className="px-4 py-3 text-foreground/90">{c?.child_name ?? ""}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{c?.level ?? ""}</td>
-                  <td className="px-4 py-3 font-semibold tabular-nums text-foreground">
+                  <td
+                    className="border-l-[3px] px-4 py-3.5 font-medium text-foreground"
+                    style={{ borderLeftColor: accent }}
+                  >
+                    {c?.parent_name ?? ""}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right font-semibold tabular-nums text-foreground">
                     {r.amount} {t.common.mad}
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-foreground/90">{dash(r.date)}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3.5 tabular-nums text-foreground/90">{dash(r.date)}</td>
+                  <td className="px-4 py-3.5 text-center">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#28396C]/8 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#28396C]">
                       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#28396C]" aria-hidden />
                       {r.mode ?? "ESPÈCES"}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3.5 text-center">
                     {status ? <span className={statusPill(status)}>{STATUS_LABEL[status]}</span> : null}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-foreground/90">{r.id.slice(0, 8)}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-foreground/90">{r.id.slice(0, 8)}</td>
+                  <td className="px-4 py-3.5 text-center">
                     <RecuBadge sent={r.invoice_sent} />
                   </td>
                 </tr>

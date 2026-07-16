@@ -15,6 +15,9 @@ import {
   CreditCard,
   Images,
   Settings,
+  Building2,
+  UserCog,
+  Inbox,
 } from "lucide-react";
 import { fr as dateFnsFr, ar as dateFnsAr } from "date-fns/locale";
 import frLanding from "@/locales/landing/fr.json";
@@ -161,6 +164,42 @@ export function useDashboardNav() {
   const secondaryNav: NavItem[] = useMemo(() => [], []);
 
   return { topNav, secondaryNav, brand: t.shell.brand };
+}
+
+export function useSuperadminNav() {
+  const { t } = useDashboardI18n();
+
+  const topNav: NavItem[] = useMemo(
+    () => [
+      {
+        to: "/superadmin",
+        label: t.superadmin.nav.overview,
+        shortLabel: t.superadmin.navShort.overview,
+        icon: LayoutDashboard,
+      },
+      {
+        to: "/superadmin/centres",
+        label: t.superadmin.nav.centres,
+        shortLabel: t.superadmin.navShort.centres,
+        icon: Building2,
+      },
+      {
+        to: "/superadmin/admins",
+        label: t.superadmin.nav.admins,
+        shortLabel: t.superadmin.navShort.admins,
+        icon: UserCog,
+      },
+      {
+        to: "/superadmin/demandes",
+        label: t.superadmin.nav.demandes,
+        shortLabel: t.superadmin.navShort.demandes,
+        icon: Inbox,
+      },
+    ],
+    [t.superadmin],
+  );
+
+  return { topNav, brand: t.superadmin.brand };
 }
 
 export function interpolate(template: string, vars: Record<string, string | number>) {

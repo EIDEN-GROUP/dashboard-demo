@@ -51,7 +51,7 @@ values ('receipt_template', '
     Restant dû : {{remaining}} MAD
   </div>
   <div class="footer">
-    {{school_name}} — {{school_address}} — {{school_phone}}
+    {{school_name}}   {{school_address}}   {{school_phone}}
   </div>
 </body>
 </html>

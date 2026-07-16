@@ -453,6 +453,8 @@ function SendMessageModal({ open, onOpenChange }: { open: boolean; onOpenChange:
 function topNavItemActive(pathname: string, to: string) {
   if (to === "/dashboard")
     return pathname === "/dashboard" || pathname === "/dashboard/";
+  if (to === "/superadmin")
+    return pathname === "/superadmin" || pathname === "/superadmin/";
   if (to === "/dashboard/rendez-vous")
     return pathname === "/dashboard/rendez-vous" || pathname.startsWith("/dashboard/rendez-vous/");
   if (to === "/dashboard/familles")
@@ -518,6 +520,7 @@ export function DashShell({
   variant = "sidebar",
   switchTo,
   switchLabel,
+  hideNotifications,
   dir,
   children,
 }: {
@@ -530,6 +533,8 @@ export function DashShell({
   /** Second workspace link (e.g. admin). Omit to hide the switch control. */
   switchTo?: string;
   switchLabel?: string;
+  /** Hide the alerts/WhatsApp sheet (admin-centric   superadmin shell hides it). */
+  hideNotifications?: boolean;
   dir?: "ltr" | "rtl";
   children: ReactNode;
 }) {
@@ -569,7 +574,7 @@ export function DashShell({
               ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-2 pt-0.5">
-              <ShellNotifications />
+              {hideNotifications ? null : <ShellNotifications />}
               <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
                 {(user?.name || "A").slice(0, 1).toUpperCase()}
               </div>
@@ -615,7 +620,7 @@ export function DashShell({
             </nav>
 
             <div className="flex w-full flex-wrap items-center justify-end gap-2 justify-self-end lg:w-auto">
-              <ShellNotifications />
+              {hideNotifications ? null : <ShellNotifications />}
               <div className="flex items-center gap-2">
                 <div className="hidden text-right sm:block">
                   <p className="text-sm font-medium leading-none text-foreground">{user?.name || "admin"}</p>

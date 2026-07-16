@@ -357,7 +357,7 @@ function LevelsSection() {
                 {l.monthly_fee} MAD
               </span>
               <span className="shrink-0 text-xs tabular-nums text-muted-foreground/70">
-                {l.max_students > 0 ? `${l.max_students} max` : "—"}
+                {l.max_students > 0 ? `${l.max_students} max` : " "}
               </span>
               <div className="ml-auto flex shrink-0 items-center gap-2">
                 <button
@@ -950,7 +950,7 @@ function DocumentsSection() {
     <Section
       icon={FileText}
       title="Documents"
-      description="Template PDF du reçu et tampon de l'école (PNG) — utilisés dans l'éditeur ci-dessous"
+      description="Template PDF du reçu et tampon de l'école (PNG)   utilisés dans l'éditeur ci-dessous"
     >
       <div className="divide-y divide-[#28396C]/8">
         <div className={rowClass}>

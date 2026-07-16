@@ -442,7 +442,7 @@ export function HeroPreviewPageBody({
                           <span key={e} className="block font-medium leading-tight">{e}</span>
                         ))}
                       </td>
-                      <td className="px-1.5 py-1 text-[#5C6B94]">{c.niveau || "—"}</td>
+                      <td className="px-1.5 py-1 text-[#5C6B94]">{c.niveau || " "}</td>
                       <td className="px-1.5 py-1">
                         {c.services.length === 0 ? (
                           <span className="text-[#5C6B94]">Aucun</span>
@@ -462,7 +462,7 @@ export function HeroPreviewPageBody({
                             {c.remise}%
                           </span>
                         ) : (
-                          <span className="text-[#5C6B94]">—</span>
+                          <span className="text-[#5C6B94]"> </span>
                         )}
                       </td>
                       <td className="px-1.5 py-1 tabular-nums">

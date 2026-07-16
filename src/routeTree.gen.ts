@@ -9,10 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SuperadminIndexRouteImport } from './routes/superadmin.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as SuperadminDemandesRouteImport } from './routes/superadmin.demandes'
+import { Route as SuperadminCentresRouteImport } from './routes/superadmin.centres'
+import { Route as SuperadminAdminsRouteImport } from './routes/superadmin.admins'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardRapportsRouteImport } from './routes/dashboard.rapports'
 import { Route as DashboardPlanificationsRouteImport } from './routes/dashboard.planifications'
@@ -21,6 +26,11 @@ import { Route as DashboardFamillesRouteImport } from './routes/dashboard.famill
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
 import { Route as DashboardAffichesRouteImport } from './routes/dashboard.affiches'
 
+const SuperadminRoute = SuperadminRouteImport.update({
+  id: '/superadmin',
+  path: '/superadmin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -36,10 +46,30 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SuperadminRoute,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const SuperadminDemandesRoute = SuperadminDemandesRouteImport.update({
+  id: '/demandes',
+  path: '/demandes',
+  getParentRoute: () => SuperadminRoute,
+} as any)
+const SuperadminCentresRoute = SuperadminCentresRouteImport.update({
+  id: '/centres',
+  path: '/centres',
+  getParentRoute: () => SuperadminRoute,
+} as any)
+const SuperadminAdminsRoute = SuperadminAdminsRouteImport.update({
+  id: '/admins',
+  path: '/admins',
+  getParentRoute: () => SuperadminRoute,
 } as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
@@ -81,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/superadmin': typeof SuperadminRouteWithChildren
   '/dashboard/affiches': typeof DashboardAffichesRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/familles': typeof DashboardFamillesRoute
@@ -88,7 +119,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/planifications': typeof DashboardPlanificationsRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/superadmin/admins': typeof SuperadminAdminsRoute
+  '/superadmin/centres': typeof SuperadminCentresRoute
+  '/superadmin/demandes': typeof SuperadminDemandesRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/superadmin/': typeof SuperadminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,13 +135,18 @@ export interface FileRoutesByTo {
   '/dashboard/planifications': typeof DashboardPlanificationsRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/superadmin/admins': typeof SuperadminAdminsRoute
+  '/superadmin/centres': typeof SuperadminCentresRoute
+  '/superadmin/demandes': typeof SuperadminDemandesRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/superadmin': typeof SuperadminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/superadmin': typeof SuperadminRouteWithChildren
   '/dashboard/affiches': typeof DashboardAffichesRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/familles': typeof DashboardFamillesRoute
@@ -114,7 +154,11 @@ export interface FileRoutesById {
   '/dashboard/planifications': typeof DashboardPlanificationsRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/superadmin/admins': typeof SuperadminAdminsRoute
+  '/superadmin/centres': typeof SuperadminCentresRoute
+  '/superadmin/demandes': typeof SuperadminDemandesRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/superadmin/': typeof SuperadminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -122,6 +166,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
+    | '/superadmin'
     | '/dashboard/affiches'
     | '/dashboard/calendar'
     | '/dashboard/familles'
@@ -129,7 +174,11 @@ export interface FileRouteTypes {
     | '/dashboard/planifications'
     | '/dashboard/rapports'
     | '/dashboard/settings'
+    | '/superadmin/admins'
+    | '/superadmin/centres'
+    | '/superadmin/demandes'
     | '/dashboard/'
+    | '/superadmin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -141,12 +190,17 @@ export interface FileRouteTypes {
     | '/dashboard/planifications'
     | '/dashboard/rapports'
     | '/dashboard/settings'
+    | '/superadmin/admins'
+    | '/superadmin/centres'
+    | '/superadmin/demandes'
     | '/dashboard'
+    | '/superadmin'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/login'
+    | '/superadmin'
     | '/dashboard/affiches'
     | '/dashboard/calendar'
     | '/dashboard/familles'
@@ -154,17 +208,29 @@ export interface FileRouteTypes {
     | '/dashboard/planifications'
     | '/dashboard/rapports'
     | '/dashboard/settings'
+    | '/superadmin/admins'
+    | '/superadmin/centres'
+    | '/superadmin/demandes'
     | '/dashboard/'
+    | '/superadmin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SuperadminRoute: typeof SuperadminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/superadmin': {
+      id: '/superadmin'
+      path: '/superadmin'
+      fullPath: '/superadmin'
+      preLoaderRoute: typeof SuperadminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -186,12 +252,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/superadmin/': {
+      id: '/superadmin/'
+      path: '/'
+      fullPath: '/superadmin/'
+      preLoaderRoute: typeof SuperadminIndexRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/superadmin/demandes': {
+      id: '/superadmin/demandes'
+      path: '/demandes'
+      fullPath: '/superadmin/demandes'
+      preLoaderRoute: typeof SuperadminDemandesRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
+    '/superadmin/centres': {
+      id: '/superadmin/centres'
+      path: '/centres'
+      fullPath: '/superadmin/centres'
+      preLoaderRoute: typeof SuperadminCentresRouteImport
+      parentRoute: typeof SuperadminRoute
+    }
+    '/superadmin/admins': {
+      id: '/superadmin/admins'
+      path: '/admins'
+      fullPath: '/superadmin/admins'
+      preLoaderRoute: typeof SuperadminAdminsRouteImport
+      parentRoute: typeof SuperadminRoute
     }
     '/dashboard/settings': {
       id: '/dashboard/settings'
@@ -271,10 +365,29 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface SuperadminRouteChildren {
+  SuperadminAdminsRoute: typeof SuperadminAdminsRoute
+  SuperadminCentresRoute: typeof SuperadminCentresRoute
+  SuperadminDemandesRoute: typeof SuperadminDemandesRoute
+  SuperadminIndexRoute: typeof SuperadminIndexRoute
+}
+
+const SuperadminRouteChildren: SuperadminRouteChildren = {
+  SuperadminAdminsRoute: SuperadminAdminsRoute,
+  SuperadminCentresRoute: SuperadminCentresRoute,
+  SuperadminDemandesRoute: SuperadminDemandesRoute,
+  SuperadminIndexRoute: SuperadminIndexRoute,
+}
+
+const SuperadminRouteWithChildren = SuperadminRoute._addFileChildren(
+  SuperadminRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
+  SuperadminRoute: SuperadminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
