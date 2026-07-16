@@ -10,13 +10,42 @@ const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID ?? "";
 const WA_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN ?? "";
 const WA_URL = `https://graph.facebook.com/${WA_API_VERSION}/${WA_PHONE_ID}/messages`;
 
-export async function sendWhatsAppMessage(phone: string, content: string): Promise<{ ok: boolean; waId?: string; error?: string }> {
+// n8n → WAHA path. When N8N_WEBHOOK_URL is set, outbound WhatsApp is routed
+// through the self-hosted n8n webhook (which calls WAHA /api/sendText) instead
+// of hitting the Meta Cloud API directly. The shared secret lets n8n reject
+// callers that aren't this app.
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL ?? "";
+const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET ?? "";
+
+type SendResult = { ok: boolean; waId?: string; error?: string };
+
+async function sendViaN8n(cleanPhone: string, content: string): Promise<SendResult> {
+  try {
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(N8N_WEBHOOK_SECRET ? { "X-Webhook-Secret": N8N_WEBHOOK_SECRET } : {}),
+      },
+      body: JSON.stringify({ phone: cleanPhone, content }),
+    });
+
+    // n8n may answer with no body / non-JSON on a bare "Respond to Webhook".
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>);
+    if (!res.ok || body.ok === false) {
+      const err = (body.error as string) ?? `n8n HTTP ${res.status}`;
+      return { ok: false, error: err };
+    }
+    const waId = (body.waId ?? body.messageId ?? body.id) as string | undefined;
+    return { ok: true, waId };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Erreur inconnue" };
+  }
+}
+
+async function sendViaMeta(cleanPhone: string, content: string): Promise<SendResult> {
   if (!WA_PHONE_ID || !WA_TOKEN) {
     return { ok: false, error: "WhatsApp API non configurée" };
-  }
-  const cleanPhone = phone.replace(/\D/g, "");
-  if (cleanPhone.length < 8) {
-    return { ok: false, error: "Numéro de téléphone invalide" };
   }
 
   try {
@@ -43,6 +72,19 @@ export async function sendWhatsAppMessage(phone: string, content: string): Promi
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Erreur inconnue" };
   }
+}
+
+export async function sendWhatsAppMessage(phone: string, content: string): Promise<SendResult> {
+  const cleanPhone = phone.replace(/\D/g, "");
+  if (cleanPhone.length < 8) {
+    return { ok: false, error: "Numéro de téléphone invalide" };
+  }
+
+  // Prefer the n8n/WAHA path when configured; otherwise fall back to Meta.
+  if (N8N_WEBHOOK_URL) {
+    return sendViaN8n(cleanPhone, content);
+  }
+  return sendViaMeta(cleanPhone, content);
 }
 
 export const sendClientMessage = createServerFn({ method: "POST" })
