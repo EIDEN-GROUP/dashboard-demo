@@ -2067,7 +2067,7 @@ function Footer() {
           <div>
             <div className="flex items-center gap-3">
               <div>
-                <img src="/public/edu-logo.png" alt="Edu logo" className="h-20 w-20" style={{ filter: "brightness(100)" }}/>
+                <img src="/edu-logo.png" alt="Edu logo" className="h-20 w-20" style={{ filter: "brightness(100)" }}/>
               </div>
             </div>
             <p className="mt-3 text-sm text-background leading-relaxed">
