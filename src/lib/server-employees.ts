@@ -159,16 +159,18 @@ export const importEmployeesCsv = createServerFn({ method: "POST" })
         address: r["address"] || r["Adresse"] || r["adresse"] || "",
         contract_type: r["contract_type"] || r["Type de contrat"] || r["contrat"] || "",
         salary: toNumber(r["salary"] || r["Salaire"] || r["salaire"] || "0"),
-        leave_start: r["leave_start"] || r["Début congé"] || r["conge_debut"] || "",
-        leave_end: r["leave_end"] || r["Fin congé"] || r["conge_fin"] || "",
+        leave_start: r["leave_start"] || r["Début congé"] || r["conge_debut"] || null,
+        leave_end: r["leave_end"] || r["Fin congé"] || r["conge_fin"] || null,
         status: (r["status"] === "inactif" || r["Statut"] === "inactif" ? "inactif" : "actif") as "actif" | "inactif",
       };
 
       try {
-        await supabaseAdmin.from("employees").insert(input);
+        const { error: insertError } = await supabaseAdmin.from("employees").insert(input);
+        if (insertError) throw insertError;
         imported++;
       } catch (e) {
-        errors.push(`Ligne ${i + 2}: ${e instanceof Error ? e.message : "Erreur inconnue"}`);
+        const msg = e instanceof Error ? e.message : typeof e === "object" && e !== null ? (e as Record<string, unknown>).message || JSON.stringify(e) : String(e);
+        errors.push(`Ligne ${i + 2}: ${msg}`);
       }
     }
 

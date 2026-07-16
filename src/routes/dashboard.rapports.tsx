@@ -318,7 +318,7 @@ function ListeFamillesModal({
 function RapportsPage() {
   const { t } = useDashboardI18n();
   const r = t.rapports;
-  const [modal, setModal] = useState<null | "paye" | "impaye">(null);
+  const [modal, setModal] = useState<null | "paye" | "en_attente">(null);
 
   const chartData = useMemo(
     () => r.months.map((m, i) => ({ m, v: CHART_VALUES[i] ?? 0 })),
@@ -335,7 +335,7 @@ function RapportsPage() {
         rows={FAMILLES_PAYEES}
       />
       <ListeFamillesModal
-        open={modal === "impaye"}
+        open={modal === "en_attente"}
         onOpenChange={(o) => !o && setModal(null)}
         eyebrow={r.modalEyebrow}
         title={r.modalUnpaidTitle}
@@ -395,7 +395,7 @@ function RapportsPage() {
           <p className="mt-1 text-xs text-muted-foreground">{r.paidDesc}</p>
         </button>
 
-        <button type="button" onClick={() => setModal("impaye")} className={cn(cardClass, "border-t-chart-3")}>
+        <button type="button" onClick={() => setModal("en_attente")} className={cn(cardClass, "border-t-chart-3")}>
           <p className="pr-14 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.unpaidCard}</p>
           <div className="mt-3 flex items-start justify-between gap-3">
             <p className="font-display text-3xl font-semibold tracking-tight text-foreground">{TOTAL_IMPAYE}</p>

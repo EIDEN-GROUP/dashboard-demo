@@ -26,7 +26,7 @@ export type Client = {
   dob: string;
   level: string;
   crm_stage: "nouveau" | "converti";
-  payment_status: "impaye" | "paye";
+  payment_status: "en_attente" | "paye";
   monthly_fee: number;
   debt: number;
   overdue: boolean;

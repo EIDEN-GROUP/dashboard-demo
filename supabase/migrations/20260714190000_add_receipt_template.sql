@@ -3,7 +3,7 @@
 -- ============================================================================
 
 insert into public.settings (key, value)
-values ('receipt_template', '
+values ('receipt_template', to_jsonb('
 <!DOCTYPE html>
 <html>
 <head>
@@ -55,4 +55,4 @@ values ('receipt_template', '
   </div>
 </body>
 </html>
-') on conflict (key) do nothing;
+'::text)) on conflict (key) do nothing;
