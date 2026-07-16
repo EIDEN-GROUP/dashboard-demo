@@ -132,6 +132,7 @@ export type Level = {
   name: string;
   cycle: string;
   monthly_fee: number;
+  max_students: number;
   created_at: string;
   updated_at: string;
 };

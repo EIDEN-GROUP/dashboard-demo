@@ -166,7 +166,7 @@ export function PageTransition() {
           >
             {/* Brand sticker: the same graduation mark as the header, on a soft tile. */}
             <div className="grid shrink-0 place-items-center rounded-2xl">
-                <img src="/public/edu-logo.png" alt="Edu logo" className="h-30 w-30" style={{ filter: "brightness(100)" }}/>
+                <img src="/edu-logo.png" alt="Edu logo" className="h-30 w-30" style={{ filter: "brightness(100)" }}/>
             </div>
 
             <div className="space-y-1">

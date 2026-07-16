@@ -56,8 +56,6 @@ export type WizardData = {
   email2: string;
   phone: string;
   phone2: string;
-  profession_father: string;
-  profession_mother: string;
   address: string;
   children: ChildFormData[];
 };
@@ -81,7 +79,7 @@ export function emptyWizard(): WizardData {
     father_name: "", mother_name: "",
     cin: "", cin_mother: "",
     email: "", email2: "", phone: "", phone2: "",
-    profession_father: "", profession_mother: "", address: "",
+    address: "",
     children: [emptyChild()],
   };
 }
@@ -179,8 +177,6 @@ export function AddClientDialog({
           email2: wizard.email2,
           phone: wizard.phone,
           phone2: wizard.phone2,
-          profession_father: wizard.profession_father,
-          profession_mother: wizard.profession_mother,
           address: wizard.address,
           child_name: first.name,
           dob: first.dob,
@@ -300,24 +296,6 @@ export function AddClientDialog({
     </div>,
 
     <div key="step3" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Field id="w-prof-father" label="Profession du père">
-        <Input
-          id="w-prof-father"
-          value={wizard.profession_father}
-          onChange={(e) => updateWizard({ profession_father: e.target.value })}
-          placeholder="ex. Ingénieur"
-          className={inputClass}
-        />
-      </Field>
-      <Field id="w-prof-mother" label="Profession de la mère">
-        <Input
-          id="w-prof-mother"
-          value={wizard.profession_mother}
-          onChange={(e) => updateWizard({ profession_mother: e.target.value })}
-          placeholder="ex. Enseignante"
-          className={inputClass}
-        />
-      </Field>
       <div className="sm:col-span-2">
         <Field id="w-address" label="Adresse">
           <Input

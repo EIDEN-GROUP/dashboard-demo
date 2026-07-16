@@ -1,0 +1,4 @@
+parent_name,child_name,child_names,email,phone,address,level,monthly_fee,remise,payment_day,fratrie,transport,cantine,garderie,activites,notes
+Alice Martin,Léo Martin,"[{""name"":""Léo Martin"",""dob"":""2018-05-12"",""cycle"":""Primaire"",""level"":""CP"",""services"":[""cantine""],""frais"":[]}]",alice@example.com,0612345678,15 Rue des Lilas,CP,250,10,5,2,true,true,false,false,""
+Sophie Bernard,Chloé Bernard,"[{""name"":""Chloé Bernard"",""dob"":""2017-09-03"",""cycle"":""Primaire"",""level"":""CE1"",""services"":[""cantine"",""garderie""],""frais"":[""assurance""]}]",sophie@example.com,0698765432,8 Avenue de la République,CE1,300,0,5,1,true,true,true,false,"Soeur aussi inscrite"
+Thomas Dubois,Mathis Dubois,"[{""name"":""Mathis Dubois"",""dob"":""2019-02-20"",""cycle"":""Maternelle"",""level"":""MS"",""services"":[""cantine""],""frais"":[]}]",thomas@example.com,0611112233,3 Place du Marché,MS,220,5,5,1,false,true,false,false,""
