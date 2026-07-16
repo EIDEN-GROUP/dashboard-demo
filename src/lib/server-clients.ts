@@ -42,31 +42,17 @@ function parseCsv(text: string): Record<string, string>[] {
   // Normalise line endings: \r\n → \n, then \r → \n
   text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
-  const lines: string[] = [];
-  let current = "";
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === '"') {
-      inQuotes = !inQuotes;
-    } else if (ch === "\n" && !inQuotes) {
-      lines.push(current);
-      current = "";
-    } else {
-      current += ch;
-    }
-  }
-  if (current.trim()) lines.push(current);
-
+  // Naive line split — same as client-side parser (handles quoted commas correctly
+  // because field-level parsing is delegated to parseCsvLine)
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
-  const headers = parseCsvLine(lines[0]);
+
+  const headers = parseCsvLine(lines[0]).map((h) => h.trim());
   const result: Record<string, string>[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-    if (!trimmed) continue;
-    const values = parseCsvLine(trimmed);
+    const values = parseCsvLine(lines[i]);
     const row: Record<string, string> = {};
-    headers.forEach((h, j) => { row[h.trim()] = (values[j] ?? "").trim(); });
+    headers.forEach((h, j) => { row[h] = (values[j] ?? "").trim(); });
     result.push(row);
   }
   return result;

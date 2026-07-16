@@ -420,7 +420,7 @@ function CrmParentsPage() {
 
   const fileRef = useRef<HTMLInputElement>(null);
   const importCsv = useMutation({
-    mutationFn: importClientsCsv,
+    mutationFn: (input: { csvText: string }) => importClientsCsv({ data: input }),
     onSuccess: (r) => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(`${r.imported} client(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
@@ -428,6 +428,7 @@ function CrmParentsPage() {
       setPreviewRows(null);
     },
     onError: (err) => {
+      console.error("CSV import error:", err);
       toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
       setPreviewRows(null);
     },
@@ -517,7 +518,7 @@ function CrmParentsPage() {
 
   function confirmImportCsv() {
     if (!csvText) return;
-    importCsv.mutate({ data: { csvText } });
+    importCsv.mutate({ csvText });
   }
 
   return (
