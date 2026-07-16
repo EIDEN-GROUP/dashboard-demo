@@ -888,8 +888,6 @@ function DetailClientDialog({
         <InfoRow label="CIN / Passeport (mère)" value={dash(client.cin_mother)} />
 
         <SectionTitle icon={Briefcase}>Profession & adresse</SectionTitle>
-        <InfoRow label="Profession du père" value={dash(client.profession_father)} />
-        <InfoRow label="Profession de la mère" value={dash(client.profession_mother)} />
         <InfoRow label="Adresse" value={dash(client.address)} />
 
         <SectionTitle icon={Phone}>Contact</SectionTitle>
