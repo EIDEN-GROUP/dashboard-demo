@@ -60,7 +60,9 @@ import {
   eyebrowClass,
 } from "@/lib/dash-ui";
 import { listClients, createClient, updateClient, deleteClient, type ClientInput } from "@/lib/server-clients";
-import { getSettings } from "@/lib/server-settings";
+import { getSettings, listLevels } from "@/lib/server-settings";
+import { StudentFields } from "@/components/student-fields";
+import { usePagination, TablePagination } from "@/components/table-pagination";
 import { AddClientDialog, emptyChild, emptyWizard, type WizardData, type ChildFormData } from "@/components/add-client-wizard";
 import { createPayment, updatePaymentInvoice } from "@/lib/server-payments";
 import { sendClientMessage, sendBroadcast, sendPaymentReceipt } from "@/lib/server-whatsapp";
@@ -339,6 +341,9 @@ function CrmParentsPage() {
     [base, niveauFilter],
   );
 
+  // 5 familles par page ; tout changement de filtre renvoie en page 1.
+  const pager = usePagination(filtered, `${search}|${serviceFilter}|${niveauFilter}`);
+
   const LEVEL_COLORS = [
     "#28396C", "#B5E18B", "#D2624A", "#F4C542", "#7BA5D9",
     "#E8A87C", "#95D5B2", "#C77DFF", "#F4845F", "#52B788",
@@ -366,7 +371,7 @@ function CrmParentsPage() {
 
   // Revenu par service. Une famille peut cumuler plusieurs services : on somme
   // le prix du service pour chaque famille abonnée (value = prix × nb familles),
-  // pas de pourcentage — les ensembles se chevauchent et ne totalisent pas 100 %.
+  // pas de pourcentage   les ensembles se chevauchent et ne totalisent pas 100 %.
   const serviceDonut = useMemo(() => {
     const priceOf: Record<string, number> = {};
     services.forEach((s) => {
@@ -416,7 +421,7 @@ function CrmParentsPage() {
         </button>
       </header>
 
-      {/* Filtres + analyses — une seule rangée : filtres, revenu par service, répartition par niveau */}
+      {/* Filtres + analyses   une seule rangée : filtres, revenu par service, répartition par niveau */}
       <div className="grid gap-4 lg:grid-cols-3">
         <section className={cn(softCard, "p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres</p>
@@ -471,7 +476,7 @@ function CrmParentsPage() {
           </p>
         </section>
 
-        {/* Graphique circulaire — revenu total par service (prix × nb de familles) */}
+        {/* Graphique circulaire   revenu total par service (prix × nb de familles) */}
         <section className={cn(softCard, "flex flex-col p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Revenu par service</p>
           {serviceTotal > 0 ? (
@@ -520,7 +525,7 @@ function CrmParentsPage() {
           )}
         </section>
 
-        {/* Graphique circulaire — répartition par niveau */}
+        {/* Graphique circulaire   répartition par niveau */}
         <section className={cn(softCard, "flex flex-col p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Répartition par niveau</p>
           {donutTotal > 0 ? (
@@ -590,7 +595,7 @@ function CrmParentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#28396C]/8">
-              {filtered.map((c) => (
+              {pager.pageItems.map((c) => (
                 <tr
                   key={c.id}
                   onClick={() => setDetailId(c.id)}
@@ -686,6 +691,14 @@ function CrmParentsPage() {
         {filtered.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-muted-foreground">{t.familles.noMatch}</p>
         ) : null}
+        <TablePagination
+          page={pager.page}
+          pageCount={pager.pageCount}
+          total={pager.total}
+          pageSize={pager.pageSize}
+          onPage={pager.setPage}
+          label={pager.total > 1 ? "familles" : "famille"}
+        />
       </section>
 
       <AddClientDialog
@@ -830,13 +843,13 @@ function DetailClientDialog({
           (client.child_names ?? []).map((ch, i) => (
             <div key={i} className="col-span-full rounded-xl bg-muted/40 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Élève {i + 1} — {ch.name}
+                Élève {i + 1}   {ch.name}
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <InfoRow label="Date de naissance" value={dash(ch.dob)} />
                 <InfoRow label="Cycle" value={dash(ch.cycle)} />
                 <InfoRow label="Niveau" value={dash(ch.level)} />
-                <InfoRow label="Services" value={(ch.services ?? []).join(", ") || "—"} />
+                <InfoRow label="Services" value={(ch.services ?? []).join(", ") || " "} />
               </div>
             </div>
           ))
@@ -850,7 +863,7 @@ function DetailClientDialog({
           const dedup = [...new Set(all as string[])];
           return dedup.length > 0
             ? dedup.map((f) => <InfoRow key={f} label={f} value="Souscrit" />)
-            : <InfoRow label="Aucun" value="—" />;
+            : <InfoRow label="Aucun" value=" " />;
         })()}
 
               <SectionTitle icon={Utensils}>Paiement & remise</SectionTitle>
@@ -1031,7 +1044,8 @@ function PaymentDialog({
 }
 
 /** Liste d'élèves de départ pour l'édition : child_names si présent, sinon
- *  un élève reconstruit depuis les champs hérités (child_name / dob / level). */
+ *  un élève reconstruit depuis les champs hérités (child_name / dob / level),
+ *  en récupérant les services/frais enregistrés au niveau de la famille. */
 function initialChildren(client: FlatClient): ChildFormData[] {
   if (client.child_names && client.child_names.length > 0) {
     return client.child_names.map((c) => ({
@@ -1043,7 +1057,79 @@ function initialChildren(client: FlatClient): ChildFormData[] {
       frais: c.frais ?? [],
     }));
   }
-  return [{ name: client.child_name ?? "", dob: client.dob ?? "", cycle: "", level: client.level ?? "", services: [], frais: [] }];
+  return [
+    {
+      name: client.child_name ?? "",
+      dob: client.dob ?? "",
+      cycle: "",
+      level: client.level ?? "",
+      services: client.subscribed_services ?? [],
+      frais: client.subscribed_frais ?? [],
+    },
+  ];
+}
+
+/** Modale « Ajouter / Modifier un élève »   mêmes questions que l'étape 5/6 de
+ *  l'assistant. Le brouillon n'est appliqué qu'à la validation (Annuler jette). */
+function StudentModal({
+  mode,
+  initial,
+  onOpenChange,
+  onConfirm,
+}: {
+  mode: "add" | "edit";
+  initial: ChildFormData;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (child: ChildFormData) => void;
+}) {
+  // Monté à l'ouverture uniquement (voir la `key` côté appelant) : l'état initial
+  // suffit, pas d'effet de synchro qui écraserait la saisie à chaque re-render.
+  const [draft, setDraft] = useState<ChildFormData>(initial);
+
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent className={cn(dialogSurface, "w-[min(100vw-1.5rem,560px)] max-w-[560px]")}>
+        <DialogDescription className="sr-only">
+          {mode === "add" ? "Ajouter un élève à la famille" : `Modifier l'élève ${initial.name}`}
+        </DialogDescription>
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Élève</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold text-foreground">
+              {mode === "add" ? "Ajouter un élève" : "Modifier l'élève"}
+            </DialogTitle>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5">
+            <StudentFields
+              value={draft}
+              onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+              idPrefix="sm"
+            />
+          </div>
+          <div className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-[#28396C]/10 px-6 py-4">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              disabled={draft.name.trim() === ""}
+              onClick={() => {
+                onConfirm(draft);
+                onOpenChange(false);
+              }}
+              className={cn(primaryPill, "px-5 py-2 disabled:opacity-50")}
+            >
+              {mode === "add" ? "Ajouter" : "Enregistrer"}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function EditClientDialog({
@@ -1057,36 +1143,50 @@ function EditClientDialog({
 }) {
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const { data: levels } = useQuery({ queryKey: ["levels"], queryFn: listLevels });
   const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
-  const initialSubscribed = client.subscribed_services ?? [];
-  const [subscribed, setSubscribed] = useState<string[]>(initialSubscribed);
-  const [fratrie, setFratrie] = useState<number>(client.fratrie ?? 1);
+  const frais: Array<{ name: string; price: number; enabled: boolean }> = settings?.frais ?? [];
   const [remise, setRemise] = useState<number>(client.remise ?? 0);
   const [children, setChildren] = useState<ChildFormData[]>(() => initialChildren(client));
+  const [studentModal, setStudentModal] = useState<{ mode: "add" } | { mode: "edit"; index: number } | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Données héritées : le niveau est connu mais pas le cycle, or le select
+  // Niveau reste désactivé sans cycle. On le déduit dès que les niveaux arrivent.
   useEffect(() => {
-    setSubscribed(client.subscribed_services ?? []);
-    setFratrie(client.fratrie ?? 1);
-    setRemise(client.remise ?? 0);
-    setChildren(initialChildren(client));
-  }, [client]);
+    if (!levels) return;
+    setChildren((prev) =>
+      prev.map((c) =>
+        c.level && !c.cycle
+          ? { ...c, cycle: levels.find((l) => l.name === c.level)?.cycle ?? c.cycle }
+          : c,
+      ),
+    );
+  }, [levels]);
 
   const { t } = useDashboardI18n();
   const f = t.form;
   const e = t.familles.editModal;
 
-  const toggleSvc = (name: string) => {
-    setSubscribed((prev) =>
-      prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name],
-    );
-  };
-
-  const addStudent = () => setChildren((prev) => [...prev, emptyChild()]);
   const removeStudent = (i: number) =>
     setChildren((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev));
-  const updateStudent = (i: number, patch: Partial<ChildFormData>) =>
-    setChildren((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+
+  // Frais mensuels recalculés depuis les élèves (niveau + services + frais),
+  // comme le fait l'assistant : sinon la colonne « Mensuel » resterait figée.
+  const totalMonthly = useMemo(() => {
+    return children.reduce((sum, c) => {
+      const lv = (levels ?? []).find((l) => l.name === c.level);
+      const svc = (c.services ?? []).reduce(
+        (s, n) => s + (services.find((x) => x.name === n)?.price ?? 0),
+        0,
+      );
+      const frs = (c.frais ?? []).reduce(
+        (s, n) => s + (frais.find((x) => x.name === n)?.price ?? 0),
+        0,
+      );
+      return sum + (lv?.monthly_fee ?? 0) + svc + frs;
+    }, 0);
+  }, [children, levels, services, frais]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -1106,6 +1206,10 @@ function EditClientDialog({
               // On ne garde que les élèves nommés ; le 1er alimente les champs hérités.
               const cleanChildren = children.filter((c) => c.name.trim() !== "");
               const firstChild = cleanChildren[0];
+              // Les services/frais vivent désormais sur l'élève : on réagrège au
+              // niveau famille pour garder les filtres et les graphiques justes.
+              const aggregatedServices = [...new Set(cleanChildren.flatMap((c) => c.services ?? []))];
+              const aggregatedFrais = [...new Set(cleanChildren.flatMap((c) => c.frais ?? []))];
               try {
                 await updateClient({
                   data: {
@@ -1123,9 +1227,11 @@ function EditClientDialog({
                     dob: firstChild?.dob ?? client.dob,
                     level: firstChild?.level ?? client.level,
                     notes: String(fd.get("notes") ?? client.notes),
-                    fratrie,
+                    monthly_fee: totalMonthly,
+                    fratrie: cleanChildren.length || 1,
                     remise,
-                    subscribed_services: subscribed,
+                    subscribed_services: aggregatedServices,
+                    subscribed_frais: aggregatedFrais,
                     payment_day: Number(fd.get("payment_day") ?? client.payment_day ?? 1),
                   },
                 });
@@ -1148,59 +1254,53 @@ function EditClientDialog({
                   <Label className={labelClass}>Élèves de la famille</Label>
                   <button
                     type="button"
-                    onClick={addStudent}
+                    onClick={() => setStudentModal({ mode: "add" })}
                     className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15"
                   >
                     <Plus className="h-3.5 w-3.5" /> Ajouter un élève
                   </button>
                 </div>
-                <div className="mt-2 space-y-3">
-                  {children.map((ch, i) => (
-                    <div key={i} className="rounded-xl border border-[#28396C]/10 bg-muted/30 p-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          Élève {i + 1}
-                        </p>
+                {children.length === 0 ? (
+                  <p className="mt-2 rounded-xl border border-dashed border-[#28396C]/15 px-3 py-4 text-center text-xs text-muted-foreground">
+                    Aucun élève. Utilisez « Ajouter un élève ».
+                  </p>
+                ) : (
+                  <ul className="mt-2 divide-y divide-[#28396C]/8 overflow-hidden rounded-xl border border-[#28396C]/10 bg-muted/30">
+                    {children.map((ch, i) => (
+                      <li key={i} className="flex items-center gap-2 px-3 py-2.5">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {ch.name.trim() || `Élève ${i + 1}`}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {ch.level || "Niveau non défini"}
+                            {(ch.services ?? []).length > 0 ? ` · ${ch.services.length} service(s)` : ""}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setStudentModal({ mode: "edit", index: i })}
+                          className={iconButton}
+                          title="Modifier l'élève"
+                          aria-label={`Modifier ${ch.name || `l'élève ${i + 1}`}`}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
                         {children.length > 1 ? (
                           <button
                             type="button"
                             onClick={() => removeStudent(i)}
-                            className="text-[#E25C5C] transition hover:opacity-70"
-                            aria-label={`Retirer l'élève ${i + 1}`}
+                            className={cn(iconButton, "text-[#E25C5C] hover:bg-[#E25C5C]/10 hover:text-[#E25C5C]")}
+                            title="Retirer l'élève"
+                            aria-label={`Retirer ${ch.name || `l'élève ${i + 1}`}`}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         ) : null}
-                      </div>
-                      <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <div className="space-y-1.5">
-                          <Label className={labelClass}>{t.common.child}</Label>
-                          <Input
-                            value={ch.name}
-                            onChange={(ev) => updateStudent(i, { name: ev.target.value })}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className={labelClass}>{f.level}</Label>
-                          <Input
-                            value={ch.level}
-                            onChange={(ev) => updateStudent(i, { level: ev.target.value })}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className={labelClass}>{f.birthDate}</Label>
-                          <Input
-                            value={ch.dob}
-                            onChange={(ev) => updateStudent(i, { dob: ev.target.value })}
-                            className={inputClass}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <Field id="e-father" label={f.fatherName}>
                 <Input id="e-father" name="father_name" defaultValue={client.father_name} className={inputClass} />
@@ -1228,21 +1328,6 @@ function EditClientDialog({
                   <Input id="e-notes" name="notes" defaultValue={client.notes} className={inputClass} />
                 </Field>
               </div>
-              <Field id="e-fratrie" label="Enfants scolarisés">
-                <Input
-                  id="e-fratrie"
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={fratrie}
-                  onChange={(ev) => {
-                    const n = Number(ev.target.value || 1);
-                    setFratrie(n);
-                    setRemise(remiseAuto(n));
-                  }}
-                  className={inputClass}
-                />
-              </Field>
               <Field id="e-remise" label="Remise fratrie (%)">
                 <Input
                   id="e-remise"
@@ -1258,20 +1343,11 @@ function EditClientDialog({
                 <Input id="e-jour" name="payment_day" type="number" min={1} max={31} defaultValue={client.payment_day ?? 1} className={inputClass} />
               </Field>
               <div className="sm:col-span-2">
-                <Label className={labelClass}>Services souscrits</Label>
-                <div className="mt-2 flex flex-wrap gap-4">
-                  {services.filter((s) => s.enabled).map((s) => (
-                    <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
-                      <input
-                        type="checkbox"
-                        checked={subscribed.includes(s.name)}
-                        onChange={() => toggleSvc(s.name)}
-                        className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
-                      />
-                      {s.name}
-                    </label>
-                  ))}
-                </div>
+                <p className="rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                  Frais mensuels recalculés :{" "}
+                  <span className="font-semibold tabular-nums text-foreground">{totalMonthly} {t.common.mad}</span>{" "}
+                    niveaux, services et frais des élèves.
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
@@ -1289,6 +1365,28 @@ function EditClientDialog({
           </form>
         </div>
       </DialogContent>
+
+      {/* Modale élève   portalisée hors du <form>, donc aucun risque de submit.
+          Montée seulement à l'ouverture, avec une key : chaque ouverture repart
+          d'un brouillon neuf (élève sélectionné ou vide). */}
+      {studentModal ? (
+        <StudentModal
+          key={studentModal.mode === "edit" ? `edit-${studentModal.index}` : "add"}
+          mode={studentModal.mode}
+          initial={
+            studentModal.mode === "edit" ? children[studentModal.index] ?? emptyChild() : emptyChild()
+          }
+          onOpenChange={(o) => !o && setStudentModal(null)}
+          onConfirm={(child) => {
+            if (studentModal.mode === "edit") {
+              const idx = studentModal.index;
+              setChildren((prev) => prev.map((c, i) => (i === idx ? child : c)));
+            } else {
+              setChildren((prev) => [...prev, child]);
+            }
+          }}
+        />
+      ) : null}
     </Dialog>
   );
 }

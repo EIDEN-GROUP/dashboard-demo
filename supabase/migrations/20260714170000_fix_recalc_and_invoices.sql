@@ -125,7 +125,7 @@ begin
     least(v_payment_day, 28)
   ) + v_grace_days;
 
-  -- Update debt / status — do NOT touch monthly_fee
+  -- Update debt / status   do NOT touch monthly_fee
   update public.clients
   set
     debt = greatest(0, v_expected - v_paid),

@@ -321,7 +321,7 @@ function LevelsSection() {
                 {l.name}
               </span>
               <span className="shrink-0 text-sm text-muted-foreground">
-                {l.cycle || "—"}
+                {l.cycle || " "}
               </span>
               <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
                 {l.monthly_fee} MAD

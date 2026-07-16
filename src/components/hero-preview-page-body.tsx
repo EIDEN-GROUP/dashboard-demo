@@ -4,40 +4,38 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpRight,
-  CheckCircle2,
+  Pencil,
   Plus,
   Search,
   Send,
+  Trash2,
   TrendingUp,
-  Users,
-  XCircle,
 } from "lucide-react";
-import { CartesianGrid, Bar, BarChart, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Bar, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useDashboardI18n, useLandingI18n } from "@/lib/landing-i18n";
 import { cn } from "@/lib/utils";
 import { initials } from "@/lib/dash-ui";
 import {
+  MIRROR_PAGE_SIZE,
+  mirrorCalendar,
   mirrorClients,
   mirrorDashboardMetrics,
-  mirrorDemandes,
   mirrorEmployes,
   mirrorLastPayments,
+  mirrorLevelSplit,
+  mirrorLevelSplitTotal,
+  mirrorPaymentModes,
   mirrorPaymentRows,
-  mirrorRapportsChart,
-  mirrorRapportsImpayeCount,
-  mirrorRapportsPayeCount,
-  mirrorRapportsTotalFamilles,
+  mirrorPaymentsEncaisse,
+  mirrorPendingDues,
+  mirrorPendingTotal,
+  mirrorServiceRevenue,
+  mirrorServiceRevenueTotal,
+  mirrorSettingsSections,
   mirrorStatKpis,
   mirrorStatSeries,
   type DashboardMiniaturePageId,
 } from "@/lib/dashboard-mirror-data";
-
-const chartTooltipBar = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: 0,
-  color: "var(--foreground)",
-} as const;
 
 // Rounded tooltip matching the real dashboard shot.
 const shotTooltip = {
@@ -50,28 +48,29 @@ const shotTooltip = {
 
 export function HeroPreviewPageBody({
   page,
-  previewBtn,
   showLocked,
 }: {
   page: DashboardMiniaturePageId;
-  previewBtn: string;
   showLocked: (msg: string) => void;
 }) {
   const { t } = useDashboardI18n();
   const { t: tl } = useLandingI18n();
   const pv = tl.preview;
 
-  const chartData = useMemo(
-    () => mirrorRapportsChart.map((row, i) => ({ m: t.rapports.months[i] ?? row.m, v: row.v })),
-    [t.rapports.months],
-  );
-
-  const stadeLabel = (s: string) => (s === "nouveau" ? t.status.nouveau : t.status.converti);
-  const paymentLabel = (s: string) => (s === "impaye" ? t.status.impaye : t.status.paye);
-
-  const rendezVousTableHeaders = useMemo(
-    () => [t.rendezVous.csvHeaders[0], t.rendezVous.csvHeaders[1], t.rendezVous.csvHeaders[3], t.rendezVous.csvHeaders[4]],
-    [t.rendezVous.csvHeaders],
+  /** Pied « 1–N sur N » des tableaux paginés (5 lignes/page sur le vrai dashboard). */
+  const pagerFooter = (total: number, label: string) => (
+    <div className="flex shrink-0 items-center justify-between gap-2 border-t border-[#28396C]/10 px-2.5 py-1.5">
+      <p className="text-[7px] tabular-nums text-[#5C6B94] sm:text-[8px]">
+        1–{Math.min(MIRROR_PAGE_SIZE, total)} sur {total} {label}
+      </p>
+      <div className="flex items-center gap-1">
+        <span className="grid h-4 w-4 place-items-center rounded-full border border-[#28396C]/15 text-[7px] text-[#5C6B94]">‹</span>
+        <span className="text-[7px] font-semibold tabular-nums text-[#28396C] sm:text-[8px]">
+          Page 1 / {Math.max(1, Math.ceil(total / MIRROR_PAGE_SIZE))}
+        </span>
+        <span className="grid h-4 w-4 place-items-center rounded-full border border-[#28396C]/15 text-[7px] text-[#5C6B94]">›</span>
+      </div>
+    </div>
   );
 
   switch (page) {
@@ -121,6 +120,15 @@ export function HeroPreviewPageBody({
                 </div>
                 <p className="mt-1.5 font-display text-lg font-semibold leading-none tracking-tight sm:text-xl">{card.value}</p>
                 <p className="mt-1 text-[8px] text-[#5C6B94] sm:text-[9px]">{card.sub}</p>
+                {/* Analyse express sur la carte Impayé   cf. dashboard.index */}
+                {card.extra ? (
+                  <p
+                    className="mt-1.5 inline-flex rounded-full px-1.5 py-0.5 text-[7px] font-semibold tabular-nums sm:text-[8px]"
+                    style={{ backgroundColor: card.tint, color: card.accent }}
+                  >
+                    {card.extra}
+                  </p>
+                ) : null}
                 <span className="mt-2 block h-1 w-8 rounded-full" style={{ backgroundColor: card.accent }} />
               </Link>
             ))}
@@ -220,6 +228,59 @@ export function HeroPreviewPageBody({
                   </li>
                 ))}
               </ul>
+
+              {/* Paiements en attente (Créances)   file de relance sous les derniers paiements */}
+              <div className="mt-2 shrink-0 overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white">
+                <div className="flex items-center justify-between gap-2 border-b border-[#28396C]/10 px-2.5 py-1.5">
+                  <div className="min-w-0">
+                    <p className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[#5C6B94] sm:text-[8px]">Créances</p>
+                    <h3 className="font-display text-[10px] text-[#28396C] sm:text-[11px]">Paiements en attente</h3>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <span className="rounded-full bg-[#F4E3C0] px-1.5 py-0.5 text-[7px] font-semibold text-[#8A5A16] sm:text-[8px]">
+                      {mirrorPendingDues.length} familles
+                    </span>
+                    <span className="rounded-full bg-[#28396C]/8 px-1.5 py-0.5 text-[7px] font-semibold tabular-nums text-[#28396C] sm:text-[8px]">
+                      {mirrorPendingTotal.toLocaleString("fr-FR")} MAD
+                    </span>
+                  </div>
+                </div>
+                <ul className="divide-y divide-[#28396C]/8">
+                  {mirrorPendingDues.map((d) => (
+                    <li key={d.id} className="flex items-center gap-2 px-2.5 py-1.5">
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#28396C]/8 text-[8px] font-bold text-[#28396C]">
+                        {initials(d.name)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1">
+                          <p className="truncate text-[9px] font-semibold leading-tight text-[#28396C] sm:text-[10px]">{d.name}</p>
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-1.5 py-0.5 text-[6px] font-semibold sm:text-[7px]",
+                              d.status === "retard" && d.days > 14
+                                ? "bg-[#F6D8D8] text-[#9A2F2F]"
+                                : "bg-[#F4E3C0] text-[#8A5A16]",
+                            )}
+                          >
+                            {d.status === "retard" ? `${d.days}j de retard` : "En attente"}
+                          </span>
+                        </div>
+                        <p className="truncate text-[7px] leading-tight text-[#5C6B94] sm:text-[8px]">{d.level}</p>
+                      </div>
+                      <span className="shrink-0 text-[9px] font-semibold tabular-nums text-[#28396C] sm:text-[10px]">
+                        {d.amount.toLocaleString("fr-FR")} MAD
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => showLocked(pv.locked.openCard)}
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[7px] font-semibold text-[#28396C] sm:text-[8px]"
+                      >
+                        <Send className="h-2.5 w-2.5" /> Relancer
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             {/* Relance rapide teaser */}
@@ -233,7 +294,7 @@ export function HeroPreviewPageBody({
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80">
                   <Plus className="h-3 w-3" />
                 </span>
-                {["Famille Alami", "Tazi / Mehdi", "Benjelloun"].map((name) => (
+                {["Karim Alami / Nadia Alami", "Mehdi Tazi / Imane Tazi", "Youssef Benjelloun / Salma Benjelloun"].map((name) => (
                   <span
                     key={name}
                     className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#B5E18B] text-[9px] font-bold text-[#28396C] ring-2 ring-[#28396C]"
@@ -257,126 +318,298 @@ export function HeroPreviewPageBody({
 
     case "familles":
       return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <div className="shrink-0 space-y-0.5">
-            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.familles.eyebrow}</p>
-            <p className="font-display text-[11px] font-semibold text-foreground sm:text-[12px]">
-              {t.familles.titleBold} <span className="italic text-muted-foreground">{t.familles.titleItalic}</span>
-            </p>
+        <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain text-[#28396C]">
+          {/* Header */}
+          <div className="flex shrink-0 items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-[#5C6B94] sm:text-[9px]">{t.familles.eyebrow}</p>
+              <p className="mt-0.5 font-display text-sm font-semibold leading-tight sm:text-base">
+                {t.familles.titleBold} <span className="font-normal italic text-[#5C6B94]">{t.familles.titleItalic}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => showLocked(pv.locked.addClient)}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#B5E18B] px-2.5 py-1.5 text-[9px] font-bold text-[#28396C] shadow-sm sm:text-[10px]"
+            >
+              <Plus className="h-3 w-3" />
+              <span className="hidden sm:inline">{t.familles.addClient}</span>
+            </button>
           </div>
-          <button type="button" className={cn(previewBtn, "shrink-0 self-start")} onClick={() => showLocked(pv.locked.addClient)}>
-            <Plus className="h-2.5 w-2.5" /> {t.common.add}
-          </button>
-          <div className="shrink-0 border border-border bg-card p-1">
-            <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-[8px]">
-              {t.common.filtersSearch}
-            </p>
-            <div className="mt-1 flex items-center gap-0.5 border border-border bg-muted px-1 py-0.5">
-              <Search className="h-2.5 w-2.5 shrink-0 text-muted-foreground/80" />
-              <span className="text-[7px] text-muted-foreground/80 sm:text-[8px]">{pv.searchEllipsis}</span>
+
+          {/* Filtres + revenu par service + répartition par niveau   une seule rangée */}
+          <div className="grid shrink-0 gap-2 sm:grid-cols-3">
+            <div className="rounded-2xl border border-[#28396C]/10 bg-white p-2 shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)]">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">Filtres</p>
+              <div className="mt-1.5 flex items-center gap-1 rounded-lg border border-[#28396C]/10 bg-[#28396C]/5 px-1.5 py-1">
+                <Search className="h-2.5 w-2.5 shrink-0 text-[#5C6B94]" />
+                <span className="text-[7px] text-[#5C6B94] sm:text-[8px]">{pv.searchEllipsis}</span>
+              </div>
+              {["Tous les niveaux", "Tous les services"].map((f) => (
+                <div key={f} className="mt-1 flex items-center justify-between rounded-lg border border-[#28396C]/10 px-1.5 py-1">
+                  <span className="text-[7px] text-[#5C6B94] sm:text-[8px]">{f}</span>
+                  <span className="text-[7px] text-[#5C6B94]">▾</span>
+                </div>
+              ))}
+              <p className="mt-1.5 text-[7px] text-[#5C6B94] sm:text-[8px]">{mirrorClients.length} familles trouvées</p>
+            </div>
+
+            <div className="rounded-2xl border border-[#28396C]/10 bg-white p-2 shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)]">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">Revenu par service</p>
+              <div className="mx-auto mt-1 h-14 w-14">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={mirrorServiceRevenue as any} dataKey="value" nameKey="name" outerRadius="95%" stroke="none">
+                      {mirrorServiceRevenue.map((d) => (
+                        <Cell key={d.name} fill={d.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="mt-1 space-y-0.5">
+                {mirrorServiceRevenue.map((d) => (
+                  <li key={d.name} className="flex items-center justify-between gap-1 rounded-full bg-[#28396C]/5 px-1.5 py-0.5">
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span className="truncate text-[6px] font-medium sm:text-[7px]">{d.name}</span>
+                    </span>
+                    <span className="shrink-0 text-[6px] font-semibold tabular-nums sm:text-[7px]">
+                      {d.value.toLocaleString("fr-FR")} MAD
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1 text-right text-[6px] font-semibold tabular-nums text-[#5C6B94] sm:text-[7px]">
+                {mirrorServiceRevenueTotal.toLocaleString("fr-FR")} MAD
+              </p>
+            </div>
+
+            <div className="hidden rounded-2xl border border-[#28396C]/10 bg-white p-2 shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)] sm:block">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">Répartition par niveau</p>
+              <div className="mx-auto mt-1 h-14 w-14">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={mirrorLevelSplit as any} dataKey="value" nameKey="name" outerRadius="95%" stroke="none">
+                      {mirrorLevelSplit.map((d) => (
+                        <Cell key={d.name} fill={d.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="mt-1 space-y-0.5">
+                {mirrorLevelSplit.map((d) => (
+                  <li key={d.name} className="flex items-center justify-between gap-1 rounded-full bg-[#28396C]/5 px-1.5 py-0.5">
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span className="truncate text-[6px] font-medium sm:text-[7px]">{d.name}</span>
+                    </span>
+                    <span className="shrink-0 text-[6px] font-semibold tabular-nums sm:text-[7px]">
+                      {d.value} · {Math.round((d.value / mirrorLevelSplitTotal) * 100)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-hidden border border-border bg-card">
-            <div className="border-b border-border px-1 py-0.5">
-              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-[8px]">
+
+          {/* Liste des clients   Parent · Élève(s) · Niveau · Services · Remise · Mensuel */}
+          <div className="min-h-0 shrink-0 overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)]">
+            <div className="border-b border-[#28396C]/10 px-2.5 py-1.5">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">
                 {t.familles.clientList}
               </p>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[280px] text-left text-[7px] sm:text-[8px]">
+              <table className="w-full min-w-[330px] text-left text-[7px] sm:text-[8px]">
                 <thead>
-                  <tr className="border-b border-border bg-muted text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                    <th className="px-1 py-0.5">{t.familles.table.parent}</th>
-                    <th className="px-1 py-0.5">{t.familles.table.child}</th>
-                    <th className="px-1 py-0.5">{pv.tableStage}</th>
-                    <th className="px-1 py-0.5">{pv.tablePayment}</th>
+                  <tr className="border-b border-[#28396C]/10 bg-[#28396C]/5 text-[6px] font-semibold uppercase tracking-wider text-[#5C6B94] sm:text-[7px]">
+                    <th className="px-1.5 py-1">{t.familles.table.parent}</th>
+                    <th className="px-1.5 py-1">Élève(s)</th>
+                    <th className="px-1.5 py-1">Niveau</th>
+                    <th className="px-1.5 py-1">Services</th>
+                    <th className="px-1.5 py-1">Remise</th>
+                    <th className="px-1.5 py-1">{t.familles.table.monthly}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-[#28396C]/8">
                   {mirrorClients.map((c) => (
-                    <tr key={c.id} className="hover:bg-muted/80">
-                      <td className="px-1 py-0.5 font-medium text-foreground">{c.parent}</td>
-                      <td className="px-1 py-0.5 text-foreground/85">{c.child}</td>
-                      <td className="px-1 py-0.5">
-                        <span className="inline-flex items-center gap-0.5 border border-border bg-muted px-0.5 py-px text-[7px] font-semibold uppercase sm:text-[8px]">
-                          {stadeLabel(c.stade)}
-                        </span>
+                    <tr key={c.id} className="hover:bg-[#B5E18B]/10">
+                      <td className="px-1.5 py-1 font-medium">{c.parent}</td>
+                      <td className="px-1.5 py-1">
+                        {c.eleves.map((e) => (
+                          <span key={e} className="block font-medium leading-tight">{e}</span>
+                        ))}
                       </td>
-                      <td className="px-1 py-0.5">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-0.5 border px-0.5 py-px text-[7px] font-semibold uppercase sm:text-[8px]",
-                            c.payment === "paye" ? "border-border bg-foreground text-background" : "border-border bg-muted text-foreground/85",
-                          )}
-                        >
-                          {paymentLabel(c.payment)}
-                        </span>
+                      <td className="px-1.5 py-1 text-[#5C6B94]">{c.niveau || "—"}</td>
+                      <td className="px-1.5 py-1">
+                        {c.services.length === 0 ? (
+                          <span className="text-[#5C6B94]">Aucun</span>
+                        ) : (
+                          <span className="flex flex-wrap gap-0.5">
+                            {c.services.map((s) => (
+                              <span key={s} className="rounded-full bg-[#28396C]/8 px-1 py-px text-[6px] font-semibold text-[#28396C]">
+                                {s.split(" ")[0]}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-1.5 py-1">
+                        {c.remise > 0 ? (
+                          <span className="rounded-full bg-[#B5E18B]/30 px-1 py-px text-[6px] font-semibold text-[#3E6420]">
+                            {c.remise}%
+                          </span>
+                        ) : (
+                          <span className="text-[#5C6B94]">—</span>
+                        )}
+                      </td>
+                      <td className="px-1.5 py-1 tabular-nums">
+                        <span className="block font-semibold">{c.mensuel.toLocaleString("fr-FR")} MAD</span>
+                        {/* Reflète le paiement, comme la colonne Mensuel réelle */}
+                        {c.payment === "paye" ? (
+                          <span className="block text-[6px] font-medium text-[#6BA53A]">Payé ce mois</span>
+                        ) : (
+                          <span className="block text-[6px] font-medium text-[#E25C5C]">
+                            Reste : {c.dette.toLocaleString("fr-FR")} MAD
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            {pagerFooter(mirrorClients.length, "familles")}
           </div>
         </div>
       );
 
     case "paiements":
       return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <div className="shrink-0">
-            <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t.paiements.eyebrow}</p>
-            <p className="font-display text-[11px] text-foreground sm:text-[12px]">
-              {t.paiements.titleBold} <span className="italic text-muted-foreground">{t.paiements.titleItalic}</span>
-            </p>
+        <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain text-[#28396C]">
+          {/* Header */}
+          <div className="flex shrink-0 items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[8px] font-medium uppercase tracking-[0.18em] text-[#5C6B94] sm:text-[9px]">{t.paiements.eyebrow}</p>
+              <p className="mt-0.5 font-display text-sm font-semibold leading-tight sm:text-base">
+                {t.paiements.titleBold} <span className="font-normal italic text-[#5C6B94]">{t.paiements.titleItalic}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => showLocked(pv.locked.exportCsv)}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#28396C]/15 bg-white px-2.5 py-1.5 text-[9px] font-semibold text-[#28396C] shadow-sm sm:text-[10px]"
+            >
+              {t.common.export}
+            </button>
           </div>
-          <button
-            type="button"
-            className={cn(previewBtn, "inline-flex shrink-0 gap-0.5 self-start")}
-            onClick={() => showLocked(pv.locked.exportCsv)}
-          >
-            {t.common.export}
-          </button>
-          <div className="shrink-0 border border-border bg-card p-1">
-            <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-[8px]">
-              {t.common.filtersAndSearch}
-            </p>
-            <div className="mt-0.5 flex items-center gap-0.5 border border-border bg-muted px-1 py-0.5">
-              <Search className="h-2.5 w-2.5 text-muted-foreground/80" />
-              <span className="text-[7px] text-muted-foreground/80 sm:text-[8px]">{pv.searchEllipsis}</span>
+
+          {/* Filtres (mois / mode / reçu) + répartition par mode */}
+          <div className="grid shrink-0 gap-2 sm:grid-cols-3">
+            <div className="rounded-2xl border border-[#28396C]/10 bg-white p-2 shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)] sm:col-span-2">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">
+                {t.common.filtersAndSearch}
+              </p>
+              <div className="mt-1.5 flex items-center gap-1 rounded-lg border border-[#28396C]/10 bg-[#28396C]/5 px-1.5 py-1">
+                <Search className="h-2.5 w-2.5 shrink-0 text-[#5C6B94]" />
+                <span className="text-[7px] text-[#5C6B94] sm:text-[8px]">{pv.searchEllipsis}</span>
+              </div>
+              <div className="mt-1 grid grid-cols-3 gap-1">
+                {["Tous les mois", "Tous les modes", "Tous les reçus"].map((f) => (
+                  <div key={f} className="flex items-center justify-between rounded-lg border border-[#28396C]/10 px-1.5 py-1">
+                    <span className="truncate text-[6px] text-[#5C6B94] sm:text-[7px]">{f}</span>
+                    <span className="text-[6px] text-[#5C6B94]">▾</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[7px] text-[#5C6B94] sm:text-[8px]">
+                {mirrorPaymentRows.length} paiements ·{" "}
+                <span className="font-semibold tabular-nums text-[#28396C]">
+                  {mirrorPaymentsEncaisse.toLocaleString("fr-FR")} {t.common.mad}
+                </span>{" "}
+                encaissés
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#28396C]/10 bg-white p-2 shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)]">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">Répartition par mode</p>
+              <div className="mx-auto mt-1 h-14 w-14">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={mirrorPaymentModes as any} dataKey="value" nameKey="name" outerRadius="95%" stroke="none">
+                      {mirrorPaymentModes.map((d) => (
+                        <Cell key={d.name} fill={d.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="mt-1 space-y-0.5">
+                {mirrorPaymentModes.map((d) => (
+                  <li key={d.name} className="flex items-center justify-between gap-1 rounded-full bg-[#28396C]/5 px-1.5 py-0.5">
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span className="truncate text-[6px] font-medium sm:text-[7px]">{d.name}</span>
+                    </span>
+                    <span className="shrink-0 text-[6px] font-semibold tabular-nums sm:text-[7px]">{d.value}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-hidden border border-border bg-card">
+
+          {/* Table   Parent · Élève · Niveau · Montant · Date · Mode · Statut · Reçu */}
+          <div className="min-h-0 shrink-0 overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)]">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[320px] text-left text-[7px] sm:text-[8px]">
+              <table className="w-full min-w-[360px] text-left text-[7px] sm:text-[8px]">
                 <thead>
-                  <tr className="border-b border-border bg-muted text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                    <th className="px-1 py-0.5">{t.common.parent}</th>
-                    <th className="px-1 py-0.5">{t.common.child}</th>
-                    <th className="px-1 py-0.5">{t.common.amount}</th>
-                    <th className="px-1 py-0.5">{t.common.date}</th>
-                    <th className="px-1 py-0.5">{t.common.mode}</th>
-                    <th className="px-1 py-0.5">{t.common.receipt}</th>
-                    <th className="px-1 py-0.5">{t.common.invoice}</th>
+                  <tr className="border-b border-[#28396C]/10 bg-[#28396C]/5 text-[6px] font-semibold uppercase tracking-wider text-[#5C6B94] sm:text-[7px]">
+                    <th className="px-1.5 py-1">{t.common.parent}</th>
+                    <th className="px-1.5 py-1">Élève</th>
+                    <th className="px-1.5 py-1">Niveau</th>
+                    <th className="px-1.5 py-1">{t.common.amount}</th>
+                    <th className="px-1.5 py-1">{t.common.date}</th>
+                    <th className="px-1.5 py-1">{t.common.mode}</th>
+                    <th className="px-1.5 py-1">Statut</th>
+                    <th className="px-1.5 py-1">{t.common.receipt}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-[#28396C]/8">
                   {mirrorPaymentRows.map((r) => (
-                    <tr key={r.id} className="hover:bg-muted/80">
-                      <td className="px-1 py-0.5 font-medium text-foreground">{r.parent}</td>
-                      <td className="px-1 py-0.5 text-foreground/85">{r.enfant}</td>
-                      <td className="px-1 py-0.5 font-semibold tabular-nums">
-                        {r.montant} {t.common.mad}
+                    <tr key={r.id} className="hover:bg-[#B5E18B]/10">
+                      <td className="px-1.5 py-1 font-medium">{r.parent}</td>
+                      <td className="px-1.5 py-1">{r.enfant}</td>
+                      <td className="px-1.5 py-1 text-[#5C6B94]">{r.niveau}</td>
+                      <td className="px-1.5 py-1 font-semibold tabular-nums">
+                        {r.montant.toLocaleString("fr-FR")} {t.common.mad}
                       </td>
-                      <td className="px-1 py-0.5 tabular-nums text-foreground/85">{r.date}</td>
-                      <td className="px-1 py-0.5">
-                        <span className="inline-flex items-center gap-0.5 border border-border bg-foreground px-0.5 py-px text-[7px] font-semibold uppercase text-background sm:text-[8px]">
+                      <td className="px-1.5 py-1 tabular-nums text-[#5C6B94]">{r.date}</td>
+                      <td className="px-1.5 py-1">
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-[#28396C]/8 px-1.5 py-px text-[6px] font-semibold uppercase tracking-wide text-[#28396C]">
+                          <span className="h-1 w-1 shrink-0 rounded-full bg-[#28396C]" aria-hidden />
                           {r.mode}
                         </span>
                       </td>
-                      <td className="px-1 py-0.5 font-mono text-[7px] text-foreground/85 sm:text-[8px]">{r.recu}</td>
-                      <td className="px-1 py-0.5">
-                        <span className="border border-border bg-muted px-0.5 py-px text-[7px] text-foreground/85 sm:text-[8px]">
+                      <td className="px-1.5 py-1">
+                        <span
+                          className={cn(
+                            "rounded-full px-1.5 py-px text-[6px] font-semibold uppercase tracking-wide",
+                            r.statut === "paye" ? "bg-[#B5E18B]/30 text-[#3E6420]" : "bg-[#F6D8D8] text-[#9A2F2F]",
+                          )}
+                        >
+                          {r.statut === "paye" ? t.status.paye : t.status.overdue}
+                        </span>
+                      </td>
+                      <td className="px-1.5 py-1">
+                        <span className="block font-mono text-[6px] text-[#5C6B94] sm:text-[7px]">{r.recu}</span>
+                        <span
+                          className={cn(
+                            "mt-px inline-flex rounded-full px-1 py-px text-[6px] font-semibold",
+                            r.facture === "envoye" ? "bg-[#B5E18B]/30 text-[#3E6420]" : "bg-[#28396C]/8 text-[#5C6B94]",
+                          )}
+                        >
                           {r.facture === "non_envoye" ? t.status.notSent : t.status.sent}
                         </span>
                       </td>
@@ -385,239 +618,245 @@ export function HeroPreviewPageBody({
                 </tbody>
               </table>
             </div>
+            {pagerFooter(mirrorPaymentRows.length, "paiements")}
           </div>
         </div>
       );
 
-    case "rendez-vous":
-      return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <div className="flex shrink-0 flex-wrap items-end justify-between gap-1">
-            <div>
-              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.rendezVous.eyebrow}</p>
-              <p className="font-display text-[11px] text-foreground sm:text-[12px]">
-                <span className="font-semibold">{t.rendezVous.titleBold}</span>
-                <span className="font-medium italic text-muted-foreground">{t.rendezVous.titleItalic}</span>
-              </p>
-            </div>
-            <button type="button" className={cn(previewBtn, "gap-0.5")} onClick={() => showLocked(pv.locked.exportCsv)}>
-              {pv.csvShort}
-            </button>
-          </div>
-          <div className="shrink-0 border border-border bg-card p-1">
-            <div className="flex items-center gap-0.5 border border-border bg-muted px-1 py-0.5">
-              <Search className="h-2.5 w-2.5 text-muted-foreground" />
-              <span className="text-[7px] text-muted-foreground/80 sm:text-[8px]">{pv.searchEllipsis}</span>
-            </div>
-          </div>
-          <div className="min-h-0 flex-1 overflow-hidden border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[260px] text-left text-[7px] sm:text-[8px]">
-                <thead>
-                  <tr className="border-b border-border bg-muted">
-                    {rendezVousTableHeaders.map((h) => (
-                      <th key={h} className="px-1 py-0.5 text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {mirrorDemandes.map((r) => (
-                    <tr key={r.id} className="border-b border-border/70">
-                      <td className="px-1 py-0.5 font-medium text-foreground">{r.nom}</td>
-                      <td className="max-w-[4rem] truncate px-1 py-0.5 text-foreground/75">{r.email}</td>
-                      <td className="px-1 py-0.5 tabular-nums">{r.dateTable}</td>
-                      <td className="max-w-[4rem] truncate px-1 py-0.5 text-muted-foreground">{r.sujet}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
+    case "calendar": {
+      // Grille mensuelle : cases vides avant le 1er, puis les jours du mois.
+      const cells: (number | null)[] = [
+        ...Array.from({ length: mirrorCalendar.startOffset }, () => null),
+        ...Array.from({ length: mirrorCalendar.daysInMonth }, (_, i) => i + 1),
+      ];
+      const dayTone = (d: number) =>
+        mirrorCalendar.holidays.includes(d)
+          ? "bg-[#6BA53A]/20 text-[#3E6420] font-semibold"
+          : mirrorCalendar.vacations.includes(d)
+            ? "bg-[#CFC27A]/40 text-[#7A6E2E] font-semibold"
+            : mirrorCalendar.planifications.includes(d)
+              ? "bg-[#8B5CF6]/15 text-[#5B21B6] font-semibold"
+              : "text-[#28396C]";
 
-    case "affiches":
       return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
+        <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain text-[#28396C]">
           <div className="shrink-0">
-            <p className="text-[8px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{t.affiches.eyebrow}</p>
-            <p className="font-display text-[11px] leading-tight text-foreground sm:text-[12px]">
-              <span className="font-semibold">{t.affiches.titleBold}</span>{" "}
-              <span className="font-normal italic text-muted-foreground">{t.affiches.titleItalic}</span>
-            </p>
-            <p className="text-[7px] text-muted-foreground sm:text-[8px]">{t.affiches.subtitle}</p>
-          </div>
-          <div className="min-h-0 flex-1 overflow-hidden border border-border bg-card">
-            <div className="border-b border-border px-1 py-0.5">
-              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-[8px]">
-                {t.affiches.employeeList}
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[280px] text-left text-[7px] sm:text-[8px]">
-                <thead>
-                  <tr className="border-b border-border bg-muted text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                    <th className="px-1 py-0.5">{t.affiches.table.name}</th>
-                    <th className="px-1 py-0.5">{t.affiches.table.position}</th>
-                    <th className="px-1 py-0.5">{t.affiches.table.department}</th>
-                    <th className="px-1 py-0.5">{t.affiches.table.contact}</th>
-                    <th className="px-1 py-0.5">{t.affiches.table.status}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {mirrorEmployes.map((e) => (
-                    <tr key={e.id} className="hover:bg-muted/80">
-                      <td className="px-1 py-0.5 font-medium text-foreground">{e.nomComplet}</td>
-                      <td className="px-1 py-0.5 text-foreground/85">{e.poste}</td>
-                      <td className="px-1 py-0.5 text-foreground/75">{e.departement}</td>
-                      <td className="px-1 py-0.5 text-foreground/75">
-                        <span className="block max-w-[5rem] truncate">{e.email}</span>
-                        <span className="mt-px block text-[7px] text-muted-foreground sm:text-[8px]">{e.tel}</span>
-                      </td>
-                      <td className="px-1 py-0.5">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-0.5 border px-0.5 py-px text-[7px] font-semibold uppercase sm:text-[8px]",
-                            e.statut === "actif" ? "border-border bg-foreground text-background" : "border-border bg-muted text-foreground/85",
-                          )}
-                        >
-                          <span className="h-0.5 w-0.5 shrink-0 bg-current" aria-hidden />
-                          {e.statut === "actif" ? t.status.actif : t.status.inactif}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
-
-    case "rapports": {
-      const rapportsCard =
-        "relative block w-full overflow-hidden border border-border bg-card p-1.5 text-left outline-none transition-colors sm:p-2 border-t-[3px]";
-      return (
-        <div className="flex h-full min-h-0 flex-col gap-1 overflow-y-auto">
-          <header className="shrink-0 space-y-0.5">
-            <p className="text-[8px] font-medium uppercase tracking-[0.22em] text-muted-foreground">{t.rapports.eyebrow}</p>
-            <div>
-              <p className="font-display text-[11px] leading-tight text-foreground sm:text-[12px]">
-                <span className="font-semibold">{t.rapports.titleBold}</span>{" "}
-                <span className="font-normal italic text-muted-foreground">{t.rapports.titleItalic}</span>
-              </p>
-              <p className="mt-0.5 text-[7px] leading-snug text-muted-foreground sm:text-[8px]">{t.rapports.subtitle}</p>
-            </div>
-          </header>
-
-          <div className="grid shrink-0 grid-cols-2 gap-0.5">
-            <div
-              className={cn(
-                rapportsCard,
-                "col-span-2 border-t-primary",
-                "cursor-default hover:border-border hover:bg-card",
-              )}
-            >
-              <p className="text-[7px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                {t.rapports.summary}
-              </p>
-              <div className="mt-1 flex flex-wrap items-end gap-x-2 gap-y-1">
-                <div>
-                  <p className="text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                    {t.rapports.paid}
-                  </p>
-                  <p className="font-display text-[12px] font-semibold tabular-nums leading-none text-foreground sm:text-[13px]">
-                    {mirrorRapportsPayeCount}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                    {t.rapports.unpaid}
-                  </p>
-                  <p className="font-display text-[12px] font-semibold tabular-nums leading-none text-foreground sm:text-[13px]">
-                    {mirrorRapportsImpayeCount}
-                  </p>
-                </div>
-                <div className="min-w-0 border-l border-border pl-2">
-                  <p className="text-[7px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                    {t.rapports.totalFamilies}
-                  </p>
-                  <p className="font-display text-[13px] font-semibold tabular-nums leading-none text-foreground sm:text-sm">
-                    {mirrorRapportsTotalFamilles}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-1 flex items-center justify-between gap-1 border-t border-border/70 pt-1">
-                <p className="min-w-0 flex-1 text-[7px] leading-tight text-muted-foreground sm:text-[8px]">
-                  {t.rapports.summaryNote}
-                </p>
-                <span className="grid h-5 w-5 shrink-0 place-items-center border border-border bg-muted text-foreground/85" aria-hidden>
-                  <Users className="h-2.5 w-2.5" />
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className={cn(rapportsCard, "border-t-chart-4 hover:border-border hover:bg-muted/60")}
-              onClick={() => showLocked(pv.locked.paidList)}
-            >
-              <p className="pr-5 text-[7px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                {t.rapports.paidCard}
-              </p>
-              <div className="mt-0.5 flex items-start justify-between gap-1">
-                <p className="font-display text-[13px] font-semibold text-foreground sm:text-sm">{mirrorRapportsPayeCount}</p>
-                <span className="grid h-5 w-5 shrink-0 place-items-center border border-border bg-muted text-foreground/85">
-                  <CheckCircle2 className="h-2.5 w-2.5" aria-hidden />
-                </span>
-              </div>
-              <p className="mt-0.5 text-[7px] leading-tight text-muted-foreground sm:text-[8px]">{t.rapports.paidDesc}</p>
-            </button>
-
-            <button
-              type="button"
-              className={cn(rapportsCard, "border-t-chart-3 hover:border-border hover:bg-muted/60")}
-              onClick={() => showLocked(pv.locked.unpaidList)}
-            >
-              <p className="pr-5 text-[7px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[8px]">
-                {t.rapports.unpaidCard}
-              </p>
-              <div className="mt-0.5 flex items-start justify-between gap-1">
-                <p className="font-display text-[13px] font-semibold text-foreground sm:text-sm">{mirrorRapportsImpayeCount}</p>
-                <span className="grid h-5 w-5 shrink-0 place-items-center border border-border bg-muted text-foreground">
-                  <XCircle className="h-2.5 w-2.5" aria-hidden />
-                </span>
-              </div>
-              <p className="mt-0.5 text-[7px] leading-tight text-muted-foreground sm:text-[8px]">{t.rapports.unpaidDesc}</p>
-            </button>
+            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[9px]">Calendrier</p>
+            <p className="mt-0.5 font-display text-sm font-semibold leading-tight sm:text-base">Calendrier</p>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col border border-border bg-card p-1 sm:p-1.5">
-            <p className="text-[7px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[8px]">
-              {t.common.chart}
-            </p>
-            <h2 className="mt-0.5 font-display text-[10px] text-foreground sm:text-[11px]">
-              {t.rapports.chartTitleBold}{" "}
-              <span className="font-normal italic text-muted-foreground">{t.rapports.chartTitleItalic}</span>
-            </h2>
-            <p className="mt-0.5 text-[7px] text-muted-foreground sm:text-[8px]">{t.rapports.chartSubtitle}</p>
-            <div className="mt-1 min-h-0 flex-1" style={{ minHeight: "4rem" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="m" stroke="var(--muted-foreground)" tick={{ fontSize: 9 }} />
-                  <YAxis stroke="var(--muted-foreground)" tick={{ fontSize: 9 }} width={16} />
-                  <Tooltip contentStyle={chartTooltipBar} />
-                  <Bar dataKey="v" fill="var(--primary)" radius={[0, 0, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Légende   jours fériés / vacances / planifications */}
+          <div className="flex shrink-0 flex-wrap gap-1">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#6BA53A]/15 px-1.5 py-0.5 text-[7px] font-semibold text-[#3E6420] sm:text-[8px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#6BA53A]" /> Jour férié ({mirrorCalendar.holidays.length})
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#CFC27A]/40 px-1.5 py-0.5 text-[7px] font-semibold text-[#7A6E2E] sm:text-[8px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#CFC27A]" /> Vacances ({mirrorCalendar.vacations.length})
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#28396C]/10 px-1.5 py-0.5 text-[7px] font-semibold text-[#28396C] sm:text-[8px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6]" /> Planification ({mirrorCalendar.planifications.length})
+            </span>
+          </div>
+
+          {/* Grille du mois */}
+          <div className="min-h-0 shrink-0 rounded-2xl border border-[#28396C]/10 bg-white p-2 shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)]">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <span className="grid h-5 w-5 place-items-center rounded-full border border-[#28396C]/15 text-[8px] text-[#28396C]">‹</span>
+                <span className="grid h-5 w-5 place-items-center rounded-full border border-[#28396C]/15 text-[8px] text-[#28396C]">›</span>
+                <h2 className="ml-1 font-display text-[11px] font-semibold sm:text-xs">
+                  {mirrorCalendar.month} <span className="font-normal text-[#5C6B94]">{mirrorCalendar.year}</span>
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => showLocked(pv.locked.openCard)}
+                className="text-[7px] font-semibold text-[#5C6B94] sm:text-[8px]"
+              >
+                Cliquez sur un jour
+              </button>
+            </div>
+
+            <div className="mt-1.5 grid grid-cols-7 gap-0.5">
+              {mirrorCalendar.weekDays.map((d, i) => (
+                <div key={i} className="py-0.5 text-center text-[6px] font-semibold uppercase text-[#5C6B94] sm:text-[7px]">
+                  {d}
+                </div>
+              ))}
+              {cells.map((d, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  disabled={d === null}
+                  onClick={() => showLocked(pv.locked.openCard)}
+                  className={cn(
+                    "grid aspect-square place-items-center rounded-md text-[7px] transition sm:text-[8px]",
+                    d === null ? "opacity-0" : dayTone(d),
+                    d === mirrorCalendar.today && "ring-1 ring-[#28396C]",
+                  )}
+                >
+                  {d ?? ""}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       );
     }
+
+    case "affiches":
+      return (
+        <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain text-[#28396C]">
+          {/* Header + ajouter un employé */}
+          <div className="flex shrink-0 items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[8px] font-medium uppercase tracking-[0.22em] text-[#5C6B94] sm:text-[9px]">{t.affiches.eyebrow}</p>
+              <p className="mt-0.5 font-display text-sm font-semibold leading-tight sm:text-base">
+                {t.affiches.titleBold}{" "}
+                <span className="font-normal italic text-[#5C6B94]">{t.affiches.titleItalic}</span>
+              </p>
+              <p className="mt-0.5 truncate text-[8px] text-[#5C6B94] sm:text-[9px]">{t.affiches.subtitle}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => showLocked(pv.locked.addClient)}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#B5E18B] px-2.5 py-1.5 text-[9px] font-bold text-[#28396C] shadow-sm sm:text-[10px]"
+            >
+              <Plus className="h-3 w-3" />
+              <span className="hidden sm:inline">Ajouter un employé</span>
+            </button>
+          </div>
+
+          {/* Recherche + compteur */}
+          <div className="shrink-0">
+            <div className="flex items-center gap-1 rounded-xl border border-[#28396C]/10 bg-white px-2 py-1.5 shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)]">
+              <Search className="h-2.5 w-2.5 shrink-0 text-[#5C6B94]" />
+              <span className="text-[7px] text-[#5C6B94] sm:text-[8px]">{pv.searchEllipsis}</span>
+            </div>
+            <p className="mt-1 text-[7px] text-[#5C6B94] sm:text-[8px]">{mirrorEmployes.length} employés</p>
+          </div>
+
+          {/* Table   Nom · Poste · Département · Contact · Salaire · Statut · Actions */}
+          <div className="min-h-0 shrink-0 overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white shadow-[0_14px_30px_-24px_rgba(40,57,108,0.5)]">
+            <div className="border-b border-[#28396C]/10 px-2.5 py-1.5">
+              <p className="text-[7px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[8px]">
+                {t.affiches.employeeList}
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[340px] text-left text-[7px] sm:text-[8px]">
+                <thead>
+                  <tr className="border-b border-[#28396C]/10 bg-[#28396C]/5 text-[6px] font-semibold uppercase tracking-wider text-[#5C6B94] sm:text-[7px]">
+                    <th className="px-1.5 py-1">{t.affiches.table.name}</th>
+                    <th className="px-1.5 py-1">{t.affiches.table.position}</th>
+                    <th className="px-1.5 py-1">{t.affiches.table.department}</th>
+                    <th className="px-1.5 py-1">{t.affiches.table.contact}</th>
+                    <th className="px-1.5 py-1">Salaire</th>
+                    <th className="px-1.5 py-1">{t.affiches.table.status}</th>
+                    <th className="px-1.5 py-1">{t.affiches.table.actions}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#28396C]/8">
+                  {mirrorEmployes.map((e) => {
+                    return (
+                      <tr key={e.id} className="hover:bg-[#B5E18B]/10">
+                        <td className="px-1.5 py-1 font-medium">{e.nomComplet}</td>
+                        <td className="px-1.5 py-1">{e.poste}</td>
+                        <td className="px-1.5 py-1 text-[#5C6B94]">{e.departement}</td>
+                        <td className="px-1.5 py-1 text-[#5C6B94]">
+                          <span className="block max-w-[5rem] truncate">{e.email}</span>
+                          <span className="mt-px block text-[6px] sm:text-[7px]">{e.tel}</span>
+                        </td>
+                        <td className="px-1.5 py-1 font-semibold tabular-nums">
+                          {e.salaire.toLocaleString("fr-FR")}{" "}
+                          <span className="text-[6px] font-normal text-[#5C6B94]">{t.common.mad}</span>
+                        </td>
+                        <td className="px-1.5 py-1">
+                          <span
+                            className={cn(
+                              "rounded-full px-1.5 py-px text-[6px] font-semibold uppercase tracking-wide",
+                              e.statut === "actif" ? "bg-[#28396C] text-white" : "bg-[#28396C]/8 text-[#5C6B94]",
+                            )}
+                          >
+                            {e.statut === "actif" ? t.status.actif : t.status.inactif}
+                          </span>
+                        </td>
+                        <td className="px-1.5 py-1">
+                          <div className="flex gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => showLocked(pv.locked.openCard)}
+                              className="grid h-4 w-4 place-items-center rounded-full border border-[#28396C]/15 text-[#28396C]"
+                              aria-label="Modifier"
+                            >
+                              <Pencil className="h-2 w-2" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => showLocked(pv.locked.openCard)}
+                              className="grid h-4 w-4 place-items-center rounded-full border border-[#28396C]/15 text-[#E25C5C]"
+                              aria-label="Supprimer"
+                            >
+                              <Trash2 className="h-2 w-2" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {pagerFooter(mirrorEmployes.length, "employés")}
+          </div>
+        </div>
+      );
+
+    case "settings":
+      return (
+        <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain text-[#28396C]">
+          <div className="shrink-0">
+            <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-[#5C6B94] sm:text-[9px]">Paramètres</p>
+            <p className="mt-0.5 font-display text-sm font-semibold leading-tight sm:text-base">
+              Configuration <span className="font-normal italic text-[#5C6B94]">du centre</span>
+            </p>
+          </div>
+
+          {/* Sections réelles de dashboard.settings */}
+          <div className="grid shrink-0 gap-2 sm:grid-cols-2">
+            {mirrorSettingsSections.map((s) => (
+              <div
+                key={s.title}
+                className="overflow-hidden rounded-2xl border border-[#28396C]/10 bg-white shadow-[0_10px_25px_-20px_rgba(40,57,108,0.5)]"
+              >
+                <div className="border-b border-[#28396C]/10 px-2 py-1.5">
+                  <p className="font-display text-[10px] font-semibold sm:text-[11px]">{s.title}</p>
+                  <p className="text-[7px] text-[#5C6B94] sm:text-[8px]">{s.desc}</p>
+                </div>
+                <ul className="divide-y divide-[#28396C]/8">
+                  {s.rows.map((r) => (
+                    <li key={r.label} className="flex items-center justify-between gap-2 px-2 py-1">
+                      <span className="truncate text-[7px] text-[#5C6B94] sm:text-[8px]">{r.label}</span>
+                      <span className="shrink-0 text-[7px] font-semibold tabular-nums text-[#28396C] sm:text-[8px]">
+                        {r.value}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-end border-t border-[#28396C]/10 px-2 py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => showLocked(pv.locked.openCard)}
+                    className="rounded-full bg-[#B5E18B] px-2 py-0.5 text-[7px] font-bold text-[#28396C] sm:text-[8px]"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
 
     default:
       return null;

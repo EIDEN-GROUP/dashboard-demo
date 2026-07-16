@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import { ArrowRight, BarChart3, Building2, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin, MessageSquare, Phone, Send, Sparkles, TrendingUp, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
+import { ArrowRight, BarChart3, Building2, Calendar, CalendarDays, Check, CreditCard, Gift, GraduationCap, Globe, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin, MessageSquare, Phone, Send, Settings, Sparkles, TrendingUp, UserPlus, Users, AlertCircle, FileSpreadsheet, BadgeDollarSign, Star, Layers, ClipboardList, UsersRound, Lock, MousePointerClick, Menu,} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { format } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
@@ -17,13 +17,14 @@ import { submitDemoRequest } from "@/lib/contact-demo";
 
 const MotionLink = motion.create(Link);
 
+// Mêmes icônes que la navigation réelle du dashboard (`useDashboardNav`).
 const PREVIEW_NAV_ICONS = {
   dashboard: LayoutDashboard,
-  "rendez-vous": Calendar,
+  calendar: Calendar,
   familles: Users,
   paiements: CreditCard,
   affiches: Images,
-  rapports: BarChart3,
+  settings: Settings,
 } as const;
 
 const PAIN_ACCENT = [
@@ -95,9 +96,9 @@ function usePreviewTopNav() {
   const { t } = useLandingI18n();
   const labels = [
     t.previewNav.dashboard,
-    t.previewNav.appointments,
-    t.previewNav.records,
-    t.previewNav.payments,
+    t.previewNav.calendar,
+    t.previewNav.familles,
+    t.previewNav.paiements,
   ];
   return PREVIEW_TOP_NAV_IDS.map((id, i) => ({
     id,
@@ -110,14 +111,14 @@ function usePreviewSecondaryNav() {
   const { t } = useLandingI18n();
   return PREVIEW_SECONDARY_NAV_IDS.map((id) => ({
     id,
-    label: id === "affiches" ? t.previewNav.posters : t.previewNav.reports,
+    label: id === "affiches" ? t.previewNav.affiches : t.previewNav.settings,
     icon: PREVIEW_NAV_ICONS[id],
   }));
 }
 
 function useTourSteps() {
   const { t } = useLandingI18n();
-  const icons = [LayoutDashboard, Calendar, Users, CreditCard, BarChart3];
+  const icons = [LayoutDashboard, Calendar, Users, CreditCard, Images, Settings];
   return t.demo.steps.map((step, i) => ({
     page: DEMO_STEP_PAGES[i],
     icon: icons[i],
@@ -547,9 +548,6 @@ function DemoSection() {
     };
   }, []);
 
-  const previewBtn =
-    "inline-flex items-center justify-center gap-0.5 border border-border bg-card px-2 py-1 text-[10px] font-semibold text-foreground shadow-sm transition hover:bg-muted active:scale-[0.98] sm:text-[11px]";
-
   const panelTransition = reduceMotion
     ? { duration: 0.15 }
     : { duration: 0.42, ease: [0.22, 1, 0.36, 1] as const };
@@ -647,7 +645,7 @@ function DemoSection() {
                 transition={panelTransition}
                 className="h-full overflow-y-auto overscroll-contain p-3 sm:p-5"
               >
-                <HeroPreviewPageBody page={page} previewBtn={previewBtn} showLocked={showLocked} />
+                <HeroPreviewPageBody page={page} showLocked={showLocked} />
               </motion.div>
             </AnimatePresence>
           </main>
@@ -2068,10 +2066,9 @@ function Footer() {
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background/10">
-                <GraduationCap className="h-5 w-5 text-background" />
+              <div>
+                <img src="/public/edu-logo.png" alt="Edu logo" className="h-20 w-20" style={{ filter: "brightness(100)" }}/>
               </div>
-              <span className="text-lg font-black tracking-tight">Gestio</span>
             </div>
             <p className="mt-3 text-sm text-background leading-relaxed">
               {t.footer.tagline}

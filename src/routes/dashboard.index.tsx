@@ -166,7 +166,7 @@ function CrmDash() {
   }, [clients]);
 
   // Familles en attente de paiement (impayé + en retard), triées du plus ancien
-  // retard au plus récent — c'est la file de relance affichée sous les paiements.
+  // retard au plus récent   c'est la file de relance affichée sous les paiements.
   const pendingDues = useMemo(() => {
     return (clients as any[])
       .filter((c: any) => c.payment_status === "impaye" || c.payment_status === "retard")
@@ -593,7 +593,7 @@ function CrmDash() {
           </ul>
         </div>
 
-        {/* Paiements en attente — file de relance : uniquement impayés et retards. */}
+        {/* Paiements en attente   file de relance : uniquement impayés et retards. */}
         <div className={cn(softCard, "overflow-hidden")}>
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-5 py-4 sm:px-6">
             <div>

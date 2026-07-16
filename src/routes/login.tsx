@@ -107,7 +107,7 @@ function Login() {
           </form>
 
           <p className="mt-8 text-xs text-muted-foreground">
-            Démo — n'importe quel email / mot de passe fonctionne.
+            Démo   n'importe quel email / mot de passe fonctionne.
           </p>
         </div>
       </div>

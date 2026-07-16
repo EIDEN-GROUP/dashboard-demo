@@ -196,7 +196,7 @@ export function HeroDashboardShot() {
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80">
               <Plus className="h-3 w-3" />
             </span>
-            {["Famille Alami", "Tazi / Mehdi", "Benjelloun"].map((name) => (
+            {["Karim Alami / Nadia Alami", "Mehdi Tazi / Imane Tazi", "Youssef Benjelloun / Salma Benjelloun"].map((name) => (
               <span
                 key={name}
                 className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#B5E18B] text-[9px] font-bold text-[#28396C] ring-2 ring-[#28396C]"

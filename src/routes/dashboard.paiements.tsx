@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useDashboardI18n } from "@/lib/landing-i18n";
+import { usePagination, TablePagination } from "@/components/table-pagination";
 import {
   softCard,
   softInput as inputClass,
@@ -108,6 +109,9 @@ function CrmPaiementsPage() {
       return blob.includes(q);
     });
   }, [monthRows, search, modeFilter, recuFilter]);
+
+  // 5 paiements par page ; tout changement de filtre renvoie en page 1.
+  const pager = usePagination(filtered, `${month}|${search}|${modeFilter}|${recuFilter}`);
 
   // Répartition par mode de paiement (pour le graphique)
   const donut = useMemo(() => {
@@ -314,7 +318,7 @@ function CrmPaiementsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#28396C]/8">
-              {filtered.map((r) => {
+              {pager.pageItems.map((r) => {
                 const c = r.clients;
                 const status = c?.payment_status as PaymentStatus | undefined;
                 return (
@@ -352,6 +356,14 @@ function CrmPaiementsPage() {
         {filtered.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-muted-foreground">{t.paiements.noMatch}</p>
         ) : null}
+        <TablePagination
+          page={pager.page}
+          pageCount={pager.pageCount}
+          total={pager.total}
+          pageSize={pager.pageSize}
+          onPage={pager.setPage}
+          label={pager.total > 1 ? "paiements" : "paiement"}
+        />
       </section>
 
       {detail ? (

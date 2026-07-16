@@ -27,11 +27,11 @@
   },
   "previewNav": {
     "dashboard": "Tableau de bord",
-    "appointments": "Rendez-vous",
-    "records": "Dossiers",
-    "payments": "Paiements",
-    "posters": "Affiches",
-    "reports": "Rapports"
+    "calendar": "Calendrier",
+    "familles": "Parents",
+    "paiements": "Paiement",
+    "affiches": "Affiches du personnel",
+    "settings": "Paramètres"
   },
   "preview": {
     "searchEllipsis": "Rechercher…",
@@ -79,32 +79,38 @@
       {
         "label": "Tableau de bord",
         "headline": "Vos KPIs en temps réel",
-        "description": "Recettes du mois, dettes en cours, nouveaux inscrits tout ce dont vous avez besoin pour piloter votre centre en un seul coup d'œil.",
+        "description": "Encaissé, impayés et retards en un coup d'œil, avec le montant exact en attente et la file des familles à relancer.",
         "tag": "Vue d'ensemble"
       },
       {
-        "label": "Rendez-vous",
-        "headline": "Planning centralisé",
-        "description": "Toutes les demandes entrantes et le planning de votre équipe au même endroit. Confirmations automatiques, zéro double booking.",
-        "tag": "Planning"
+        "label": "Calendrier",
+        "headline": "L'année scolaire en un écran",
+        "description": "Jours fériés marocains synchronisés automatiquement, vacances scolaires et planifications de votre équipe sur un même calendrier.",
+        "tag": "Agenda"
       },
       {
-        "label": "Dossiers",
-        "headline": "Dossiers complets en 2 clics",
-        "description": "Chaque dossier, chaque document, l'historique des séances et le statut de paiement accessibles immédiatement, depuis n'importe quel appareil.",
-        "tag": "Gestion dossiers"
+        "label": "Parents",
+        "headline": "Familles et élèves en 2 clics",
+        "description": "Chaque famille avec tous ses élèves, leur niveau, leurs services et le reste à payer. Ajoutez un élève sans quitter la fiche.",
+        "tag": "Gestion des familles"
       },
       {
-        "label": "Paiements",
+        "label": "Paiement",
         "headline": "Zéro impayé oublié",
-        "description": "Reçus numérotés automatiquement, suivi mensuel par dossier et relances automatiques. Plus besoin de courir après les paiements.",
+        "description": "Reçus numérotés automatiquement, suivi mensuel par famille et relances en un clic. Plus besoin de courir après les paiements.",
         "tag": "Paiements & relances"
       },
       {
-        "label": "Rapports",
-        "headline": "Indicateurs & exports",
-        "description": "Tableaux de bord analytiques et exports CSV prêts pour votre comptabilité. Prenez les bonnes décisions avec les bonnes données.",
-        "tag": "Analyse"
+        "label": "Affiches du personnel",
+        "headline": "Votre équipe au complet",
+        "description": "Postes, départements, contrats et congés de chaque employé, réunis dans une fiche claire et à jour.",
+        "tag": "Personnel"
+      },
+      {
+        "label": "Paramètres",
+        "headline": "Votre centre, vos règles",
+        "description": "Niveaux et frais, services, réduction fratrie et échéance des paiements : tout se règle une fois, et le reste suit.",
+        "tag": "Configuration"
       }
     ]
   },

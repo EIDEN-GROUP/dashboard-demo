@@ -167,19 +167,22 @@ export function interpolate(template: string, vars: Record<string, string | numb
   return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(vars[key] ?? ""));
 }
 
+// La visite guidée de la landing calque exactement la navigation réelle du
+// dashboard (voir `useDashboardNav` ci-dessus) : un module = une entrée de nav.
 export const DEMO_STEP_PAGES = [
   "dashboard",
-  "rendez-vous",
+  "calendar",
   "familles",
   "paiements",
-  "rapports",
+  "affiches",
+  "settings",
 ] as const;
 
 export const PREVIEW_TOP_NAV_IDS = [
   "dashboard",
-  "rendez-vous",
+  "calendar",
   "familles",
   "paiements",
 ] as const;
 
-export const PREVIEW_SECONDARY_NAV_IDS = ["affiches", "rapports"] as const;
+export const PREVIEW_SECONDARY_NAV_IDS = ["affiches", "settings"] as const;

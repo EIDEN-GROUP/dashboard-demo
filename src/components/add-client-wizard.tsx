@@ -42,6 +42,7 @@ import {
 } from "@/lib/dash-ui";
 import { createClient } from "@/lib/server-clients";
 import { getSettings, listLevels } from "@/lib/server-settings";
+import { StudentFields } from "@/components/student-fields";
 import { toast } from "sonner";
 
 export type ChildFormData = { name: string; dob: string; cycle: string; level: string; services: string[]; frais: string[] };
@@ -110,22 +111,8 @@ export function AddClientDialog({
   const [busy, setBusy] = useState(false);
   // Applique (ou non) la réduction fratrie pour cette famille. Remplace l'ancien
   // interrupteur global des paramètres : la réduction se décide désormais par client,
-  // au récapitulatif. Désactivée par défaut — c'est un choix explicite.
+  // au récapitulatif. Désactivée par défaut   c'est un choix explicite.
   const [reductionEnabled, setReductionEnabled] = useState(false);
-
-  const allCycles = useMemo(
-    () => [...new Set((levels ?? []).map((l) => l.cycle).filter(Boolean))].sort(),
-    [levels],
-  );
-  const levelsByCycle = useMemo(() => {
-    const map: Record<string, typeof levels> = {};
-    for (const l of levels ?? []) {
-      const c = l.cycle || "Sans cycle";
-      if (!map[c]) map[c] = [];
-      map[c].push(l);
-    }
-    return map;
-  }, [levels]);
 
   const step = wizard.step;
   const totalSteps = 6;
@@ -358,103 +345,11 @@ export function AddClientDialog({
             </button>
           ) : null}
           <p className={cn(eyebrowClass, "mb-4")}>Élève {i + 1}</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field id={`c-name-${i}`} label="Nom d'élève">
-              <Input
-                id={`c-name-${i}`}
-                value={child.name}
-                onChange={(e) => updChild(i, { name: e.target.value })}
-                placeholder="Prénom et nom"
-                className={inputClass}
-              />
-            </Field>
-            <Field id={`c-dob-${i}`} label="Date de naissance">
-              <Input
-                id={`c-dob-${i}`}
-                type="date"
-                value={child.dob}
-                onChange={(e) => updChild(i, { dob: e.target.value })}
-                className={inputClass}
-              />
-            </Field>
-            <Field id={`c-cycle-${i}`} label="Cycle">
-              <Select
-                value={child.cycle}
-                onValueChange={(v) => updChild(i, { cycle: v, level: "" })}
-              >
-                <SelectTrigger id={`c-cycle-${i}`} className={selectTriggerClass}>
-                  <SelectValue placeholder="Choisir un cycle" />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  {allCycles.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field id={`c-level-${i}`} label="Niveau">
-              <Select
-                value={child.level}
-                onValueChange={(v) => updChild(i, { level: v })}
-                disabled={!child.cycle}
-              >
-                <SelectTrigger id={`c-level-${i}`} className={selectTriggerClass}>
-                  <SelectValue placeholder={child.cycle ? "Choisir un niveau" : "Sélectionnez d'abord le cycle"} />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  {(levelsByCycle[child.cycle] ?? []).map((lv) => (
-                    <SelectItem key={lv.id} value={lv.name}>
-                      {lv.name} — {lv.monthly_fee} MAD
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <div className="sm:col-span-2">
-              <Label className={labelClass}>Services souscrits</Label>
-              <div className="mt-2 flex flex-wrap gap-4">
-                {services.filter((s) => s.enabled).map((s) => (
-                  <label key={s.name} className="flex items-center gap-2 text-sm text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={child.services.includes(s.name)}
-                      onChange={() =>
-                        updChild(i, {
-                          services: child.services.includes(s.name)
-                            ? child.services.filter((x) => x !== s.name)
-                            : [...child.services, s.name],
-                        })
-                      }
-                      className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
-                    />
-                    {s.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="sm:col-span-2">
-              <Label className={labelClass}>Frais supplémentaires</Label>
-              <div className="mt-2 flex flex-wrap gap-4">
-                {frais.filter((f) => f.enabled).map((f) => (
-                  <label key={f.name} className="flex items-center gap-2 text-sm text-foreground">
-                    <input
-                      type="checkbox"
-                      checked={child.frais.includes(f.name)}
-                      onChange={() =>
-                        updChild(i, {
-                          frais: child.frais.includes(f.name)
-                            ? child.frais.filter((x) => x !== f.name)
-                            : [...child.frais, f.name],
-                        })
-                      }
-                      className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
-                    />
-                    {f.name} — {f.price} MAD
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
+          <StudentFields
+            value={child}
+            onChange={(patch) => updChild(i, patch)}
+            idPrefix={`c-${i}`}
+          />
         </div>
       ))}
       <button type="button" onClick={addChild} className={cn(ghostPill, "w-full justify-center gap-2")}>
@@ -470,18 +365,18 @@ export function AddClientDialog({
         </div>
         <div className="py-3">
           <p className={eyebrowClass}>Contact</p>
-          <p className="mt-1 text-sm text-foreground">{wizard.email || "—"} · {wizard.phone || "—"}</p>
+          <p className="mt-1 text-sm text-foreground">{wizard.email || " "} · {wizard.phone || " "}</p>
         </div>
         <div className="py-3">
           <p className={eyebrowClass}>Adresse</p>
-          <p className="mt-1 text-sm text-foreground">{wizard.address || "—"}</p>
+          <p className="mt-1 text-sm text-foreground">{wizard.address || " "}</p>
         </div>
         <div className="py-3">
           <p className={eyebrowClass}>Élèves inscrits ({children.length})</p>
           <ul className="mt-1 space-y-1">
             {children.map((c, i) => (
               <li key={i} className="text-sm text-foreground">
-                {c.name} — {c.level || "Niveau non défini"}
+                {c.name}   {c.level || "Niveau non défini"}
               </li>
             ))}
           </ul>
@@ -507,7 +402,7 @@ export function AddClientDialog({
                     const svc = services.find((s) => s.name === svcName);
                     return svc ? (
                       <p key={svcName} className="text-xs text-muted-foreground">
-                        ↳ {c.name} — {svc.name} : +{svc.price} MAD
+                        ↳ {c.name}   {svc.name} : +{svc.price} MAD
                       </p>
                     ) : null;
                   })}
@@ -515,7 +410,7 @@ export function AddClientDialog({
                     const f = frais.find((x) => x.name === fName);
                     return f ? (
                       <p key={fName} className="text-xs text-muted-foreground">
-                        ↳ {c.name} — {f.name} : +{f.price} MAD
+                        ↳ {c.name}   {f.name} : +{f.price} MAD
                       </p>
                     ) : null;
                   })}
@@ -577,7 +472,7 @@ export function AddClientDialog({
               ))}
             </div>
             <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Étape {step + 1} / {totalSteps} — {STEP_LABELS[step]}
+              Étape {step + 1} / {totalSteps}   {STEP_LABELS[step]}
             </p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5">

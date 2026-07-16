@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
+import { usePagination, TablePagination } from "@/components/table-pagination";
 import {
   softCard,
   softInput as inputClass,
@@ -759,6 +760,9 @@ function AffichesPage() {
     );
   }, [search, employes]);
 
+  // 5 employés par page ; une nouvelle recherche renvoie en page 1.
+  const pager = usePagination(filtered, search);
+
   const selected = detailId ? employes.find((e) => e.id === detailId) ?? null : null;
   const editing = editId ? employes.find((e) => e.id === editId) ?? null : null;
   const deleting = deleteId ? employes.find((e) => e.id === deleteId) ?? null : null;
@@ -847,7 +851,7 @@ function AffichesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map((e) => (
+              {pager.pageItems.map((e) => (
                 <tr
                   key={e.id}
                   onClick={() => {
@@ -926,6 +930,14 @@ function AffichesPage() {
             </tbody>
           </table>
         </div>
+        <TablePagination
+          page={pager.page}
+          pageCount={pager.pageCount}
+          total={pager.total}
+          pageSize={pager.pageSize}
+          onPage={pager.setPage}
+          label={pager.total > 1 ? "employés" : "employé"}
+        />
       </section>
     </div>
   );
