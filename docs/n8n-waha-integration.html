@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestio CRM — WhatsApp via n8n + WAHA: what was done and why</title>
+<style>
+  :root {
+    --bg: #fbfbfa;
+    --panel: #ffffff;
+    --ink: #1a1a18;
+    --ink-soft: #55534e;
+    --ink-faint: #86837c;
+    --line: #e5e3de;
+    --accent: #b8552b;
+    --accent-soft: #fdf3ee;
+    --ok: #2f6f4f;
+    --ok-soft: #eef6f1;
+    --warn: #8a6320;
+    --warn-soft: #fdf6e7;
+    --bad: #9d3427;
+    --bad-soft: #fdeeeb;
+    --code-bg: #f4f2ee;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16161a;
+      --panel: #1d1d22;
+      --ink: #eceae5;
+      --ink-soft: #a9a69f;
+      --ink-faint: #7c7972;
+      --line: #302f36;
+      --accent: #e8875a;
+      --accent-soft: #2a1f19;
+      --ok: #7fc0a0;
+      --ok-soft: #1a2620;
+      --warn: #ddb063;
+      --warn-soft: #272016;
+      --bad: #e08a7c;
+      --bad-soft: #2a1c19;
+      --code-bg: #26262c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16161a; --panel: #1d1d22; --ink: #eceae5; --ink-soft: #a9a69f;
+    --ink-faint: #7c7972; --line: #302f36; --accent: #e8875a; --accent-soft: #2a1f19;
+    --ok: #7fc0a0; --ok-soft: #1a2620; --warn: #ddb063; --warn-soft: #272016;
+    --bad: #e08a7c; --bad-soft: #2a1c19; --code-bg: #26262c;
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --panel: #ffffff; --ink: #1a1a18; --ink-soft: #55534e;
+    --ink-faint: #86837c; --line: #e5e3de; --accent: #b8552b; --accent-soft: #fdf3ee;
+    --ok: #2f6f4f; --ok-soft: #eef6f1; --warn: #8a6320; --warn-soft: #fdf6e7;
+    --bad: #9d3427; --bad-soft: #fdeeeb; --code-bg: #f4f2ee;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 3rem 1.25rem 6rem; }
+
+  header.hero { margin-bottom: 3rem; }
+  .eyebrow {
+    font-size: .75rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 650; margin-bottom: .75rem;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.15;
+    margin: 0 0 1rem; letter-spacing: -.02em; font-weight: 700;
+  }
+  .lede { font-size: 1.1rem; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+  .meta {
+    margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line);
+    font-size: .85rem; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 1.25rem;
+  }
+
+  h2 {
+    font-size: 1.5rem; margin: 3.5rem 0 1rem; letter-spacing: -.01em;
+    padding-bottom: .5rem; border-bottom: 2px solid var(--line);
+  }
+  h3 { font-size: 1.1rem; margin: 2rem 0 .6rem; letter-spacing: -.005em; }
+  p { margin: 0 0 1rem; }
+  a { color: var(--accent); }
+
+  code {
+    font-family: var(--mono); font-size: .875em;
+    background: var(--code-bg); padding: .12em .38em; border-radius: 4px;
+    border: 1px solid var(--line);
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 1rem; overflow-x: auto; margin: 1rem 0;
+    font-family: var(--mono); font-size: .82rem; line-height: 1.6;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 1.25rem 1.4rem; margin: 1.25rem 0;
+  }
+  .note {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.25rem 0;
+  }
+  .note.ok   { border-left-color: var(--ok);   background: var(--ok-soft); }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note.bad  { border-left-color: var(--bad);  background: var(--bad-soft); }
+  .note p:last-child { margin-bottom: 0; }
+  .note .tag {
+    display: block; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: .4rem; color: var(--accent);
+  }
+  .note.ok .tag { color: var(--ok); }
+  .note.warn .tag { color: var(--warn); }
+  .note.bad .tag { color: var(--bad); }
+
+  .scroll { overflow-x: auto; margin: 1.25rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 480px; }
+  th, td { text-align: left; padding: .6rem .75rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 650; color: var(--ink-soft); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  dl.glossary { margin: 1.5rem 0; }
+  dl.glossary dt {
+    font-weight: 680; margin-top: 1.4rem; font-size: 1rem;
+    display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap;
+  }
+  dl.glossary dt .kind {
+    font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); border: 1px solid var(--line); border-radius: 20px;
+    padding: .1rem .5rem;
+  }
+  dl.glossary dd { margin: .3rem 0 0; color: var(--ink-soft); }
+
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1.25rem 0; }
+  .chain .box {
+    border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
+    padding: .5rem .8rem; font-size: .82rem; font-weight: 600;
+  }
+  .chain .box small { display: block; font-weight: 400; color: var(--ink-faint); font-size: .7rem; }
+  .chain .arrow { color: var(--ink-faint); font-size: 1rem; }
+
+  ol.steps { margin: 1.5rem 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps > li {
+    counter-increment: s; position: relative; padding: 0 0 1.75rem 2.9rem;
+    border-left: 2px solid var(--line); margin-left: 1rem;
+  }
+  ol.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps > li::before {
+    content: counter(s); position: absolute; left: -1.05rem; top: -.15rem;
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: var(--panel); border: 2px solid var(--line);
+    display: grid; place-items: center; font-size: .8rem; font-weight: 700; color: var(--ink-soft);
+  }
+  ol.steps > li.done::before { border-color: var(--ok); color: var(--ok); content: "✓"; }
+  ol.steps > li.open::before { border-color: var(--warn); color: var(--warn); }
+  ol.steps h3 { margin-top: 0; }
+  .why {
+    font-size: .92rem; color: var(--ink-soft);
+    border-left: 2px solid var(--accent); padding-left: .8rem; margin: .6rem 0 0;
+  }
+  .why b { color: var(--accent); font-weight: 650; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
+    font-size: .82rem; color: var(--ink-faint);
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 2rem 1rem 4rem; }
+    ol.steps > li { padding-left: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Gestio CRM · Infrastructure record</div>
+  <h1>Sending WhatsApp through our own server</h1>
+  <p class="lede">
+    What was built on 16 July 2026, why each step was necessary, and what every
+    piece of jargon actually means. Written to be readable without prior context.
+  </p>
+  <div class="meta">
+    <span><strong>Status:</strong> working end to end</span>
+    <span><strong>Live in:</strong> local dev only</span>
+    <span><strong>Production:</strong> still on Meta, deliberately</span>
+  </div>
+</header>
+
+<div class="note">
+  <span class="tag">In one paragraph</span>
+  <p>
+    Gestio CRM sends WhatsApp messages to parents. Until now those went through
+    <strong>Meta</strong>, the company that owns WhatsApp — reliable, but it means depending on
+    them and paying them. Someone had started building a replacement that sends messages
+    through <strong>our own server</strong> instead, but left it half-finished: the app code was
+    written but switched off, and the server had no way to receive requests from the internet.
+    We finished the server half, connected the two, and proved a real message travels the whole
+    chain. It is switched on for development only — turning it on for real parents needs a
+    dedicated phone number first, for reasons explained at the bottom.
+  </p>
+</div>
+
+<h2>Part 1 — The words, explained</h2>
+
+<p>
+  Most of the confusion in this project comes from vocabulary rather than difficulty.
+  Here is every term used in this document, in plain language.
+</p>
+
+<dl class="glossary">
+
+  <dt>Gestio CRM <span class="kind">our product</span></dt>
+  <dd>
+    The app in this repository. A <em>CRM</em> ("customer relationship management") is
+    software for tracking the people a business deals with — here, the families at a
+    specialised centre: their files, payments and appointments. Note the repository is
+    named <code>dashboard-demo</code>, which is <strong>not</strong> the product name. That
+    mismatch caused real confusion during this work.
+  </dd>
+
+  <dt>Meta Cloud API <span class="kind">the old way</span></dt>
+  <dd>
+    Meta (Facebook's parent, and WhatsApp's owner) offers an official, paid, sanctioned
+    way for businesses to send WhatsApp messages. It is the channel Gestio CRM uses today.
+    Because it is official, Meta will not ban you for using it as intended.
+  </dd>
+
+  <dt>WAHA <span class="kind">the new way</span></dt>
+  <dd>
+    "WhatsApp HTTP API" — software we run on our own server that talks to WhatsApp by
+    pretending to be <em>WhatsApp Web</em> (the version you use in a browser by scanning a
+    QR code with your phone). It is <strong>unofficial</strong>: Meta does not bless it. That
+    is the entire trade — independence from Meta, in exchange for losing Meta's protection.
+  </dd>
+
+  <dt>n8n <span class="kind">the glue</span></dt>
+  <dd>
+    An automation tool. You draw a flowchart of boxes — "when a request arrives, check
+    this, then call that, then reply with this" — and it runs. It sits between our app and
+    WAHA, so the logic can change without redeploying the app.
+  </dd>
+
+  <dt>VPS <span class="kind">the machine</span></dt>
+  <dd>
+    "Virtual private server" — a rented computer in a data centre that is always on.
+    Ours lives at the address <code>76.13.58.6</code> and runs Ubuntu Linux.
+  </dd>
+
+  <dt>Docker / container <span class="kind">packaging</span></dt>
+  <dd>
+    A container is a program packed with everything it needs, kept in its own sealed box so
+    it cannot interfere with its neighbours. Our server runs seven of them: n8n, WAHA, a
+    database, a web server, and others. <strong>This causes a specific illusion that fooled
+    us — see the correction at the end.</strong>
+  </dd>
+
+  <dt>nginx / reverse proxy <span class="kind">the doorman</span></dt>
+  <dd>
+    The program that answers all web traffic arriving at our server, looks at which address
+    the visitor asked for, and forwards them to the right container behind it. A
+    <em>reverse proxy</em> is exactly that: one public front door serving many private rooms.
+  </dd>
+
+  <dt>DNS / A record <span class="kind">the phone book</span></dt>
+  <dd>
+    DNS turns a name people can read into an address computers use. An <em>A record</em> is
+    one line in that phone book: "<code>n8n.eiden-group.com</code> is at
+    <code>76.13.58.6</code>". Without it, the name simply does not exist.
+  </dd>
+
+  <dt>TLS certificate / Let's Encrypt / certbot <span class="kind">the padlock</span></dt>
+  <dd>
+    A certificate is what makes an address work over <code>https</code> rather than
+    <code>http</code> — the padlock in the browser. It proves the server really is who it
+    claims and encrypts the traffic. <em>Let's Encrypt</em> issues them free;
+    <em>certbot</em> is the tool that asks for them. They expire every 90 days and must be
+    renewed — which matters a great deal here.
+  </dd>
+
+  <dt>Webhook <span class="kind">the doorbell</span></dt>
+  <dd>
+    A web address that exists to be called by another program rather than visited by a
+    person. Our app calls n8n's webhook to say "please send this message".
+  </dd>
+
+  <dt>Shared secret <span class="kind">the password</span></dt>
+  <dd>
+    A long random password that both sides know. Our app sends it with every request; n8n
+    rejects anything without it. Necessary because the webhook is on the open internet, and
+    without it <em>anyone</em> could use our server to send WhatsApp messages.
+  </dd>
+
+  <dt>Session <span class="kind">the linked phone</span></dt>
+  <dd>
+    WAHA's word for one connected WhatsApp account. Creating a session and confirming it
+    from the phone is the same act as scanning the QR for WhatsApp Web. Ours is named
+    <code>n8ndemo</code>.
+  </dd>
+
+  <dt><code>chatId</code> and <code>@c.us</code> <span class="kind">address format</span></dt>
+  <dd>
+    WhatsApp does not identify people by phone number alone but by an internal id that looks
+    like <code>212691422346@c.us</code>. Note the <strong>country code is mandatory</strong>:
+    <code>0691422346</code> is meaningless to WhatsApp; <code>212691422346</code> works.
+  </dd>
+
+  <dt>Vercel <span class="kind">where our app lives</span></dt>
+  <dd>
+    The hosting service running Gestio CRM. Importantly, it is <strong>not</strong> our VPS —
+    they are different machines. This is precisely why the server needed a public address and
+    a padlock: our app has to reach it across the open internet.
+  </dd>
+
+  <dt>Environment variable <span class="kind">the switch</span></dt>
+  <dd>
+    A setting given to a program from outside its code, so behaviour can change without
+    editing the program. <code>N8N_WEBHOOK_URL</code> is the switch here: when it exists, the
+    app uses the new path; when it does not, it uses Meta. It is the whole on/off control.
+  </dd>
+
+  <dt>SSH / RDP <span class="kind">remote access</span></dt>
+  <dd>
+    Two ways to use a distant computer. <strong>SSH</strong> gives a text terminal — this is
+    how the work was done. <strong>RDP</strong> gives a full graphical desktop, which is what
+    you were using. RDP compresses the picture, and that turned out to matter.
+  </dd>
+
+  <dt>Swap / OOM <span class="kind">memory safety</span></dt>
+  <dd>
+    <em>Swap</em> is spare disk space a machine borrows when it runs out of memory — a shock
+    absorber. Our server has <strong>none</strong>. Without it, running out of memory triggers
+    the <em>OOM killer</em> ("out of memory"), which kills a program at random to survive.
+    That is why memory was watched closely here.
+  </dd>
+
+</dl>
+
+<h2>Part 2 — What the chain looks like</h2>
+
+<p><strong>Before</strong> — everything goes through Meta:</p>
+<div class="chain">
+  <span class="box">Gestio CRM<small>on Vercel</small></span>
+  <span class="arrow">→</span>
+  <span class="box">Meta Cloud API<small>official, paid</small></span>
+  <span class="arrow">→</span>
+  <span class="box">Parent's phone</span>
+</div>
+
+<p><strong>After</strong> — what we built, currently used by local development only:</p>
+<div class="chain">
+  <span class="box">Gestio CRM<small>on Vercel</small></span>
+  <span class="arrow">→</span>
+  <span class="box">nginx<small>the doorman</small></span>
+  <span class="arrow">→</span>
+  <span class="box">n8n<small>the glue</small></span>
+  <span class="arrow">→</span>
+  <span class="box">WAHA<small>talks to WhatsApp</small></span>
+  <span class="arrow">→</span>
+  <span class="box">Parent's phone</span>
+</div>
+
+<p>
+  The app decides between the two by a single test: is <code>N8N_WEBHOOK_URL</code> set?
+  If yes, the new path. If no, Meta. Nothing else changes. That design is why the work
+  could sit finished-but-invisible for weeks — the code was present and correct, but the
+  switch was never flipped, so it behaved exactly as if nothing had been done.
+</p>
+
+<h2>Part 3 — The process, and the reason for each step</h2>
+
+<ol class="steps">
+
+  <li class="done">
+    <h3>Read the existing notes and checked every claim</h3>
+    <p>
+      A runbook already described this work. Rather than trust it, each statement was
+      re-tested against the live server.
+    </p>
+    <p class="why"><b>Why:</b> the notes turned out to be partly wrong, including one
+      instruction that would have broken the system. Trusting them would have caused
+      an outage.</p>
+  </li>
+
+  <li class="done">
+    <h3>DNS — created the name <code>n8n.eiden-group.com</code></h3>
+    <p>
+      Added an A record in Hostinger pointing the name at <code>76.13.58.6</code>, then
+      confirmed it resolved from three independent places.
+    </p>
+    <p class="why"><b>Why:</b> the name did not exist at all, so nothing could reach the
+      server by it. This blocked everything else. It required a human because the domain
+      controls live in Hostinger's panel, with no automated access from the server.</p>
+  </li>
+
+  <li class="done">
+    <h3>Linked a WhatsApp account to WAHA</h3>
+    <p>
+      WAHA had zero accounts connected. The QR code could not be scanned, so a
+      <strong>pairing code</strong> was used instead — an eight-character code typed into the
+      phone, no camera involved.
+    </p>
+    <p class="why"><b>Why the QR failed:</b> the browser was running on the server's desktop,
+      viewed through RDP, which compresses the image. QR codes are fine detail; compression
+      destroys them. WhatsApp also expires each QR in 20–60 seconds and gives up after six —
+      which is exactly why the session kept dying. The pairing code sidesteps the camera
+      entirely and worked first time.</p>
+    <p class="why"><b>Why the name matters:</b> the session was created through the API rather
+      than the dashboard, to force the name <code>n8ndemo</code>. Left blank, WAHA invents a
+      random name like <code>session_01kxn6tr0x…</code>, which then has to be hardcoded — and
+      changes every time the session is recreated, silently breaking everything.</p>
+  </li>
+
+  <li class="done">
+    <h3>Freed the server's memory</h3>
+    <p>
+      Linking WhatsApp dropped free memory to <strong>136 MB out of 3.8 GB</strong>, with no
+      swap. An abandoned tool called <code>opencode</code> was using 874 MB; stopping it
+      restored headroom to 1.1 GB.
+    </p>
+    <p class="why"><b>Why it mattered:</b> with no swap, the next spike would have triggered
+      the OOM killer — and it does not choose politely. It could have killed the database
+      belonging to the <em>other</em> project on that machine. This was a real risk, not
+      housekeeping.</p>
+  </li>
+
+  <li class="done">
+    <h3>Issued a TLS certificate</h3>
+    <p>
+      A standalone certificate for <code>n8n.eiden-group.com</code>, tested against a practice
+      server first, leaving the existing certificate for the other project untouched.
+    </p>
+    <p class="why"><b>Why standalone:</b> the safest of the options — it cannot affect the
+      other project's padlock. The alternative would have fixed more but risked more.</p>
+    <p class="why"><b>Why the practice run:</b> Let's Encrypt limits how often you may ask.
+      A dry run proves the real attempt will succeed while writing nothing and risking nothing.</p>
+  </li>
+
+  <li class="done">
+    <h3>Told nginx about the new address</h3>
+    <p>
+      Added a block routing <code>n8n.eiden-group.com</code> to the n8n container, tested the
+      configuration, <em>then</em> applied it — and confirmed the other project's addresses
+      still worked afterwards.
+    </p>
+    <p class="why"><b>Why the certificate came first:</b> nginx refuses to start if told to
+      use a certificate that does not exist. Doing this in the wrong order would have taken
+      the other project offline. Order was the whole risk.</p>
+  </li>
+
+  <li class="done">
+    <h3>Built the n8n workflow</h3>
+    <p>
+      Four steps: receive the request → check the shared secret → call WAHA → reply.
+      Saved into the repository as a file, so it is version-controlled rather than existing
+      only inside n8n.
+    </p>
+    <p class="why"><b>Why secrets live outside it:</b> the workflow reads passwords from the
+      server's environment instead of containing them, so the file is safe to commit.</p>
+    <p class="why"><b>Why the country code is added here:</b> numbers stored as
+      <code>0691422346</code> are converted to <code>212691422346</code> inside the workflow.
+      One place to fix, and no need to rewrite the database.</p>
+  </li>
+
+  <li class="done">
+    <h3>Tested it, including the ways it should fail</h3>
+    <p>Called from outside, across the public internet — the same path Vercel will use:</p>
+    <pre><code>no secret       → 401  {"ok":false,"error":"unauthorized"}
+wrong secret    → 401  {"ok":false,"error":"unauthorized"}
+correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message arrived</code></pre>
+    <p class="why"><b>Why test the failures:</b> proving it sends is easy. Proving it
+      <em>refuses</em> strangers is what shows the door is locked — and that test caught a
+      genuine bug where nothing was being rejected at all.</p>
+  </li>
+
+  <li class="done">
+    <h3>Switched it on for development only</h3>
+    <p>
+      <code>N8N_WEBHOOK_URL</code> was added to the local <code>.env</code> file, and
+      deliberately <strong>not</strong> to Vercel.
+    </p>
+    <p class="why"><b>Why not production:</b> that one variable would route every parent's
+      message through a personal phone number over unofficial software. See the warning below.</p>
+  </li>
+
+  <li class="open">
+    <h3>Still to do</h3>
+    <p>
+      Get a dedicated SIM, then switch production on. Renew both certificates before October.
+    </p>
+  </li>
+
+</ol>
+
+<h2>Part 4 — Two bugs that would never have announced themselves</h2>
+
+<p>
+  Both of these produce <em>no error</em>. Everything looks healthy while quietly doing the
+  wrong thing — the most expensive kind of bug, and the reason the testing above was worth
+  the time.
+</p>
+
+<div class="note bad">
+  <span class="tag">Bug 1 — the message ID hides in a different place</span>
+  <p>
+    WAHA reports the sent message's id as <code>key.id</code>. Our app looks for
+    <code>waId</code>, <code>messageId</code> or <code>id</code> — none of which exist in
+    WAHA's reply. Passing WAHA's answer straight through would record every message as
+    <strong>sent successfully with an empty id</strong>, losing the ability to trace any
+    message ever sent. The workflow now copies <code>key.id</code> across explicitly.
+  </p>
+</div>
+
+<div class="note bad">
+  <span class="tag">Bug 2 — a blank reply counts as success</span>
+  <p>
+    n8n refuses to read passwords from its environment unless explicitly permitted. Without
+    that permission it failed and returned an <strong>empty "200 OK"</strong>. Our app treats a
+    blank reply as success, because it only fails when told <code>ok: false</code> — and blank
+    says nothing at all. Every message would have reported success while none were sent. Fixed
+    by permitting it (<code>N8N_BLOCK_ENV_ACCESS_IN_NODE=false</code>). If sending ever goes
+    quiet, check this first.
+  </p>
+</div>
+
+<h2>Part 5 — A correction worth recording</h2>
+
+<div class="note warn">
+  <span class="tag">The runbook was wrong, and so was I</span>
+  <p>
+    The notes claimed a stray, duplicate copy of n8n was running and wasting memory, and
+    recommended killing it. That was investigated, agreed with, and written down as confirmed.
+    <strong>It was false.</strong>
+  </p>
+  <p>
+    Containers share the machine's process list, so the n8n container appears as an ordinary
+    program owned by the user <code>deploy</code>. It looked like a stray because it ran under
+    a normal username at a normal path. Tracing its parentage settled it:
+  </p>
+  <pre><code>459351  node /usr/local/bin/n8n              ← the "stray"
+  └─ 459265  tini -- /docker-entrypoint.sh   ← this IS the n8n container
+      └─ 459219  containerd-shim-runc-v2</code></pre>
+  <p>
+    Killing it would have killed n8n. It survived only because you stopped and asked what was
+    being done before approving it. The lesson is recorded in the runbook: on this machine,
+    check <code>/proc/&lt;pid&gt;/cgroup</code> before believing any program is running outside
+    a container.
+  </p>
+</div>
+
+<h2>Part 6 — Before this touches real parents</h2>
+
+<div class="note warn">
+  <span class="tag">Read before switching production on</span>
+  <p>
+    WAHA is <strong>unofficial</strong>. WhatsApp bans numbers for behaviour that looks
+    automated — and bans are driven mostly by <strong>recipients reporting or blocking you</strong>,
+    plus machine-like patterns: bursts, identical text to many people, messaging strangers.
+  </p>
+  <p>
+    The risk is a gradient, not a switch. Occasional one-to-one messages to parents who know
+    the centre and expect them are low risk. <code>sendBroadcast</code> — the same text to the
+    whole client list at once — is the pattern that gets numbers banned.
+  </p>
+  <p>
+    <strong>Use a dedicated SIM you can afford to lose.</strong> Losing a personal WhatsApp
+    account is not the same as losing this integration. Note also that a number cannot be on
+    Meta's official API and WAHA at the same time — so parents will see a different sender than
+    they do today. That is a product decision, not just a technical one.
+  </p>
+  <p>
+    Changing the phone is cheap and breaks nothing: delete the session, recreate it as
+    <code>n8ndemo</code>, pair the new phone. The workflow, the app and the settings all refer
+    to the <em>session name</em>, never the number. That is exactly why the name was worth
+    insisting on.
+  </p>
+</div>
+
+<h2>Part 7 — The October deadline</h2>
+
+<div class="note warn">
+  <span class="tag">Nothing renews these automatically</span>
+  <p>
+    Certificates expire every 90 days. Automatic renewal was deliberately not set up, so this
+    is now a diary entry:
+  </p>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr><th>Certificate</th><th>Expires</th><th>What breaks</th><th>Why it won't renew</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>n8n.eiden-group.com</code></td>
+          <td><strong>14 Oct 2026</strong></td>
+          <td>Gestio CRM's WhatsApp sending stops</td>
+          <td>Its settings are correct, but nothing is scheduled to run the renewal.</td>
+        </tr>
+        <tr>
+          <td><code>files.</code> + <code>ws.</code></td>
+          <td><strong>12 Oct 2026</strong></td>
+          <td>The other project (crm-edien) breaks</td>
+          <td>Configured to renew by a method that cannot work here. A pre-existing fault, found by accident.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The manual renewal, which must be run before mid-October:</p>
+  <pre><code>docker run --rm \
+  -v docker_certbot-certs:/etc/letsencrypt \
+  -v docker_certbot-www:/var/www/certbot \
+  certbot/certbot renew --cert-name n8n.eiden-group.com \
+  --webroot -w /var/www/certbot
+
+docker exec eiden-nginx nginx -s reload   # required — renewing alone is not enough</code></pre>
+  <p>
+    Automating it later is a two-line scheduled job and needs no special privileges. The full
+    detail is in <code>docs/n8n-waha-integration.md</code>.
+  </p>
+</div>
+
+<h2>Part 8 — Where everything lives</h2>
+
+<div class="scroll">
+  <table>
+    <thead><tr><th>Thing</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>The switch that turns this on</td><td><code>N8N_WEBHOOK_URL</code> — local <code>.env</code> now; Vercel later</td></tr>
+      <tr><td>App-side code</td><td><code>src/lib/server-whatsapp.ts</code></td></tr>
+      <tr><td>The n8n workflow, as a file</td><td><code>docs/n8n-whatsapp-send.workflow.json</code></td></tr>
+      <tr><td>Full technical runbook</td><td><code>docs/n8n-waha-integration.md</code></td></tr>
+      <tr><td>Server stack definition</td><td><code>~/n8n-stack/docker-compose.yml</code> on the VPS</td></tr>
+      <tr><td>Passwords (server)</td><td><code>~/n8n-stack/.env</code> on the VPS — never in the repository</td></tr>
+      <tr><td>nginx front door</td><td><code>~/crm-edien/docker/nginx/sites/eiden.conf</code> — shared with the other project</td></tr>
+      <tr><td>WAHA dashboard</td><td><code>http://localhost:3000/dashboard</code>, from the server's desktop only</td></tr>
+      <tr><td>n8n editor</td><td><code>https://n8n.eiden-group.com</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="note ok">
+  <span class="tag">Current state</span>
+  <p>
+    DNS, certificate, front door, workflow and linked phone all working, and proven with a real
+    message across the public internet. Live for development only. Production continues on Meta
+    until a dedicated SIM exists — which is the correct and deliberate position, not an
+    unfinished one.
+  </p>
+</div>
+
+<footer>
+  Written 16 July 2026 · Gestio CRM (<code>dashboard-demo</code>) · Companion to
+  <code>docs/n8n-waha-integration.md</code>, which carries the technical detail.
+  Every claim here was verified against the live server rather than taken from prior notes —
+  which is how the two silent bugs and one incorrect instruction were caught.
+</footer>
+
+</div>
+</body>
+</html>

@@ -26,10 +26,11 @@ import {
   Send,
   Clock,
 } from "lucide-react";
-import { AddClientDialog, emptyWizard, type WizardData } from "@/components/add-client-wizard";
 import {
   ResponsiveContainer,
   BarChart,
+  AreaChart,
+  Area,
   Bar,
   XAxis,
   YAxis,
@@ -77,9 +78,14 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 // Données démo   statistique générale (encaissé en k MAD + nb de paiements)
 // ──────────────────────────────────────────────────────────
-type Grain = "mensuel" | "trimestriel" | "annuel";
+type Grain = "mensuel" | "annuel";
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+type Range = "1S" | "1M" | "3M" | "1A";
+
+/** How many months each range button shows. "1S" (one week) still lands inside a month. */
+const RANGE_MONTHS: Record<Range, number> = { "1S": 1, "1M": 1, "3M": 3, "1A": 12 };
+
 type SeriesKey = "encaisse" | "impaye" | "retard";
 
 const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
@@ -103,20 +109,117 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
-/** Jours de retard depuis l'échéance du mois courant (borne à 0, jour ≤ 28). */
-function daysOverdue(paymentDay?: number): number {
-  const now = new Date();
-  const day = Math.min(Math.max(Number(paymentDay) || 1, 1), 28);
-  const due = new Date(now.getFullYear(), now.getMonth(), day);
-  const diff = Math.floor((now.getTime() - due.getTime()) / 86_400_000);
-  return Math.max(0, diff);
+function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { t } = useDashboardI18n();
+  const f = t.form;
+  const m = t.home.addClientModal;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className={cn(
+          dialogSurface,
+          "max-h-[min(90vh,860px)] w-[min(100vw-1.5rem,640px)] max-w-[min(100vw-1.5rem,640px)] translate-y-[-50%] sm:max-w-[640px]",
+        )}
+      >
+        <DialogDescription className="sr-only">{m.srDesc}</DialogDescription>
+        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
+          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{m.eyebrow}</p>
+            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
+              {m.title}
+            </DialogTitle>
+          </div>
+          <form
+            className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onOpenChange(false);
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field id="crm-eleve" label={f.studentName}>
+                <Input id="crm-eleve" name="eleve" autoComplete="name" className={softInput} />
+              </Field>
+              <Field id="crm-dob" label={f.birthDate}>
+                <div className="relative">
+                  <Input
+                    id="crm-dob"
+                    name="naissance"
+                    placeholder={f.birthDatePlaceholder}
+                    className={cn(softInput, "pr-10")}
+                  />
+                  <Calendar
+                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
+                    aria-hidden
+                  />
+                </div>
+              </Field>
+              <Field id="crm-pere" label={f.fatherName}>
+                <Input id="crm-pere" name="pere" autoComplete="additional-name" className={softInput} />
+              </Field>
+              <Field id="crm-mere" label={f.motherName}>
+                <Input id="crm-mere" name="mere" autoComplete="additional-name" className={softInput} />
+              </Field>
+              <Field id="crm-cin" label={f.cinPassport}>
+                <Input id="crm-cin" name="cin" className={softInput} />
+              </Field>
+              <Field id="crm-niveau" label={f.level}>
+                <Select name="niveau">
+                  <SelectTrigger id="crm-niveau" className={softSelectTrigger}>
+                    <SelectValue placeholder={t.common.selectLevel} />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="ps">{f.levels.ps}</SelectItem>
+                    <SelectItem value="ms">{f.levels.ms}</SelectItem>
+                    <SelectItem value="gs">{f.levels.gs}</SelectItem>
+                    <SelectItem value="cp">{f.levels.cp}</SelectItem>
+                    <SelectItem value="ce1">{f.levels.ce1}</SelectItem>
+                    <SelectItem value="ce2">{f.levels.ce2}</SelectItem>
+                    <SelectItem value="cm1">{f.levels.cm1}</SelectItem>
+                    <SelectItem value="cm2">{f.levels.cm2}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field id="crm-email1" label={f.email1}>
+                <Input id="crm-email1" name="email1" type="email" autoComplete="email" className={softInput} />
+              </Field>
+              <Field id="crm-email2" label={f.email2}>
+                <Input id="crm-email2" name="email2" type="email" className={softInput} />
+              </Field>
+              <Field id="crm-tel1" label={f.phone1}>
+                <Input id="crm-tel1" name="tel1" type="tel" autoComplete="tel" className={softInput} />
+              </Field>
+              <Field id="crm-tel2" label={f.phone2}>
+                <Input id="crm-tel2" name="tel2" type="tel" className={softInput} />
+              </Field>
+            </div>
+            <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t.common.cancel}
+              </button>
+              <button type="submit" className={cn(primaryPill, "px-5 py-2")}>
+                {m.submit}
+              </button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
-  const [wizard, setWizard] = useState<WizardData>(emptyWizard);
-  const updateWizard = (patch: Partial<WizardData>) => setWizard((prev) => ({ ...prev, ...patch }));
+  const [relanceIds, setRelanceIds] = useState<string[]>([]);
+  const [relanceExpanded, setRelanceExpanded] = useState(false);
+  const [relancePeriode, setRelancePeriode] = useState("Mai 2026 — frais mensuels");
+  const [range, setRange] = useState<Range>("1A");
   const [grain, setGrain] = useState<Grain>("mensuel");
   const [year, setYear] = useState(String(new Date().getFullYear()));
 
@@ -152,7 +255,25 @@ function CrmDash() {
   });
 
   const dbPayments = payments as unknown as Array<{ id: string; amount: number; date: string; mode: string; period: string; invoice_sent: boolean; clients: { parent_name: string; child_name: string; phone: string; email: string; level: string; monthly_fee: number; payment_status: string; subscribed_services: string[] } }>;
+  const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
+
   const chartData = barData as InvoicePoint[];
+
+  /** 1S/1M/3M/1A now actually cut the window: last N months of the year's series. */
+  const areaData = useMemo(() => {
+    const months = monthlyData as InvoicePoint[];
+    const take = RANGE_MONTHS[range];
+    const thisYear = String(new Date().getFullYear()) === year;
+    // Anchor the window on the current month when looking at the current year.
+    const end = thisYear ? new Date().getMonth() + 1 : months.length;
+    const start = Math.max(0, end - take);
+    return months.slice(start, end);
+  }, [monthlyData, range, year]);
+
+  const rangeTotal = useMemo(
+    () => areaData.reduce((sum, p) => sum + (p.encaisse ?? 0), 0),
+    [areaData],
+  );
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
@@ -164,30 +285,6 @@ function CrmDash() {
     });
     return c;
   }, [clients]);
-
-  // Familles en attente de paiement (impayé + en retard), triées du plus ancien
-  // retard au plus récent   c'est la file de relance affichée sous les paiements.
-  const pendingDues = useMemo(() => {
-    return (clients as any[])
-      .filter((c: any) => c.payment_status === "impaye" || c.payment_status === "retard")
-      .map((c: any) => {
-        const net = Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100));
-        return {
-          id: c.id as string,
-          name: (c.parent_name || c.child_name || "") as string,
-          level: (c.level || "") as string,
-          status: c.payment_status as "impaye" | "retard",
-          days: c.payment_status === "retard" ? daysOverdue(c.payment_day) : 0,
-          amount: (c.debt ?? 0) > 0 ? (c.debt as number) : net,
-        };
-      })
-      .sort((a, b) => b.days - a.days || b.amount - a.amount);
-  }, [clients]);
-
-  const pendingTotal = useMemo(
-    () => pendingDues.reduce((s, d) => s + d.amount, 0),
-    [pendingDues],
-  );
 
   // Last 4 payments
   const lastPayments = useMemo(() => {
@@ -220,7 +317,6 @@ function CrmDash() {
       icon: Users,
       to: "/dashboard/familles",
       search: {},
-      extra: null as string | null,
     },
     {
       k: "02",
@@ -232,7 +328,6 @@ function CrmDash() {
       icon: CreditCard,
       to: "/dashboard/familles",
       search: { statut: "paye" },
-      extra: null as string | null,
     },
     {
       k: "03",
@@ -244,7 +339,6 @@ function CrmDash() {
       icon: Clock,
       to: "/dashboard/familles",
       search: { statut: "retard" },
-      extra: null as string | null,
     },
     {
       k: "04",
@@ -256,28 +350,53 @@ function CrmDash() {
       icon: AlertCircle,
       to: "/dashboard/familles",
       search: { statut: "impaye" },
-      // Analyse express : montant total en attente de recouvrement.
-      extra: `${(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD en attente`,
     },
   ] as const;
 
   const queryClient = useQueryClient();
 
-  const relanceMutation = useMutation({
-    mutationFn: () => sendBroadcast({ data: { content: "Rappel de paiement", filterOverdue: true } }),
-    onSuccess: (res) => {
-      toast.success(`Rappel envoyé à ${res.success} clients`);
-      queryClient.invalidateQueries({ queryKey: ["message-history"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+  // Relance rapide: pick who gets the reminder instead of blasting every overdue
+  // client. Empty selection keeps the old behaviour (all overdue clients).
+  const relanceCandidates = useMemo(
+    () => (clients as any[]).filter((c: any) => c.payment_status !== "paye"),
+    [clients],
+  );
+  const relanceShown = relanceExpanded ? relanceCandidates : relanceCandidates.slice(0, 4);
+  const toggleRelance = (id: string) =>
+    setRelanceIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  // Relance individuelle depuis la file "Paiements en attente".
-  const remindMutation = useMutation({
-    mutationFn: (clientId: string) =>
-      sendClientMessage({ data: { clientId, content: "Rappel de paiement" } }),
-    onSuccess: () => {
-      toast.success("Rappel envoyé");
+  const relanceMutation = useMutation({
+    mutationFn: async () => {
+      const content = relancePeriode.trim()
+        ? `Rappel de paiement — ${relancePeriode.trim()}`
+        : "Rappel de paiement";
+
+      // No selection => previous behaviour: every overdue client.
+      if (relanceIds.length === 0) {
+        return sendBroadcast({ data: { content, filterOverdue: true } });
+      }
+
+      // Sequential, not Promise.all: WAHA drives one WhatsApp session, and
+      // parallel bursts are exactly the pattern that gets numbers banned.
+      let success = 0;
+      const errors: string[] = [];
+      for (const clientId of relanceIds) {
+        const res = await sendClientMessage({ data: { clientId, content } });
+        if (res.ok) success += 1;
+        else errors.push(res.error ?? "échec");
+      }
+      return { ok: true, success, failed: relanceIds.length - success, errors };
+    },
+    onSuccess: (res: any) => {
+      if (res.success === 0) {
+        toast.error(res.errors?.[0] ?? "Aucun rappel envoyé");
+      } else {
+        toast.success(
+          `Rappel envoyé à ${res.success} client${res.success > 1 ? "s" : ""}` +
+            (res.failed ? ` (${res.failed} échec${res.failed > 1 ? "s" : ""})` : ""),
+        );
+      }
+      setRelanceIds([]);
       queryClient.invalidateQueries({ queryKey: ["message-history"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -309,13 +428,7 @@ function CrmDash() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <AddClientDialog
-        open={addClientOpen}
-        onOpenChange={setAddClientOpen}
-        wizard={wizard}
-        updateWizard={updateWizard}
-        setWizard={setWizard}
-      />
+      <NouveauClientModal open={addClientOpen} onOpenChange={setAddClientOpen} />
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -353,14 +466,6 @@ function CrmDash() {
             </div>
             <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground">{card.value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{card.sub}</p>
-            {card.extra ? (
-              <p
-                className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums"
-                style={{ backgroundColor: card.tint, color: card.accent }}
-              >
-                {card.extra}
-              </p>
-            ) : null}
             <span className="mt-3 block h-1 w-10 rounded-full" style={{ backgroundColor: card.accent }} />
           </Link>
         ))}
@@ -385,11 +490,10 @@ function CrmDash() {
                   </SelectTrigger>
                   <SelectContent className={softSelectContent}>
                     <SelectItem value="mensuel">Mensuel</SelectItem>
-                    <SelectItem value="trimestriel">3 mois</SelectItem>
                     <SelectItem value="annuel">Annuel</SelectItem>
                   </SelectContent>
                 </Select>
-                {/* Only monthly is scoped to a year; "3 mois" is the last 3 months from today and annual shows every year. */}
+                {/* In annual mode every year is already on screen, so the year picker is moot. */}
                 {grain === "mensuel" ? (
                   <Select value={year} onValueChange={setYear}>
                     <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[6.5rem] rounded-xl")} aria-label="Année">
@@ -476,12 +580,7 @@ function CrmDash() {
                 );
               })}
               <li className="ml-1 text-xs text-muted-foreground">
-                {grain === "mensuel"
-                  ? `Par mois · ${year}`
-                  : grain === "trimestriel"
-                    ? "3 derniers mois"
-                    : "Par année"}{" "}
-                · MAD
+                {grain === "mensuel" ? `Par mois · ${year}` : "Par année"} · MAD
               </li>
             </ul>
           </div>
@@ -553,10 +652,84 @@ function CrmDash() {
         </div>
       </div>
 
+      {/* Encaissements mensuels   courbe d'activité avec plages 1S / 1M / 3M / 1A */}
+      <div className={cn(softCard, "min-w-0 p-5 sm:p-6")}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className={eyebrowClass}>Mon activité</p>
+            <h2 className="mt-1 font-display text-xl text-foreground">
+              Encaissements <span className="font-normal italic text-muted-foreground">mensuels</span>
+            </h2>
+              <div className="mt-2 flex items-end gap-2">
+                <p className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                  {rangeTotal.toLocaleString("fr-FR")} <span className="text-sm font-normal text-muted-foreground">MAD</span>
+                </p>
+                <span className="pb-1 text-xs text-muted-foreground">encaissé sur {range}</span>
+              </div>
+          </div>
+          <div className="flex items-center gap-1 rounded-full border border-[#28396C]/10 bg-muted/60 p-1">
+            {rangeButtons.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRange(r)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  range === r ? "bg-[#28396C] text-white shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-4 h-56 w-full min-w-0 sm:h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={areaData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+              <defs>
+                {SERIES_META.map((s) => (
+                  <linearGradient key={s.key} id={`fill-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={s.color} stopOpacity={0.18} />
+                    <stop offset="100%" stopColor={s.color} stopOpacity={0.03} />
+                  </linearGradient>
+                ))}
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.10)" vertical={false} />
+              <XAxis dataKey="bucket" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis
+                stroke="var(--muted-foreground)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                width={64}
+                tickFormatter={(v: number) => v.toLocaleString("fr-FR")}
+              />
+              <Tooltip
+                contentStyle={dashTooltip}
+                cursor={{ stroke: "rgba(40,57,108,0.25)", strokeWidth: 1 }}
+                formatter={(v: number, n) => [`${Number(v).toLocaleString("fr-FR")} MAD`, n]}
+              />
+              {/* `linear` keeps the angular, ticker-like profile of the reference   `monotone` rounds it off. */}
+              {SERIES_META.filter((s) => series[s.key]).map((s) => (
+                <Area
+                  key={s.key}
+                  type="linear"
+                  dataKey={s.key}
+                  name={s.label}
+                  stroke={s.color}
+                  strokeWidth={2}
+                  fill={`url(#fill-${s.key})`}
+                  dot={false}
+                  activeDot={{ r: 4, fill: s.color, stroke: "#fff", strokeWidth: 2 }}
+                />
+              ))}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Activité récente + relance rapide + actions rapides */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)] lg:items-start">
-        {/* Colonne principale : activité récente + créances en attente à relancer */}
-        <div className="space-y-5">
         {/* Derniers paiements (Activité récente) */}
         <div className={cn(softCard, "p-5 sm:p-6")}>
           <div className="flex items-center justify-between gap-3">
@@ -593,74 +766,6 @@ function CrmDash() {
           </ul>
         </div>
 
-        {/* Paiements en attente   file de relance : uniquement impayés et retards. */}
-        <div className={cn(softCard, "overflow-hidden")}>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-5 py-4 sm:px-6">
-            <div>
-              <p className={eyebrowClass}>Créances</p>
-              <h2 className="mt-1 font-display text-xl text-foreground">Paiements en attente</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">Familles impayées ou en retard à relancer</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-[#F4E3C0] px-3 py-1 text-xs font-semibold text-[#8A5A16]">
-                {pendingDues.length} famille{pendingDues.length > 1 ? "s" : ""}
-              </span>
-              {pendingTotal > 0 ? (
-                <span className="rounded-full bg-[#28396C]/8 px-3 py-1 text-xs font-semibold tabular-nums text-[#28396C]">
-                  {pendingTotal.toLocaleString("fr-FR")} MAD
-                </span>
-              ) : null}
-            </div>
-          </div>
-          {pendingDues.length === 0 ? (
-            <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-              Aucun paiement en attente. Tout est à jour.
-            </p>
-          ) : (
-            <ul className="divide-y divide-[#28396C]/8">
-              {pendingDues.map((d) => (
-                <li key={d.id} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#28396C]/8 text-xs font-bold text-[#28396C]">
-                    {initials(d.name)}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-foreground">{d.name}</p>
-                      {d.status === "retard" && d.days > 0 ? (
-                        <span
-                          className={cn(
-                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                            d.days > 14 ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]",
-                          )}
-                        >
-                          {d.days}j de retard
-                        </span>
-                      ) : (
-                        <span className="shrink-0 rounded-full bg-[#F4E3C0] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A16]">
-                          En attente
-                        </span>
-                      )}
-                    </div>
-                    <p className="truncate text-xs text-muted-foreground">{d.level || "Niveau non défini"}</p>
-                  </div>
-                  <p className="hidden shrink-0 text-right text-sm font-semibold tabular-nums text-foreground sm:block">
-                    {d.amount.toLocaleString("fr-FR")} MAD
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => remindMutation.mutate(d.id)}
-                    disabled={remindMutation.isPending}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15 disabled:opacity-50"
-                  >
-                    <Send className="h-3.5 w-3.5" /> Relancer
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        </div>
-
         {/* Colonne latérale   relance rapide + actions rapides */}
         <div className="space-y-5">
           {/* Relance rapide */}
@@ -673,20 +778,47 @@ function CrmDash() {
                 </Link>
               </div>
               <h3 className="mt-1 font-display text-lg font-semibold">Rappel de paiement</h3>
-              <div className="mt-4 flex items-center gap-2">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80">
-                  <Plus className="h-4 w-4" />
-                </span>
-                {(clients as any[]).filter((c: any) => c.payment_status !== "paye").slice(0, 4).map((c: any) => c.parent_name).map((name: string) => (
-                  <span
-                    key={name}
-                    title={name}
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#B5E18B] text-xs font-bold text-[#28396C] ring-2 ring-[#28396C]"
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {relanceCandidates.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setRelanceExpanded((v) => !v)}
+                    title={relanceExpanded ? "Afficher moins" : `Afficher les ${relanceCandidates.length} clients`}
+                    aria-expanded={relanceExpanded}
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-dashed border-white/40 text-white/80 transition hover:border-white/80 hover:text-white"
                   >
-                    {initials(name)}
-                  </span>
-                ))}
+                    <Plus className={cn("h-4 w-4 transition-transform", relanceExpanded && "rotate-45")} />
+                  </button>
+                )}
+                {relanceShown.map((c: any) => {
+                  const selected = relanceIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleRelance(c.id)}
+                      title={`${c.parent_name}${selected ? " — sélectionné" : ""}`}
+                      aria-pressed={selected}
+                      className={cn(
+                        "grid h-11 w-11 shrink-0 place-items-center rounded-full text-xs font-bold transition",
+                        selected
+                          ? "bg-white text-[#28396C] ring-2 ring-[#B5E18B] ring-offset-2 ring-offset-[#28396C]"
+                          : "bg-[#B5E18B] text-[#28396C] ring-2 ring-[#28396C] opacity-70 hover:opacity-100",
+                      )}
+                    >
+                      {initials(c.parent_name)}
+                    </button>
+                  );
+                })}
+                {relanceCandidates.length === 0 && (
+                  <p className="text-xs text-white/60">Aucun client à relancer.</p>
+                )}
               </div>
+              <p className="mt-3 text-[11px] text-white/70">
+                {relanceIds.length > 0
+                  ? `${relanceIds.length} client${relanceIds.length > 1 ? "s" : ""} sélectionné${relanceIds.length > 1 ? "s" : ""}`
+                  : "Cliquez sur un parent pour le relancer, ou envoyez à tous les retards."}
+              </p>
             </div>
             <form
               className="space-y-3 p-5"
@@ -701,13 +833,22 @@ function CrmDash() {
                 </Label>
                 <Input
                   id="relance-periode"
-                  defaultValue="Mai 2026   frais mensuels"
+                  value={relancePeriode}
+                  onChange={(e) => setRelancePeriode(e.target.value)}
                   className={cn(softInput, "mt-1.5")}
                 />
               </div>
-              <button type="submit" disabled={relanceMutation.isPending} className={cn(primaryPill, "w-full justify-center")}>
+              <button
+                type="submit"
+                disabled={relanceMutation.isPending || relanceCandidates.length === 0}
+                className={cn(primaryPill, "w-full justify-center")}
+              >
                 <Send className="h-4 w-4" />
-                {relanceMutation.isPending ? "Envoi..." : "Envoyer le rappel"}
+                {relanceMutation.isPending
+                  ? "Envoi..."
+                  : relanceIds.length > 0
+                    ? `Envoyer à ${relanceIds.length} sélectionné${relanceIds.length > 1 ? "s" : ""}`
+                    : "Envoyer à tous les retards"}
               </button>
             </form>
           </div>
