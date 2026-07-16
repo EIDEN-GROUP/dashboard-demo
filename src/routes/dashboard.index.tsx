@@ -79,16 +79,15 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 type Grain = "mensuel" | "trimestriel" | "annuel";
 
+const PENDING_COLOR = "#E8A13C";
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-type SeriesKey = "encaisse" | "en_attente" | "retard";
+type SeriesKey = "encaisse" | "en_attente" | "retard" | "attente";
 
 const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
   { key: "encaisse", label: "Encaissé", color: "#28396C" },
   { key: "en_attente", label: "En attente", color: STATUS_COLORS.en_attente },
   { key: "retard", label: "En retard", color: STATUS_COLORS.retard },
-  // "En attente" is impayé + retard, so it deliberately overlaps the two series
-  // above: it reads as the single "left to collect" column next to Encaissé.
-  { key: "attente", label: "En attente", color: PENDING_COLOR },
+  { key: "attente", label: "En attente (total)", color: PENDING_COLOR },
 ];
 
 type QuickAction =
@@ -107,7 +106,7 @@ function Field({ id, label, children }: { id: string; label: string; children: R
 }
 
 /** Jours de retard depuis l'échéance du mois courant (borne à 0, jour ≤ 28). */
-function daysOverdue(paymentDay?: number): number {
+const daysOverdue = (paymentDay?: number): number => {
   const now = new Date();
   const day = Math.min(Math.max(Number(paymentDay) || 1, 1), 28);
   const due = new Date(now.getFullYear(), now.getMonth(), day);
@@ -160,7 +159,7 @@ function CrmDash() {
   // the due date has passed. Derived here rather than in the ledger query   it is
   // exactly impayé + retard, which getInvoiceAnalytics already returns.
   const chartData = useMemo(
-    () => (barData as InvoicePoint[]).map((p) => ({ ...p, attente: p.impaye + p.retard })),
+    () => (barData as InvoicePoint[]).map((p) => ({ ...p, attente: p.en_attente + p.retard })),
     [barData],
   );
 
@@ -202,8 +201,8 @@ function CrmDash() {
   // The "En attente" KPI reads off the invoices ledger, like the Impayé / En retard
   // rows it sits under, so the column sums consistently   and matches the chart's
   // "En attente" bars, which come from the same query.
-  const attenteTotal = (outstanding?.impayeTotal ?? 0) + (outstanding?.retardTotal ?? 0);
-  const attenteCount = (outstanding?.impayeCount ?? 0) + (outstanding?.retardCount ?? 0);
+  const attenteTotal = (outstanding?.enAttenteTotal ?? 0) + (outstanding?.retardTotal ?? 0);
+  const attenteCount = (outstanding?.enAttenteCount ?? 0) + (outstanding?.retardCount ?? 0);
 
   // Last 4 payments
   const lastPayments = useMemo(() => {

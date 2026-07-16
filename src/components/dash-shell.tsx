@@ -564,7 +564,7 @@ export function DashShell({
             <div className="flex shrink-0 items-center gap-2 pt-0.5">
               {hideNotifications ? null : <ShellNotifications />}
               <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
-                {(user?.name || "A").slice(0, 1).toUpperCase()}
+                {((user?.user_metadata?.name || user?.email || "A"))!.slice(0, 1).toUpperCase()}
               </div>
               <button type="button" onClick={handleLogout} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#28396C]/15 text-muted-foreground transition-colors hover:bg-[#B5E18B]/15 hover:text-foreground" aria-label={t.shell.logoutAria}>
                 <LogOut className="h-4 w-4" strokeWidth={1.75} />
@@ -605,10 +605,10 @@ export function DashShell({
               {hideNotifications ? null : <ShellNotifications />}
               <div className="flex items-center gap-2">
                 <div className="hidden text-right sm:block">
-                  <p className="text-sm font-medium leading-none text-foreground">{user?.name || "admin"}</p>
+                  <p className="text-sm font-medium leading-none text-foreground">{(user?.user_metadata?.name || user?.email || "admin")}</p>
                 </div>
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-[#28396C] text-sm font-medium text-[#B5E18B] shadow-[0_10px_20px_-10px_rgba(40,57,108,0.5)]">
-                  {(user?.name || "A").slice(0, 1).toUpperCase()}
+                  {((user?.user_metadata?.name || user?.email || "A"))!.slice(0, 1).toUpperCase()}
                 </div>
               </div>
               <button type="button" onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-full border border-[#28396C]/15 px-3 py-1.5 text-muted-foreground hover:bg-[#B5E18B]/15" aria-label={t.shell.logoutAria}>
@@ -701,10 +701,10 @@ export function DashShell({
           <div className="px-6 h-16 flex items-center justify-end gap-4">
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium leading-none text-foreground">{user?.name || "Admin"}</p>
+                <p className="text-sm font-medium leading-none text-foreground">{(user?.user_metadata?.name || user?.email || "Admin")}</p>
               </div>
               <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground grid place-items-center text-sm font-medium">
-                {(user?.name || "A").slice(0, 1).toUpperCase()}
+                {((user?.user_metadata?.name || user?.email || "A"))!.slice(0, 1).toUpperCase()}
               </div>
             </div>
           </div>

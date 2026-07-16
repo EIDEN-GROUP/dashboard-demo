@@ -189,8 +189,8 @@ function employeToInput(emp: Partial<Employe>): Partial<EmployeeInput> {
     address: emp.adresse,
     contract_type: emp.contrat,
     salary: emp.salaire,
-    leave_start: emp.congeDebut || null,
-    leave_end: emp.congeFin || null,
+    leave_start: emp.congeDebut || undefined,
+    leave_end: emp.congeFin || undefined,
     status: emp.statut,
   };
 }

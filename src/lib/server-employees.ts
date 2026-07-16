@@ -49,7 +49,7 @@ export const createEmployee = createServerFn({ method: "POST" })
         address: data.address ?? "",
         contract_type: data.contract_type ?? "",
         salary: data.salary ?? 0,
-        leave_start: data.leave_start ?? null,
+        leave_start: data.leave_start ?? undefined,
         leave_end: data.leave_end ?? null,
         status: data.status ?? "actif",
       })
@@ -159,8 +159,8 @@ export const importEmployeesCsv = createServerFn({ method: "POST" })
         address: r["address"] || r["Adresse"] || r["adresse"] || "",
         contract_type: r["contract_type"] || r["Type de contrat"] || r["contrat"] || "",
         salary: toNumber(r["salary"] || r["Salaire"] || r["salaire"] || "0"),
-        leave_start: r["leave_start"] || r["Début congé"] || r["conge_debut"] || null,
-        leave_end: r["leave_end"] || r["Fin congé"] || r["conge_fin"] || null,
+        leave_start: r["leave_start"] || r["Début congé"] || r["conge_debut"] || undefined,
+        leave_end: r["leave_end"] || r["Fin congé"] || r["conge_fin"] || undefined,
         status: (r["status"] === "inactif" || r["Statut"] === "inactif" ? "inactif" : "actif") as "actif" | "inactif",
       };
 

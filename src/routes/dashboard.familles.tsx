@@ -790,7 +790,7 @@ function CrmParentsPage() {
                 const banded = familyIdx % 2 === 1;
                 // Rappel visuel du statut déjà écrit dans la colonne Mensualité :
                 // l'admin repère les familles à relancer sans traverser 8 colonnes.
-                const accent = STATUS_COLORS[c.payment_status] ?? STATUS_COLORS.impaye;
+                const accent = STATUS_COLORS[c.payment_status] ?? STATUS_COLORS.en_attente;
 
                 return rows.map((ch, i) => (
                   <tr

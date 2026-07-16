@@ -42,9 +42,9 @@ const PLAN_COLORS: Record<string, string> = {
   premium: "#28396C",
 };
 
-function statusTone(status: string): "paye" | "impaye" | "retard" | "neutral" {
+function statusTone(status: string): "paye" | "en_attente" | "retard" | "neutral" {
   if (status === "actif") return "paye";
-  if (status === "essai") return "impaye";
+  if (status === "essai") return "en_attente";
   if (status === "suspendu") return "retard";
   return "neutral";
 }
