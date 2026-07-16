@@ -745,12 +745,14 @@ function AffichesPage() {
   const importCsv = useMutation({
     mutationFn: (input: { csvText: string }) => importEmployeesCsv({ data: input }),
     onSuccess: (r) => {
+      alert("import success: " + r.imported + " imported, " + r.errors.length + " errors");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast.success(`${r.imported} employé(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
       if (r.errors.length) r.errors.forEach((e) => toast.error(e));
       setPreviewRows(null);
     },
     onError: (err) => {
+      alert("import error: " + (err instanceof Error ? err.message : JSON.stringify(err)));
       console.error("CSV import error:", err);
       toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
       setPreviewRows(null);
@@ -851,7 +853,8 @@ function AffichesPage() {
   }
 
   function confirmImportCsv() {
-    if (!csvText) return;
+    if (!csvText) { alert("csvText is empty"); return; }
+    alert("confirmImportCsv called, csvText length: " + csvText.length);
     importCsv.mutate({ csvText });
   }
 

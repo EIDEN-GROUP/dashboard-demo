@@ -422,12 +422,14 @@ function CrmParentsPage() {
   const importCsv = useMutation({
     mutationFn: (input: { csvText: string }) => importClientsCsv({ data: input }),
     onSuccess: (r) => {
+      alert("import success: " + r.imported + " imported, " + r.errors.length + " errors");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(`${r.imported} client(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
       if (r.errors.length) r.errors.forEach((e) => toast.error(e));
       setPreviewRows(null);
     },
     onError: (err) => {
+      alert("import error: " + (err instanceof Error ? err.message : JSON.stringify(err)));
       console.error("CSV import error:", err);
       toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
       setPreviewRows(null);
@@ -517,7 +519,8 @@ function CrmParentsPage() {
   }
 
   function confirmImportCsv() {
-    if (!csvText) return;
+    if (!csvText) { alert("csvText is empty"); return; }
+    alert("confirmImportCsv called, csvText length: " + csvText.length);
     importCsv.mutate({ csvText });
   }
 
