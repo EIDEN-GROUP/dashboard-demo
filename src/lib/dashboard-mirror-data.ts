@@ -37,13 +37,13 @@ export const mirrorDashboardMetrics: readonly {
   { k: "01", label: "Total familles", value: "4", sub: "familles inscrites", accent: "#28396C", tint: "rgba(40,57,108,0.10)", icon: Users, to: "/dashboard/familles" },
   { k: "02", label: "Payé", value: "2", sub: "reçus ce mois", accent: "#6BA53A", tint: "rgba(107,165,58,0.14)", icon: CreditCard, to: "/dashboard/paiements" },
   { k: "03", label: "En retard", value: "1", sub: "relance conseillée", accent: "#E25C5C", tint: "rgba(226,92,92,0.12)", icon: Clock, to: "/dashboard/paiements" },
-  { k: "04", label: "Impayé", value: "1", sub: "facture en attente", accent: "#E8A13C", tint: "rgba(232,161,60,0.14)", icon: AlertCircle, to: "/dashboard/paiements", extra: "1 200 MAD en attente" },
+  { k: "04", label: "En attente", value: "1", sub: "facture en attente", accent: "#E8A13C", tint: "rgba(232,161,60,0.14)", icon: AlertCircle, to: "/dashboard/paiements", extra: "1 200 MAD en attente" },
 ];
 
 /** « Paiements en attente » (Créances)   file de relance sous les derniers paiements. */
 export const mirrorPendingDues = [
   { id: "d1", name: "Youssef Benjelloun / Salma Benjelloun", level: "CE2", status: "retard" as const, days: 21, amount: 1200 },
-  { id: "d2", name: "Rachid Cherkaoui / Houda Cherkaoui", level: "CP", status: "impaye" as const, days: 0, amount: 900 },
+  { id: "d2", name: "Rachid Cherkaoui / Houda Cherkaoui", level: "CP", status: "en_attente" as const, days: 0, amount: 900 },
 ] as const;
 
 export const mirrorPendingTotal = mirrorPendingDues.reduce((s, d) => s + d.amount, 0);
@@ -182,7 +182,7 @@ export const mirrorClients = [
     phone: "0655667788",
     services: [] as readonly string[],
     remise: 0,
-    payment: "impaye",
+    payment: "en_attente",
     mensuel: 900,
     dette: 900,
   },

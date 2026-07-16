@@ -80,18 +80,15 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 type Grain = "mensuel" | "annuel";
 
+const PENDING_COLOR = "#E8A13C";
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-type Range = "1S" | "1M" | "3M" | "1A";
-
-/** How many months each range button shows. "1S" (one week) still lands inside a month. */
-const RANGE_MONTHS: Record<Range, number> = { "1S": 1, "1M": 1, "3M": 3, "1A": 12 };
-
-type SeriesKey = "encaisse" | "impaye" | "retard";
+type SeriesKey = "encaisse" | "en_attente" | "retard" | "attente";
 
 const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
   { key: "encaisse", label: "Encaissé", color: "#28396C" },
-  { key: "impaye", label: "Impayé", color: STATUS_COLORS.impaye },
+  { key: "en_attente", label: "En attente", color: STATUS_COLORS.en_attente },
   { key: "retard", label: "En retard", color: STATUS_COLORS.retard },
+  { key: "attente", label: "En attente (total)", color: PENDING_COLOR },
 ];
 
 type QuickAction =
@@ -109,108 +106,13 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
-function NouveauClientModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { t } = useDashboardI18n();
-  const f = t.form;
-  const m = t.home.addClientModal;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={cn(
-          dialogSurface,
-          "max-h-[min(90vh,860px)] w-[min(100vw-1.5rem,640px)] max-w-[min(100vw-1.5rem,640px)] translate-y-[-50%] sm:max-w-[640px]",
-        )}
-      >
-        <DialogDescription className="sr-only">{m.srDesc}</DialogDescription>
-        <div className="flex min-h-0 flex-1 flex-col border-t-4 border-t-[#B5E18B]">
-          <div className="shrink-0 border-b border-[#28396C]/10 px-6 pb-4 pt-6 pr-14">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{m.eyebrow}</p>
-            <DialogTitle className="mt-2 text-left font-display text-xl font-semibold tracking-tight text-foreground">
-              {m.title}
-            </DialogTitle>
-          </div>
-          <form
-            className="min-h-0 flex-1 overflow-y-auto scroll-touch px-6 py-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onOpenChange(false);
-            }}
-          >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="crm-eleve" label={f.studentName}>
-                <Input id="crm-eleve" name="eleve" autoComplete="name" className={softInput} />
-              </Field>
-              <Field id="crm-dob" label={f.birthDate}>
-                <div className="relative">
-                  <Input
-                    id="crm-dob"
-                    name="naissance"
-                    placeholder={f.birthDatePlaceholder}
-                    className={cn(softInput, "pr-10")}
-                  />
-                  <Calendar
-                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
-                    aria-hidden
-                  />
-                </div>
-              </Field>
-              <Field id="crm-pere" label={f.fatherName}>
-                <Input id="crm-pere" name="pere" autoComplete="additional-name" className={softInput} />
-              </Field>
-              <Field id="crm-mere" label={f.motherName}>
-                <Input id="crm-mere" name="mere" autoComplete="additional-name" className={softInput} />
-              </Field>
-              <Field id="crm-cin" label={f.cinPassport}>
-                <Input id="crm-cin" name="cin" className={softInput} />
-              </Field>
-              <Field id="crm-niveau" label={f.level}>
-                <Select name="niveau">
-                  <SelectTrigger id="crm-niveau" className={softSelectTrigger}>
-                    <SelectValue placeholder={t.common.selectLevel} />
-                  </SelectTrigger>
-                  <SelectContent className={softSelectContent}>
-                    <SelectItem value="ps">{f.levels.ps}</SelectItem>
-                    <SelectItem value="ms">{f.levels.ms}</SelectItem>
-                    <SelectItem value="gs">{f.levels.gs}</SelectItem>
-                    <SelectItem value="cp">{f.levels.cp}</SelectItem>
-                    <SelectItem value="ce1">{f.levels.ce1}</SelectItem>
-                    <SelectItem value="ce2">{f.levels.ce2}</SelectItem>
-                    <SelectItem value="cm1">{f.levels.cm1}</SelectItem>
-                    <SelectItem value="cm2">{f.levels.cm2}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field id="crm-email1" label={f.email1}>
-                <Input id="crm-email1" name="email1" type="email" autoComplete="email" className={softInput} />
-              </Field>
-              <Field id="crm-email2" label={f.email2}>
-                <Input id="crm-email2" name="email2" type="email" className={softInput} />
-              </Field>
-              <Field id="crm-tel1" label={f.phone1}>
-                <Input id="crm-tel1" name="tel1" type="tel" autoComplete="tel" className={softInput} />
-              </Field>
-              <Field id="crm-tel2" label={f.phone2}>
-                <Input id="crm-tel2" name="tel2" type="tel" className={softInput} />
-              </Field>
-            </div>
-            <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-[#28396C]/10 pt-5">
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="rounded-full border border-[#28396C]/15 bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
-              >
-                {t.common.cancel}
-              </button>
-              <button type="submit" className={cn(primaryPill, "px-5 py-2")}>
-                {m.submit}
-              </button>
-            </div>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+/** Jours de retard depuis l'échéance du mois courant (borne à 0, jour ≤ 28). */
+const daysOverdue = (paymentDay?: number): number => {
+  const now = new Date();
+  const day = Math.min(Math.max(Number(paymentDay) || 1, 1), 28);
+  const due = new Date(now.getFullYear(), now.getMonth(), day);
+  const diff = Math.floor((now.getTime() - due.getTime()) / 86_400_000);
+  return Math.max(0, diff);
 }
 
 function CrmDash() {
@@ -226,8 +128,9 @@ function CrmDash() {
   // Which money series are drawn. Clicking a legend chip toggles one on/off.
   const [series, setSeries] = useState<Record<SeriesKey, boolean>>({
     encaisse: true,
-    impaye: true,
+    en_attente: true,
     retard: true,
+    attente: true,
   });
   const toggleSeries = (k: SeriesKey) =>
     setSeries((s) => {
@@ -255,9 +158,13 @@ function CrmDash() {
   });
 
   const dbPayments = payments as unknown as Array<{ id: string; amount: number; date: string; mode: string; period: string; invoice_sent: boolean; clients: { parent_name: string; child_name: string; phone: string; email: string; level: string; monthly_fee: number; payment_status: string; subscribed_services: string[] } }>;
-  const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
-
-  const chartData = barData as InvoicePoint[];
+  // "En attente" is what the bucket still owes: the unpaid amount whether or not
+  // the due date has passed. Derived here rather than in the ledger query   it is
+  // exactly impayé + retard, which getInvoiceAnalytics already returns.
+  const chartData = useMemo(
+    () => (barData as InvoicePoint[]).map((p) => ({ ...p, attente: p.en_attente + p.retard })),
+    [barData],
+  );
 
   /** 1S/1M/3M/1A now actually cut the window: last N months of the year's series. */
   const areaData = useMemo(() => {
@@ -277,14 +184,44 @@ function CrmDash() {
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
-    const c = { paye: 0, impaye: 0, retard: 0 };
+    const c = { paye: 0, en_attente: 0, retard: 0 };
     (clients as any[]).forEach((cl: any) => {
       if (cl.payment_status === "paye") c.paye++;
       else if (cl.payment_status === "retard") c.retard++;
-      else c.impaye++;
+      else if (cl.payment_status === "en_attente") c.en_attente++;
     });
     return c;
   }, [clients]);
+
+  // Familles en attente de paiement (impayé + en retard), triées du plus ancien
+  // retard au plus récent   c'est la file de relance affichée sous les paiements.
+  const pendingDues = useMemo(() => {
+    return (clients as any[])
+      .filter((c: any) => c.payment_status === "en_attente" || c.payment_status === "retard")
+      .map((c: any) => {
+        const net = Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100));
+        return {
+          id: c.id as string,
+          name: (c.parent_name || c.child_name || "") as string,
+          level: (c.level || "") as string,
+          status: c.payment_status as "en_attente" | "retard",
+          days: c.payment_status === "retard" ? daysOverdue(c.payment_day) : 0,
+          amount: (c.debt ?? 0) > 0 ? (c.debt as number) : net,
+        };
+      })
+      .sort((a, b) => b.days - a.days || b.amount - a.amount);
+  }, [clients]);
+
+  const pendingTotal = useMemo(
+    () => pendingDues.reduce((s, d) => s + d.amount, 0),
+    [pendingDues],
+  );
+
+  // The "En attente" KPI reads off the invoices ledger, like the Impayé / En retard
+  // rows it sits under, so the column sums consistently   and matches the chart's
+  // "En attente" bars, which come from the same query.
+  const attenteTotal = (outstanding?.enAttenteTotal ?? 0) + (outstanding?.retardTotal ?? 0);
+  const attenteCount = (outstanding?.enAttenteCount ?? 0) + (outstanding?.retardCount ?? 0);
 
   // Last 4 payments
   const lastPayments = useMemo(() => {
@@ -293,7 +230,7 @@ function CrmDash() {
       note: `Frais mensuels · ${p.clients?.child_name ?? ""}`,
       date: p.date || " ",
       amount: String(p.amount),
-      status: (p.clients?.payment_status ?? "impaye") as "paye" | "impaye" | "retard",
+      status: (p.clients?.payment_status ?? "en_attente") as "paye" | "en_attente" | "retard",
     }));
   }, [dbPayments]);
 
@@ -301,7 +238,7 @@ function CrmDash() {
   const totalClients = (clients as any[]).length;
   const paidCount = statusCounts.paye;
   const overdueCount = statusCounts.retard;
-  const unpaidCount = statusCounts.impaye;
+  const unpaidCount = statusCounts.en_attente;
   const totalRevenue = stats?.total_revenue ?? 0;
 
   // Each card opens the client list already filtered to the status it counts,
@@ -342,14 +279,16 @@ function CrmDash() {
     },
     {
       k: "04",
-      label: "Impayé",
+      label: "En attente",
       value: String(unpaidCount),
       sub: "facture en attente",
-      accent: STATUS_COLORS.impaye,
+      accent: STATUS_COLORS.en_attente,
       tint: "rgba(232,161,60,0.14)",
       icon: AlertCircle,
       to: "/dashboard/familles",
-      search: { statut: "impaye" },
+      search: { statut: "en_attente" },
+      // Analyse express : montant total en attente de recouvrement.
+      extra: `${pendingDues.length} famille(s) en attente`,
     },
   ] as const;
 
@@ -523,7 +462,7 @@ function CrmDash() {
                     axisLine={false}
                     dy={6}
                   />
-                  {/* Width fits 4-digit MAD ticks   a tighter axis clips the leading digit. */}
+                  {/* Width fits 4-digit MAD ticks   a tighter axis clips the leading digit.*/}
                   <YAxis
                     stroke="var(--muted-foreground)"
                     fontSize={11}
@@ -604,19 +543,19 @@ function CrmDash() {
               <li>
                 <Link
                   to="/dashboard/familles"
-                  search={{ statut: "impaye" }}
+                  search={{ statut: "en_attente" }}
                   className="block px-5 py-5 transition-colors hover:bg-[#F4E3C0]/40 sm:px-6"
                 >
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.impaye }} />
-                    Impayé
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.en_attente }} />
+                    En attente
                     <ArrowRight className="ml-auto h-3.5 w-3.5" />
                   </p>
                   <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
-                    {(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD
+                    {(outstanding?.enAttenteTotal ?? 0).toLocaleString("fr-FR")} MAD
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {outstanding?.impayeCount ?? 0} facture(s) en attente
+                    {outstanding?.enAttenteCount ?? 0} facture(s) en attente
                   </p>
                 </Link>
               </li>
@@ -642,9 +581,15 @@ function CrmDash() {
               </li>
 
               <li className="px-5 py-5 sm:px-6">
-                <p className="text-xs text-muted-foreground">Familles actives</p>
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: PENDING_COLOR }} />
+                  En attente
+                </p>
                 <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
-                  {stats?.active_clients ?? 0}
+                  {attenteTotal.toLocaleString("fr-FR")} MAD
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {attenteCount} facture(s) à recouvrer
                 </p>
               </li>
             </ul>
@@ -759,7 +704,7 @@ function CrmDash() {
                   <p className="text-[11px] text-muted-foreground">{p.date}</p>
                 </div>
                 <span className={statusPill(p.status)}>
-                  {p.status === "paye" ? "Payé" : p.status === "retard" ? "En retard" : "Impayé"}
+                  {p.status === "paye" ? "Payé" : p.status === "retard" ? "En retard" : "En attente"}
                 </span>
               </li>
             ))}

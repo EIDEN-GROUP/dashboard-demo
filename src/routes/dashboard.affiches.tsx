@@ -189,8 +189,8 @@ function employeToInput(emp: Partial<Employe>): Partial<EmployeeInput> {
     address: emp.adresse,
     contract_type: emp.contrat,
     salary: emp.salaire,
-    leave_start: emp.congeDebut || null,
-    leave_end: emp.congeFin || null,
+    leave_start: emp.congeDebut || undefined,
+    leave_end: emp.congeFin || undefined,
     status: emp.statut,
   };
 }
@@ -745,14 +745,12 @@ function AffichesPage() {
   const importCsv = useMutation({
     mutationFn: (input: { csvText: string }) => importEmployeesCsv({ data: input }),
     onSuccess: (r) => {
-      alert("import success: " + r.imported + " imported, " + r.errors.length + " errors");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       toast.success(`${r.imported} employé(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
       if (r.errors.length) r.errors.forEach((e) => toast.error(e));
       setPreviewRows(null);
     },
     onError: (err) => {
-      alert("import error: " + (err instanceof Error ? err.message : JSON.stringify(err)));
       console.error("CSV import error:", err);
       toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
       setPreviewRows(null);
@@ -853,8 +851,7 @@ function AffichesPage() {
   }
 
   function confirmImportCsv() {
-    if (!csvText) { alert("csvText is empty"); return; }
-    alert("confirmImportCsv called, csvText length: " + csvText.length);
+    if (!csvText) return;
     importCsv.mutate({ csvText });
   }
 
@@ -884,6 +881,34 @@ function AffichesPage() {
   const editing = editId ? employes.find((e) => e.id === editId) ?? null : null;
   const deleting = deleteId ? employes.find((e) => e.id === deleteId) ?? null : null;
   const conge = congeId ? employes.find((e) => e.id === congeId) ?? null : null;
+
+  const validateWarnings = useMemo(() => {
+    if (!previewRows || !previewHeaders.length) return [];
+    const warnings: string[] = [];
+    const h = previewHeaders.map((x) => x.toLowerCase());
+
+    const nameCol = previewHeaders.find((x) =>
+      ["full_name", "nom complet", "nom_complet", "nom"].includes(x.toLowerCase())
+    );
+    if (!nameCol) warnings.push("Colonne manquante : full_name / Nom complet");
+
+    const recommended = [
+      { label: "position / Poste", keys: ["position", "poste"] },
+      { label: "email / Email", keys: ["email"] },
+      { label: "phone / Téléphone", keys: ["phone", "telephone", "téléphone", "tel"] },
+      { label: "cin / CIN", keys: ["cin"] },
+      { label: "salary / Salaire", keys: ["salary", "salaire"] },
+    ];
+    recommended.forEach((r) => {
+      if (!r.keys.some((k) => h.includes(k))) warnings.push(`Colonne conseillée manquante : ${r.label}`);
+    });
+
+    if (nameCol) {
+      const missing = previewRows.filter((row) => !(row[nameCol] ?? "").trim()).length;
+      if (missing) warnings.push(`${missing} ligne(s) sans nom complet`);
+    }
+    return warnings;
+  }, [previewRows, previewHeaders]);
 
   return (
     <div className="space-y-8">
@@ -1079,6 +1104,20 @@ function AffichesPage() {
           <DialogDescription className="text-sm text-muted-foreground">
             {previewRows ? `${previewRows.length} employé(s) détecté(s). Vérifiez les données avant de confirmer l'import.` : ""}
           </DialogDescription>
+          {validateWarnings.length > 0 ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              {validateWarnings.map((w, i) => (
+                <p key={i} className="flex items-center gap-1.5">
+                  <span className="shrink-0">⚠️</span> {w}
+                </p>
+              ))}
+              <p className="mt-1 text-[10px] text-amber-600">L'import peut tout de même être tenté avec les données disponibles.</p>
+            </div>
+          ) : previewRows ? (
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+              Toutes les colonnes recommandées sont présentes.
+            </div>
+          ) : null}
           <div className="flex-1 overflow-auto rounded-md border">
             <table className="w-full text-xs">
               <thead>

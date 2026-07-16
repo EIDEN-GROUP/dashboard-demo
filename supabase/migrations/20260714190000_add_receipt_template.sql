@@ -3,7 +3,7 @@
 -- ============================================================================
 
 insert into public.settings (key, value)
-values ('receipt_template', '
+values ('receipt_template', to_jsonb('
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,8 +51,8 @@ values ('receipt_template', '
     Restant dû : {{remaining}} MAD
   </div>
   <div class="footer">
-    {{school_name}} — {{school_address}} — {{school_phone}}
+    {{school_name}}   {{school_address}}   {{school_phone}}
   </div>
 </body>
 </html>
-') on conflict (key) do nothing;
+'::text)) on conflict (key) do nothing;

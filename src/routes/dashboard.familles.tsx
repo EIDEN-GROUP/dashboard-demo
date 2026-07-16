@@ -87,11 +87,11 @@ export const Route = createFileRoute("/dashboard/familles")({
   component: CrmParentsPage,
 });
 
-type PaymentStatus = "paye" | "impaye" | "retard";
+type PaymentStatus = "paye" | "en_attente" | "retard";
 
 const PAYMENT_LABEL: Record<PaymentStatus, string> = {
   paye: "Payé",
-  impaye: "Impayé",
+  en_attente: "En attente",
   retard: "En retard",
 };
 
@@ -195,7 +195,7 @@ function Field({ id, label, children }: { id: string; label: string; children: R
 function ServiceChips({ services }: { services: string[] }) {
   if (services.length === 0) return <span className="text-xs text-muted-foreground">Aucun service</span>;
   return (
-    <span className="flex flex-wrap gap-1">
+    <span className="flex flex-wrap justify-center gap-1">
       {services.map((s) => (
         <span
           key={s}
@@ -248,7 +248,7 @@ function StatusSelect({
       </SelectTrigger>
       <SelectContent className={softSelectContent}>
         <SelectItem value="paye">{PAYMENT_LABEL.paye}</SelectItem>
-        <SelectItem value="impaye">{PAYMENT_LABEL.impaye}</SelectItem>
+        <SelectItem value="en_attente">{PAYMENT_LABEL.en_attente}</SelectItem>
         <SelectItem value="retard">{PAYMENT_LABEL.retard}</SelectItem>
       </SelectContent>
     </Select>
@@ -300,6 +300,9 @@ function CrmParentsPage() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  // Une famille occupe plusieurs <tr> : le survol est piloté ici pour surligner
+  // tout le groupe, et pas seulement la ligne de l'élève pointé.
+  const [hoverId, setHoverId] = useState<string | null>(null);
 
   // Wizard data persists across dialog close so users don't lose their input
   const [wizard, setWizard] = useState<WizardData>(emptyWizard);
@@ -422,14 +425,12 @@ function CrmParentsPage() {
   const importCsv = useMutation({
     mutationFn: (input: { csvText: string }) => importClientsCsv({ data: input }),
     onSuccess: (r) => {
-      alert("import success: " + r.imported + " imported, " + r.errors.length + " errors");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(`${r.imported} client(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
       if (r.errors.length) r.errors.forEach((e) => toast.error(e));
       setPreviewRows(null);
     },
     onError: (err) => {
-      alert("import error: " + (err instanceof Error ? err.message : JSON.stringify(err)));
       console.error("CSV import error:", err);
       toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
       setPreviewRows(null);
@@ -519,10 +520,37 @@ function CrmParentsPage() {
   }
 
   function confirmImportCsv() {
-    if (!csvText) { alert("csvText is empty"); return; }
-    alert("confirmImportCsv called, csvText length: " + csvText.length);
+    if (!csvText) return;
     importCsv.mutate({ csvText });
   }
+
+  const validateWarnings = useMemo(() => {
+    if (!previewRows || !previewHeaders.length) return [];
+    const warnings: string[] = [];
+    const h = previewHeaders.map((x) => x.toLowerCase());
+
+    const nameCol = previewHeaders.find((x) =>
+      ["parent_name", "parent", "nom parent", "nom_parent"].includes(x.toLowerCase())
+    );
+    if (!nameCol) warnings.push("Colonne manquante : parent_name / Parent");
+
+    const recommended = [
+      { label: "child_name / Enfant", keys: ["child_name", "enfant"] },
+      { label: "email / Email", keys: ["email"] },
+      { label: "phone / Téléphone", keys: ["phone", "telephone", "téléphone", "tel"] },
+      { label: "level / Niveau", keys: ["level", "niveau"] },
+      { label: "monthly_fee / Frais mensuels", keys: ["monthly_fee", "frais mensuels", "frais_mensuels"] },
+    ];
+    recommended.forEach((r) => {
+      if (!r.keys.some((k) => h.includes(k))) warnings.push(`Colonne conseillée manquante : ${r.label}`);
+    });
+
+    if (nameCol) {
+      const missing = previewRows.filter((row) => !(row[nameCol] ?? "").trim()).length;
+      if (missing) warnings.push(`${missing} ligne(s) sans parent`);
+    }
+    return warnings;
+  }, [previewRows, previewHeaders]);
 
   return (
     <div className="space-y-6">
@@ -718,124 +746,165 @@ function CrmParentsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.familles.clientList}</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1200px] text-left text-sm">
+          {/* Grille verticale posée au niveau du tableau plutôt que cellule par
+              cellule : une colonne ajoutée ou retirée hérite du filet sans risque
+              d'oubli. Pas de `:last-child` ici   sur les lignes de fratrie la
+              dernière cellule est Services (les colonnes famille sont en rowSpan),
+              le filet de droite sauterait donc une ligne sur deux. */}
+          <table
+            className={cn(
+              "w-full min-w-[1200px] text-left text-sm",
+              "[&_th]:border-r [&_th]:border-[#28396C]/15",
+              "[&_td]:border-r [&_td]:border-[#28396C]/8",
+            )}
+          >
+            {/* Alignement : texte à gauche (l'œil descend le long d'un bord franc),
+                montants à droite en chiffres tabulaires (les MAD s'alignent par
+                unité), badges et actions centrés. */}
             <thead>
-              <tr className="border-b border-[#28396C]/10 bg-muted/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3">{t.familles.table.parent}</th>
-                <th className="px-4 py-3">Élève(s)</th>
-                <th className="px-4 py-3">Niveau</th>
-                <th className="px-4 py-3">Emails des parents</th>
-                <th className="px-4 py-3">{t.familles.table.contact}</th>
-                <th className="px-4 py-3">Services</th>
-                <th className="px-4 py-3">Remise fratrie</th>
-                <th className="px-4 py-3">{t.familles.table.monthly}</th>
-                <th className="px-4 py-3 w-36">{t.familles.table.actions}</th>
+              <tr className="border-b border-[#28396C]/15 bg-muted/60 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="whitespace-nowrap px-4 py-3.5">{t.familles.table.parent}</th>
+                <th className="whitespace-nowrap px-4 py-3.5">Élève(s)</th>
+                <th className="whitespace-nowrap px-4 py-3.5">Niveau</th>
+                <th className="whitespace-nowrap px-4 py-3.5">Emails des parents</th>
+                <th className="whitespace-nowrap px-4 py-3.5">{t.familles.table.contact}</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-center">Services</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-center">Remise fratrie</th>
+                <th className="whitespace-nowrap px-4 py-3.5 text-right">{t.familles.table.monthly}</th>
+                <th className="w-36 whitespace-nowrap px-4 py-3.5 text-center">{t.familles.table.actions}</th>
               </tr>
             </thead>
+            {/* Une <tr> par élève : Élève / Niveau / Services se lisent ligne par ligne,
+                les colonnes propres à la famille s'étendent sur tout le groupe (rowSpan).
+                Le divide-y de tbody ne trace donc un trait que sous les cellules qui
+                commencent sur la ligne   fin trait entre élèves, trait plein entre familles. */}
             <tbody className="divide-y divide-[#28396C]/8">
-              {pager.pageItems.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => setDetailId(c.id)}
-                  className="cursor-pointer transition-colors hover:bg-[#B5E18B]/10"
-                >
-                  <td className="px-4 py-3 font-medium text-foreground">
-                    <span className="block">{c.parent_name}</span>
-                  </td>
-                  <td className="px-4 py-3 text-foreground">
-                    {(c.child_names ?? []).filter((ch) => ch.name?.trim()).length > 0 ? (
-                      <div className="space-y-0.5">
-                        {(c.child_names ?? [])
-                          .filter((ch) => ch.name?.trim())
-                          .map((ch, i) => (
-                            <span key={i} className="block font-medium">{ch.name}</span>
-                          ))}
-                      </div>
-                    ) : (
-                      <span className="block font-medium">{dash(c.child_name)}</span>
+              {pager.pageItems.flatMap((c, familyIdx) => {
+                const kids = (c.child_names ?? []).filter((ch) => ch.name?.trim());
+                // Sans child_names, on retombe sur l'élève unique des champs hérités.
+                const rows: Array<(typeof kids)[number] | null> = kids.length > 0 ? kids : [null];
+                const span = rows.length;
+                const hovered = hoverId === c.id;
+                // Bandes une famille sur deux : le bloc d'une fratrie se lit d'un
+                // bloc, sans compter les traits pour savoir où la famille s'arrête.
+                const banded = familyIdx % 2 === 1;
+                // Rappel visuel du statut déjà écrit dans la colonne Mensualité :
+                // l'admin repère les familles à relancer sans traverser 8 colonnes.
+                const accent = STATUS_COLORS[c.payment_status] ?? STATUS_COLORS.en_attente;
+
+                return rows.map((ch, i) => (
+                  <tr
+                    key={`${c.id}-${i}`}
+                    onClick={() => setDetailId(c.id)}
+                    onMouseEnter={() => setHoverId(c.id)}
+                    onMouseLeave={() => setHoverId(null)}
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      hovered ? "bg-[#B5E18B]/10" : banded ? "bg-[#28396C]/[0.02]" : undefined,
                     )}
-                    {c.child_subtitle ? (
-                      <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                        {c.child_subtitle}
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{dash(c.level)}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    <span className="block">{dash(c.email)}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.email2)}</span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    <span className="block">{c.phone}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">{dash(c.phone2)}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <ServiceChips services={servicesOf(c, svcNames)} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <RemiseBadge client={c} />
-                  </td>
-                  <td className="px-4 py-3 tabular-nums text-foreground/90">
-                    <span className="block font-semibold text-foreground">
-                      {(c.monthly_fee ?? 0)} {t.common.mad}
-                    </span>
-                    {(c.remise ?? 0) > 0 ? (
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad} après remise
-                      </span>
-                    ) : null}
-                    {/* Reflète le paiement : recalc_client_debt met à jour debt/statut après chaque paiement.
-                        Un client sans recalc a debt=0 mais n'est pas payé, d'où le test sur le statut. */}
-                    {c.payment_status === "paye" ? (
-                      <span className="mt-1 block text-xs font-medium text-[#6BA53A]">Mois payé</span>
-                    ) : (
-                      <span className="mt-1 block text-xs font-medium text-[#E25C5C]">
-                        Reste : {(c.debt ?? 0) > 0 ? c.debt : Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditId(c.id)}
-                        className={iconButton}
-                        title="Modifier"
-                        aria-label={interpolate(t.familles.editAria, { name: c.child_name })}
+                  >
+                    {i === 0 ? (
+                      <td
+                        rowSpan={span}
+                        className="border-l-[3px] px-4 py-3.5 align-middle font-medium text-foreground"
+                        style={{ borderLeftColor: accent }}
                       >
-                        <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          toast.warning(
-                            `Supprimer la fiche de ${c.child_name} ?`,
-                            {
-                              description: c.parent_name,
-                              duration: 8000,
-                              action: {
-                                label: "Supprimer",
-                                onClick: () => removeClient.mutate(c.id),
-                              },
-                              cancel: {
-                                label: "Annuler",
-                                onClick: () => {},
-                              },
-                            },
-                          );
-                        }}
-                        disabled={removeClient.isPending}
-                        className={cn(iconButton, "text-[#E25C5C] hover:bg-[#E25C5C]/10 hover:text-[#E25C5C] disabled:opacity-50")}
-                        title="Supprimer"
-                        aria-label={`Supprimer la fiche de ${c.child_name}`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+
+                        <span className="block">{c.parent_name}</span>
+                      </td>
+                    ) : null}
+                    <td className="px-4 py-3.5 align-middle text-foreground">
+                      <span className="block font-medium">{ch ? ch.name : dash(c.child_name)}</span>
+                      {i === 0 && c.child_subtitle ? (
+                        <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                          {c.child_subtitle}
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-3.5 align-middle text-muted-foreground">
+                      {dash((ch ? ch.level : c.level) ?? "")}
+                    </td>
+                    {i === 0 ? (
+                      <td rowSpan={span} className="px-4 py-3.5 align-middle text-muted-foreground">
+                        <span className="block">{dash(c.email)}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground/70">{dash(c.email2)}</span>
+                      </td>
+                    ) : null}
+                    {i === 0 ? (
+                      <td rowSpan={span} className="px-4 py-3.5 align-middle text-muted-foreground">
+                        <span className="block whitespace-nowrap">{c.phone}</span>
+                        <span className="mt-0.5 block whitespace-nowrap text-xs text-muted-foreground/70">{dash(c.phone2)}</span>
+                      </td>
+                    ) : null}
+                    <td className="px-4 py-3.5 align-middle">
+                      <ServiceChips
+                        services={
+                          ch
+                            ? (ch.services ?? []).filter((s) => svcNames.includes(s))
+                            : servicesOf(c, svcNames)
+                        }
+                      />
+                    </td>
+                    {i === 0 ? (
+                      <td rowSpan={span} className="px-4 py-3.5 text-center align-middle">
+                        <RemiseBadge client={c} />
+                      </td>
+                    ) : null}
+                    {i === 0 ? (
+                      <td rowSpan={span} className="whitespace-nowrap px-4 py-3.5 text-right align-middle tabular-nums text-foreground/90">
+                        <span className="block font-semibold text-foreground">
+                          {(c.monthly_fee ?? 0)} {t.common.mad}
+                        </span>
+                        {(c.remise ?? 0) > 0 ? (
+                          <span className="mt-0.5 block text-xs text-muted-foreground/70">
+                            {Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad} après remise
+                          </span>
+                        ) : null}
+                        {/* Reflète le paiement : recalc_client_debt met à jour debt/statut après chaque paiement.
+                            Un client sans recalc a debt=0 mais n'est pas payé, d'où le test sur le statut. */}
+                        {c.payment_status === "paye" ? (
+                          <span className="mt-1 block text-xs font-medium text-[#6BA53A]">Mois payé</span>
+                        ) : (
+                          <span className="mt-1 block text-xs font-medium text-[#E25C5C]">
+                            Reste : {(c.debt ?? 0) > 0 ? c.debt : Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad}
+                          </span>
+                        )}
+                      </td>
+                    ) : null}
+                    {i === 0 ? (
+                      <td rowSpan={span} className="px-4 py-3.5 align-middle" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditId(c.id)}
+                            className={iconButton}
+                            title="Modifier"
+                            aria-label={interpolate(t.familles.editAria, { name: c.child_name })}
+                          >
+                            <Pencil className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Supprimer définitivement la fiche de ${c.child_name} (${c.parent_name}) ?`)) {
+                                removeClient.mutate(c.id);
+                              }
+                            }}
+                            disabled={removeClient.isPending}
+                            className={cn(iconButton, "text-[#E25C5C] hover:bg-[#E25C5C]/10 hover:text-[#E25C5C] disabled:opacity-50")}
+                            title="Supprimer"
+                            aria-label={`Supprimer la fiche de ${c.child_name}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    ) : null}
+                  </tr>
+                ));
+              })}
+
+           </tbody>
           </table>
         </div>
         {filtered.length === 0 ? (
@@ -902,6 +971,20 @@ function CrmParentsPage() {
           <DialogDescription className="text-sm text-muted-foreground">
             {previewRows ? `${previewRows.length} client(s) détecté(s). Vérifiez les données avant de confirmer l'import.` : ""}
           </DialogDescription>
+          {validateWarnings.length > 0 ? (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              {validateWarnings.map((w, i) => (
+                <p key={i} className="flex items-center gap-1.5">
+                  <span className="shrink-0">⚠️</span> {w}
+                </p>
+              ))}
+              <p className="mt-1 text-[10px] text-amber-600">L'import peut tout de même être tenté avec les données disponibles.</p>
+            </div>
+          ) : previewRows ? (
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+              Toutes les colonnes recommandées sont présentes.
+            </div>
+          ) : null}
           <div className="flex-1 overflow-auto rounded-md border">
             <table className="w-full text-xs">
               <thead>
@@ -1681,4 +1764,5 @@ function EditClientDialog({
     </Dialog>
   );
 }
+
 

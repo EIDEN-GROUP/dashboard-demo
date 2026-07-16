@@ -1,6 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
 import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SupportButton } from "@/components/support-button";
 import { useLandingI18nOptional, type LandingLocale } from "@/lib/landing-i18n";
 
 function LanguageToggleButton({
@@ -50,13 +51,16 @@ export function LanguageToggleFloating() {
   return (
     <div
       className={cn(
-        "fixed z-[60] flex flex-col items-center",
+        "fixed z-[60] flex flex-col items-center gap-2",
         "end-[max(1rem,env(safe-area-inset-right))]",
         onDashboard
           ? "bottom-[calc(5rem+max(0.5rem,env(safe-area-inset-bottom)))] lg:bottom-[max(1rem,env(safe-area-inset-bottom))]"
           : "bottom-[max(1rem,env(safe-area-inset-bottom))]",
       )}
     >
+      {/* Assistance : réservée au tableau de bord   la landing a déjà ses propres
+          points de contact (section contact + FAQ). */}
+      {onDashboard ? <SupportButton /> : null}
       <LanguageToggleButton locale={i18n.locale} onToggle={i18n.toggleLocale} label={langLabel} />
     </div>
   );

@@ -1,8 +1,60 @@
+export type UserRole = "admin" | "superadmin";
+
 export type Profile = {
   id: string;
   name: string;
+  email: string;
+  role: UserRole;
   created_at: string;
   updated_at: string;
+};
+
+export type CenterPlan = "essai" | "standard" | "premium";
+export type CenterStatus = "actif" | "suspendu" | "essai";
+
+export type Center = {
+  id: string;
+  name: string;
+  city: string;
+  contact_email: string;
+  contact_phone: string;
+  plan: CenterPlan;
+  status: CenterStatus;
+  monthly_price: number;
+  students_count: number;
+  is_primary: boolean;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CenterInput = {
+  name: string;
+  city?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  plan?: CenterPlan;
+  status?: CenterStatus;
+  monthly_price?: number;
+  students_count?: number;
+  notes?: string;
+};
+
+export type CenterAdmin = {
+  center_id: string;
+  profile_id: string;
+  created_at: string;
+};
+
+export type PlatformStats = {
+  total_centers: number;
+  active_centers: number;
+  suspended_centers: number;
+  total_admins: number;
+  total_students: number;
+  platform_revenue: number;
+  mrr: number;
+  pending_demo_requests: number;
 };
 
 export type Client = {
@@ -26,7 +78,7 @@ export type Client = {
   dob: string;
   level: string;
   crm_stage: "nouveau" | "converti";
-  payment_status: "impaye" | "paye";
+  payment_status: "en_attente" | "paye";
   monthly_fee: number;
   debt: number;
   overdue: boolean;
