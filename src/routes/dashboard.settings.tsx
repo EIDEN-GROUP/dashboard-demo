@@ -374,7 +374,20 @@ function LevelsSection() {
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm(`Supprimer le niveau « ${l.name} » ?`)) remove.mutate(l.id);
+                    toast.warning(
+                      `Supprimer le niveau « ${l.name} » ?`,
+                      {
+                        duration: 8000,
+                        action: {
+                          label: "Supprimer",
+                          onClick: () => remove.mutate(l.id),
+                        },
+                        cancel: {
+                          label: "Annuler",
+                          onClick: () => {},
+                        },
+                      },
+                    );
                   }}
                   className={cn(iconButton, "text-red-500 hover:bg-red-50 hover:text-red-600")}
                   aria-label={`Supprimer ${l.name}`}

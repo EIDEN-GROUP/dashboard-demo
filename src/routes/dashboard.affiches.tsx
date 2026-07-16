@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, CalendarDays, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { listEmployees, createEmployee, updateEmployee, deleteEmployee, type EmployeeInput } from "@/lib/server-employees";
+import { AlertTriangle, CalendarDays, Pencil, Plus, Search, Trash2, Upload, Download, Loader2 } from "lucide-react";
+import { listEmployees, createEmployee, updateEmployee, deleteEmployee, importEmployeesCsv, type EmployeeInput } from "@/lib/server-employees";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ import {
   labelClass,
   iconButton,
   primaryPill,
+  ghostPill,
 } from "@/lib/dash-ui";
 
 export const Route = createFileRoute("/dashboard/affiches")({
@@ -741,6 +742,119 @@ function AffichesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const importCsv = useMutation({
+    mutationFn: (input: { csvText: string }) => importEmployeesCsv({ data: input }),
+    onSuccess: (r) => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      toast.success(`${r.imported} employé(s) importé(s)${r.errors.length ? `, ${r.errors.length} erreur(s)` : ""}`);
+      if (r.errors.length) r.errors.forEach((e) => toast.error(e));
+      setPreviewRows(null);
+    },
+    onError: (err) => {
+      console.error("CSV import error:", err);
+      toast.error(err instanceof Error ? err.message : `Erreur import CSV${err ? ` : ${JSON.stringify(err)}` : ""}`);
+      setPreviewRows(null);
+    },
+  });
+
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function handleExportCsv() {
+    const cols = [
+      "full_name", "position", "department", "email", "personal_email",
+      "phone", "phone2", "cin", "birth_date", "hire_date", "address",
+      "contract_type", "salary", "leave_start", "leave_end", "status",
+    ];
+    const esc = (v: unknown) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const header = cols.join(",");
+    const body = employes.map((e) =>
+      cols.map((col) => {
+        const val = (e as Record<string, unknown>)[
+          col === "full_name" ? "nomComplet" :
+          col === "position" ? "poste" :
+          col === "department" ? "departement" :
+          col === "personal_email" ? "emailPerso" :
+          col === "phone" ? "tel" :
+          col === "phone2" ? "tel2" :
+          col === "birth_date" ? "dateNaissance" :
+          col === "hire_date" ? "dateEmbauche" :
+          col === "contract_type" ? "contrat" :
+          col === "leave_start" ? "congeDebut" :
+          col === "leave_end" ? "congeFin" :
+          col
+        ];
+        return esc(val);
+      }).join(",")
+    ).join("\n");
+    const csv = `${header}\n${body}`;
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "employes.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const [previewRows, setPreviewRows] = useState<Record<string, string>[] | null>(null);
+  const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
+  const [csvText, setCsvText] = useState("");
+
+  function parseCsvClient(text: string): { headers: string[]; rows: Record<string, string>[] } {
+    let t = text;
+    if (t.charCodeAt(0) === 0xfeff) t = t.slice(1);
+    t = t.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const lines: string[] = t.split("\n").filter((l) => l.trim());
+    if (lines.length < 2) return { headers: [], rows: [] };
+    function splitLine(line: string): string[] {
+      const res: string[] = [];
+      let cur = "", q = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (q && line[i + 1] === '"') { cur += '"'; i++; }
+          else q = !q;
+        } else if (c === "," && !q) { res.push(cur); cur = ""; }
+        else cur += c;
+      }
+      res.push(cur);
+      return res;
+    }
+    const headers = splitLine(lines[0]).map((h) => h.trim());
+    const rows: Record<string, string>[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = splitLine(lines[i]);
+      const row: Record<string, string> = {};
+      headers.forEach((h, j) => { row[h] = (vals[j] ?? "").trim(); });
+      rows.push(row);
+    }
+    return { headers, rows };
+  }
+
+  function handleImportCsv(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      const { headers, rows } = parseCsvClient(text);
+      if (rows.length === 0) {
+        toast.error("Aucune ligne valide dans le fichier CSV");
+        return;
+      }
+      setPreviewHeaders(headers);
+      setPreviewRows(rows);
+      setCsvText(text);
+    };
+    reader.readAsText(file);
+  }
+
+  function confirmImportCsv() {
+    if (!csvText) return;
+    importCsv.mutate({ csvText });
+  }
+
   const [search, setSearch] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -806,10 +920,26 @@ function AffichesPage() {
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{a.subtitle}</p>
           </div>
-          <button type="button" onClick={() => setAddOpen(true)} className={cn(primaryPill, "shrink-0")}>
-            <Plus className="h-4 w-4" />
-            Ajouter un employé
-          </button>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImportCsv(f); e.target.value = ""; }}
+            />
+            <button type="button" onClick={handleExportCsv} className={cn(ghostPill, "gap-1.5")} title="Exporter en CSV">
+              <Download className="h-3.5 w-3.5" /> Exporter
+            </button>
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={importCsv.isPending} className={cn(ghostPill, "gap-1.5 disabled:opacity-50")} title="Importer un CSV">
+              {importCsv.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              Importer
+            </button>
+            <button type="button" onClick={() => setAddOpen(true)} className={cn(primaryPill, "shrink-0")}>
+              <Plus className="h-4 w-4" />
+              Ajouter un employé
+            </button>
+          </div>
         </div>
       </header>
 
@@ -939,6 +1069,52 @@ function AffichesPage() {
           label={pager.total > 1 ? "employés" : "employé"}
         />
       </section>
+
+      <Dialog open={!!previewRows} onOpenChange={(o) => !o && setPreviewRows(null)}>
+        <DialogContent className="max-w-[90vw] max-h-[85vh] flex flex-col">
+          <DialogTitle className="text-lg font-semibold">Aperçu des données CSV</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            {previewRows ? `${previewRows.length} employé(s) détecté(s). Vérifiez les données avant de confirmer l'import.` : ""}
+          </DialogDescription>
+          <div className="flex-1 overflow-auto rounded-md border">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-muted/50">
+                  {previewHeaders.map((h, i) => (
+                    <th key={i} className="whitespace-nowrap px-3 py-2 text-left font-semibold text-foreground">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {previewRows?.map((row, ri) => (
+                  <tr key={ri} className="border-t border-border odd:bg-card">
+                    {previewHeaders.map((h, ci) => (
+                      <td key={ci} className="max-w-[200px] truncate px-3 py-1.5 text-foreground" title={row[h]}>{row[h]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex flex-wrap justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setPreviewRows(null)}
+              className="rounded-full border border-border bg-card px-5 py-2 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={confirmImportCsv}
+              disabled={importCsv.isPending}
+              className="rounded-full bg-[#6BA53A] px-5 py-2 text-sm font-medium text-white hover:bg-[#5a9232] disabled:opacity-60"
+            >
+              {importCsv.isPending ? "Import en cours…" : `Importer ${previewRows?.length ?? 0} employé(s)`}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

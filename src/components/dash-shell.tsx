@@ -661,6 +661,7 @@ export function DashShell({
         </main>
 
         <MobileBottomNav topNav={topNav} pathname={loc.pathname} mainNavAria={t.shell.mainNavAria} />
+        <Toaster />
       </div>
     );
   }

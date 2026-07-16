@@ -805,9 +805,21 @@ function CrmParentsPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          if (confirm(`Supprimer définitivement la fiche de ${c.child_name} (${c.parent_name}) ?`)) {
-                            removeClient.mutate(c.id);
-                          }
+                          toast.warning(
+                            `Supprimer la fiche de ${c.child_name} ?`,
+                            {
+                              description: c.parent_name,
+                              duration: 8000,
+                              action: {
+                                label: "Supprimer",
+                                onClick: () => removeClient.mutate(c.id),
+                              },
+                              cancel: {
+                                label: "Annuler",
+                                onClick: () => {},
+                              },
+                            },
+                          );
                         }}
                         disabled={removeClient.isPending}
                         className={cn(iconButton, "text-[#E25C5C] hover:bg-[#E25C5C]/10 hover:text-[#E25C5C] disabled:opacity-50")}

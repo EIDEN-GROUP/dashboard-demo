@@ -83,3 +83,94 @@ export const deleteEmployee = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+function parseCsv(text: string): Record<string, string>[] {
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = parseCsvLine(lines[0]).map((h) => h.trim());
+  const result: Record<string, string>[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCsvLine(lines[i]);
+    const row: Record<string, string> = {};
+    headers.forEach((h, j) => { row[h] = (values[j] ?? "").trim(); });
+    result.push(row);
+  }
+  return result;
+}
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function toNumber(v: string): number {
+  const cleaned = v.replace(/[^\d.,\-]/g, "").replace(",", ".");
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+
+export const importEmployeesCsv = createServerFn({ method: "POST" })
+  .inputValidator((input: { csvText: string }) => input)
+  .handler(async ({ data }) => {
+    const rows = parseCsv(data.csvText);
+    let imported = 0;
+    const errors: string[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const fullName = r["full_name"] || r["Nom complet"] || r["nom_complet"] || r["Nom Complet"] || "";
+      if (!fullName) {
+        errors.push(`Ligne ${i + 2}: nom complet manquant`);
+        continue;
+      }
+
+      const input: EmployeeInput = {
+        full_name: fullName,
+        position: r["position"] || r["Poste"] || r["poste"] || "",
+        department: r["department"] || r["Département"] || r["Departement"] || r["departement"] || "",
+        email: r["email"] || r["Email"] || "",
+        personal_email: r["personal_email"] || r["Email personnel"] || r["email_perso"] || "",
+        phone: r["phone"] || r["Téléphone"] || r["Telephone"] || r["tel"] || "",
+        phone2: r["phone2"] || r["Téléphone 2"] || r["Telephone 2"] || r["tel2"] || "",
+        cin: r["cin"] || r["CIN"] || "",
+        birth_date: r["birth_date"] || r["Date de naissance"] || r["date_naissance"] || "",
+        hire_date: r["hire_date"] || r["Date d'embauche"] || r["date_embauche"] || "",
+        address: r["address"] || r["Adresse"] || r["adresse"] || "",
+        contract_type: r["contract_type"] || r["Type de contrat"] || r["contrat"] || "",
+        salary: toNumber(r["salary"] || r["Salaire"] || r["salaire"] || "0"),
+        leave_start: r["leave_start"] || r["Début congé"] || r["conge_debut"] || "",
+        leave_end: r["leave_end"] || r["Fin congé"] || r["conge_fin"] || "",
+        status: (r["status"] === "inactif" || r["Statut"] === "inactif" ? "inactif" : "actif") as "actif" | "inactif",
+      };
+
+      try {
+        await supabaseAdmin.from("employees").insert(input);
+        imported++;
+      } catch (e) {
+        errors.push(`Ligne ${i + 2}: ${e instanceof Error ? e.message : "Erreur inconnue"}`);
+      }
+    }
+
+    return { imported, errors };
+  });
