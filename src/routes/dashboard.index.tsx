@@ -43,6 +43,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -53,6 +54,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { AddClientDialog, emptyWizard, type WizardData } from "@/components/add-client-wizard";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 import {
   softCard,
@@ -78,7 +80,12 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 // Données démo   statistique générale (encaissé en k MAD + nb de paiements)
 // ──────────────────────────────────────────────────────────
-type Grain = "mensuel" | "annuel";
+type Grain = "mensuel" | "trimestriel" | "annuel";
+
+type Range = "1S" | "1M" | "3M" | "1A";
+const RANGE_LABEL: Record<Range, string> = { "1S": "1 semaine", "1M": "1 mois", "3M": "3 mois", "1A": "1 an" };
+const RANGE_MONTHS: Record<Range, number> = { "1S": 1, "1M": 1, "3M": 3, "1A": 12 };
+const rangeButtons: Range[] = ["1S", "1M", "3M", "1A"];
 
 const PENDING_COLOR = "#E8A13C";
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
@@ -118,6 +125,8 @@ const daysOverdue = (paymentDay?: number): number => {
 function CrmDash() {
   const { t } = useDashboardI18n();
   const [addClientOpen, setAddClientOpen] = useState(false);
+  const [wizard, setWizard] = useState<WizardData>(emptyWizard);
+  const updateWizard = (patch: Partial<WizardData>) => setWizard((prev) => ({ ...prev, ...patch }));
   const [relanceIds, setRelanceIds] = useState<string[]>([]);
   const [relanceExpanded, setRelanceExpanded] = useState(false);
   const [relancePeriode, setRelancePeriode] = useState("Mai 2026 — frais mensuels");
@@ -223,6 +232,64 @@ function CrmDash() {
   const attenteTotal = (outstanding?.enAttenteTotal ?? 0) + (outstanding?.retardTotal ?? 0);
   const attenteCount = (outstanding?.enAttenteCount ?? 0) + (outstanding?.retardCount ?? 0);
 
+  // Relance rapide: pick who gets the reminder instead of blasting every overdue
+  // client. Empty selection keeps the old behaviour (all overdue clients).
+  const relanceCandidates = useMemo(
+    () => (clients as any[]).filter((c: any) => c.payment_status !== "paye"),
+    [clients],
+  );
+  const relanceShown = relanceExpanded ? relanceCandidates : relanceCandidates.slice(0, 4);
+  const toggleRelance = (id: string) =>
+    setRelanceIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const relanceMutation = useMutation({
+    mutationFn: async () => {
+      const content = relancePeriode.trim()
+        ? `Rappel de paiement — ${relancePeriode.trim()}`
+        : "Rappel de paiement";
+
+      // No selection => previous behaviour: every overdue client.
+      if (relanceIds.length === 0) {
+        return sendBroadcast({ data: { content, filterOverdue: true } });
+      }
+
+      // Sequential, not Promise.all: WAHA drives one WhatsApp session, and
+      // parallel bursts are exactly the pattern that gets numbers banned.
+      let success = 0;
+      const errors: string[] = [];
+      for (const clientId of relanceIds) {
+        const res = await sendClientMessage({ data: { clientId, content } });
+        if (res.ok) success += 1;
+        else errors.push(res.error ?? "échec");
+      }
+      return { ok: true, success, failed: relanceIds.length - success, errors };
+    },
+    onSuccess: (res: any) => {
+      if (res.success === 0) {
+        toast.error(res.errors?.[0] ?? "Aucun rappel envoyé");
+      } else {
+        toast.success(
+          `Rappel envoyé à ${res.success} client${res.success > 1 ? "s" : ""}` +
+            (res.failed ? ` (${res.failed} échec${res.failed > 1 ? "s" : ""})` : ""),
+        );
+      }
+      setRelanceIds([]);
+      queryClient.invalidateQueries({ queryKey: ["message-history"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  } as const);
+
+  // Relance individuelle depuis la file "Paiements en attente".
+  const remindMutation = useMutation({
+    mutationFn: (clientId: string) =>
+      sendClientMessage({ data: { clientId, content: "Rappel de paiement" } }),
+    onSuccess: () => {
+      toast.success("Rappel envoyé");
+      queryClient.invalidateQueries({ queryKey: ["message-history"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   // Last 4 payments
   const lastPayments = useMemo(() => {
     return dbPayments.slice(0, 4).map((p) => ({
@@ -292,54 +359,7 @@ function CrmDash() {
     },
   ] as const;
 
-  const queryClient = useQueryClient();
-
-  // Relance rapide: pick who gets the reminder instead of blasting every overdue
-  // client. Empty selection keeps the old behaviour (all overdue clients).
-  const relanceCandidates = useMemo(
-    () => (clients as any[]).filter((c: any) => c.payment_status !== "paye"),
-    [clients],
-  );
-  const relanceShown = relanceExpanded ? relanceCandidates : relanceCandidates.slice(0, 4);
-  const toggleRelance = (id: string) =>
-    setRelanceIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-
-  const relanceMutation = useMutation({
-    mutationFn: async () => {
-      const content = relancePeriode.trim()
-        ? `Rappel de paiement — ${relancePeriode.trim()}`
-        : "Rappel de paiement";
-
-      // No selection => previous behaviour: every overdue client.
-      if (relanceIds.length === 0) {
-        return sendBroadcast({ data: { content, filterOverdue: true } });
-      }
-
-      // Sequential, not Promise.all: WAHA drives one WhatsApp session, and
-      // parallel bursts are exactly the pattern that gets numbers banned.
-      let success = 0;
-      const errors: string[] = [];
-      for (const clientId of relanceIds) {
-        const res = await sendClientMessage({ data: { clientId, content } });
-        if (res.ok) success += 1;
-        else errors.push(res.error ?? "échec");
-      }
-      return { ok: true, success, failed: relanceIds.length - success, errors };
-    },
-    onSuccess: (res: any) => {
-      if (res.success === 0) {
-        toast.error(res.errors?.[0] ?? "Aucun rappel envoyé");
-      } else {
-        toast.success(
-          `Rappel envoyé à ${res.success} client${res.success > 1 ? "s" : ""}` +
-            (res.failed ? ` (${res.failed} échec${res.failed > 1 ? "s" : ""})` : ""),
-        );
-      }
-      setRelanceIds([]);
-      queryClient.invalidateQueries({ queryKey: ["message-history"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+const queryClient = useQueryClient();
 
   const quickActions: QuickAction[] = [
     {
@@ -367,7 +387,13 @@ function CrmDash() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <NouveauClientModal open={addClientOpen} onOpenChange={setAddClientOpen} />
+      <AddClientDialog
+        open={addClientOpen}
+        onOpenChange={setAddClientOpen}
+        wizard={wizard}
+        updateWizard={updateWizard}
+        setWizard={setWizard}
+      />
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -723,7 +749,7 @@ function CrmDash() {
                 </Link>
               </div>
               <h3 className="mt-1 font-display text-lg font-semibold">Rappel de paiement</h3>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div className="mt-4 flex items-center gap-2">
                 {relanceCandidates.length > 4 && (
                   <button
                     type="button"
