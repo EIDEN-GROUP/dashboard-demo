@@ -23,6 +23,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import {
   Dialog,
@@ -389,8 +390,10 @@ function CrmParentsPage() {
       counts[name] = 0;
     });
     base.forEach((c) => {
-      (c.subscribed_services ?? []).forEach((s) => {
-        if (s in counts) counts[s] += 1;
+      (c.child_names ?? []).forEach((child) => {
+        (child.services ?? []).forEach((s) => {
+          if (s in counts) counts[s] += 1;
+        });
       });
     });
     return svcNames
@@ -1137,8 +1140,12 @@ function PaymentDialog({
             <Field id="pay-period" label="Mois concerné">
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className={cn(selectTriggerClass, "w-full justify-start text-left font-normal")}>
-                    {selectedPeriod ? formatPeriod(selectedPeriod) : "Mois en cours"}
+                  <button
+                    className={cn(selectTriggerClass, "flex w-full items-center justify-between gap-1 px-3")}
+                    data-placeholder={selectedPeriod ? undefined : ""}
+                  >
+                    <span className="truncate">{selectedPeriod ? formatPeriod(selectedPeriod) : "Mois en cours"}</span>
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground/50" />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-[280px] p-3">
