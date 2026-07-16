@@ -257,7 +257,9 @@ function CrmDash() {
       to: "/dashboard/familles",
       search: { statut: "impaye" },
       // Analyse express : montant total en attente de recouvrement.
-      extra: `${(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD en attente`,
+      extra: (outstanding?.impayeTotal ?? 0) > 0
+        ? `${(outstanding.impayeTotal).toLocaleString("fr-FR")} MAD en attente`
+        : null,
     },
   ] as const;
 
