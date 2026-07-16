@@ -140,6 +140,42 @@ function servicesOf(c: DbClient, svcNames: string[]) {
   return dedup.filter((s) => svcNames.includes(s));
 }
 
+/** Pie slice label that prints the raw total (not the percentage), grouped by thousands. */
+function renderTotalLabel({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  value,
+}: {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  value: number;
+}) {
+  if (!value) return null;
+  const RAD = Math.PI / 180;
+  const r = innerRadius + (outerRadius - innerRadius) * 0.6;
+  const x = cx + r * Math.cos(-midAngle * RAD);
+  const y = cy + r * Math.sin(-midAngle * RAD);
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="#fff"
+      fontSize={12}
+      fontWeight={700}
+      textAnchor="middle"
+      dominantBaseline="central"
+    >
+      {value.toLocaleString("fr-FR")}
+    </text>
+  );
+}
+
 function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
     <div className="space-y-1.5">
@@ -340,6 +376,35 @@ function CrmParentsPage() {
   }, [base]);
   const donutTotal = donut.reduce((s, d) => s + d.value, 0);
 
+  // Revenu par service. Une famille peut cumuler plusieurs services : on somme
+  // le prix du service pour chaque famille abonnée (value = prix × nb familles),
+  // pas de pourcentage — les ensembles se chevauchent et ne totalisent pas 100 %.
+  const serviceDonut = useMemo(() => {
+    const priceOf: Record<string, number> = {};
+    services.forEach((s) => {
+      priceOf[s.name] = Number(s.price) || 0;
+    });
+    const counts: Record<string, number> = {};
+    svcNames.forEach((name) => {
+      counts[name] = 0;
+    });
+    base.forEach((c) => {
+      (c.subscribed_services ?? []).forEach((s) => {
+        if (s in counts) counts[s] += 1;
+      });
+    });
+    return svcNames
+      .map((name, i) => ({
+        name,
+        count: counts[name] ?? 0,
+        value: (counts[name] ?? 0) * (priceOf[name] ?? 0),
+        color: LEVEL_COLORS[i % LEVEL_COLORS.length],
+      }))
+      .filter((d) => d.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [base, svcNames, services]);
+  const serviceTotal = serviceDonut.reduce((s, d) => s + d.value, 0);
+
   const detail = detailId ? clients.find((c) => c.id === detailId) : null;
   const edit = editId ? clients.find((c) => c.id === editId) : null;
   const paymentClient = paymentId ? clients.find((c) => c.id === paymentId) : null;
@@ -427,12 +492,12 @@ function CrmParentsPage() {
         </div>
       </header>
 
-      {/* Filtres */}
+      {/* Filtres + analyses — une seule rangée : filtres, revenu par service, répartition par niveau */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className={cn(softCard, "p-5 lg:col-span-2")}>
+        <section className={cn(softCard, "p-5")}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Filtres</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="relative min-w-0 sm:col-span-2">
+          <div className="mt-4 space-y-4">
+            <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
               <Input
                 value={search}
@@ -442,35 +507,37 @@ function CrmParentsPage() {
                 aria-label={t.familles.searchAria}
               />
             </div>
-            <div>
-              <Label className={labelClass}>Niveau</Label>
-              <Select value={niveauFilter} onValueChange={setNiveauFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par niveau">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  <SelectItem value="tous">Tous les niveaux</SelectItem>
-                  {niveaux.map((n) => (
-                    <SelectItem key={n} value={n}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="sm:col-span-2">
-              <Label className={labelClass}>Service souscrit</Label>
-              <Select value={serviceFilter} onValueChange={setServiceFilter}>
-                <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={softSelectContent}>
-                  <SelectItem value="tous">Tous les services</SelectItem>
-                  <SelectItem value="transport">Transport scolaire</SelectItem>
-                  <SelectItem value="cantine">Cantine</SelectItem>
-                  <SelectItem value="garderie">Garderie</SelectItem>
-                  <SelectItem value="activites">Activités périscolaires</SelectItem>
-                  <SelectItem value="remise">Avec remise fratrie</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className={labelClass}>Niveau</Label>
+                <Select value={niveauFilter} onValueChange={setNiveauFilter}>
+                  <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par niveau">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="tous">Tous les niveaux</SelectItem>
+                    {niveaux.map((n) => (
+                      <SelectItem key={n} value={n}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className={labelClass}>Service souscrit</Label>
+                <Select value={serviceFilter} onValueChange={setServiceFilter}>
+                  <SelectTrigger className={cn(selectTriggerClass, "mt-1.5")} aria-label="Filtrer par service">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className={softSelectContent}>
+                    <SelectItem value="tous">Tous les services</SelectItem>
+                    <SelectItem value="transport">Transport scolaire</SelectItem>
+                    <SelectItem value="cantine">Cantine</SelectItem>
+                    <SelectItem value="garderie">Garderie</SelectItem>
+                    <SelectItem value="activites">Activités périscolaires</SelectItem>
+                    <SelectItem value="remise">Avec remise fratrie</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
@@ -480,22 +547,70 @@ function CrmParentsPage() {
           </p>
         </section>
 
+        {/* Graphique circulaire — revenu total par service (prix × nb de familles) */}
+        <section className={cn(softCard, "flex flex-col p-5")}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Revenu par service</p>
+          {serviceTotal > 0 ? (
+            <>
+              <div className="mx-auto mt-2 h-48 w-full max-w-[15rem]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={serviceDonut}
+                      dataKey="value"
+                      nameKey="name"
+                      outerRadius="95%"
+                      stroke="none"
+                      labelLine={false}
+                      label={renderTotalLabel}
+                    >
+                      {serviceDonut.map((d) => (
+                        <Cell key={d.name} fill={d.color} />
+                      ))}
+                    </Pie>
+                    <RTooltip
+                      contentStyle={dashTooltip}
+                      formatter={(value: number, name: string) => [`${value.toLocaleString("fr-FR")} MAD`, name]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="mt-3 space-y-1.5">
+                {serviceDonut.map((d) => (
+                  <li key={d.name} className="flex items-center justify-between gap-2 rounded-full bg-muted/60 px-3 py-1.5 text-xs">
+                    <span className="flex items-center gap-2 font-medium text-foreground">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                      {d.name}
+                    </span>
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {d.value.toLocaleString("fr-FR")} MAD
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              Aucune souscription à un service pour cette sélection.
+            </p>
+          )}
+        </section>
+
         {/* Graphique circulaire — répartition par niveau */}
         <section className={cn(softCard, "flex flex-col p-5")}>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Analyse</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Répartition par niveau</p>
           {donutTotal > 0 ? (
             <>
-              <div className="mt-1 flex items-center justify-center">
-                <ResponsiveContainer width="100%" height={180}>
+              <div className="mx-auto mt-2 h-48 w-full max-w-[15rem]">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={donut}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={48}
-                      outerRadius={78}
                       dataKey="value"
-                      strokeWidth={0}
+                      nameKey="name"
+                      outerRadius="95%"
+                      stroke="none"
+                      labelLine={false}
                       label={renderPieLabel}
                     >
                       {donut.map((d) => (
@@ -509,20 +624,22 @@ function CrmParentsPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+              <ul className="mt-3 space-y-1.5">
                 {donut.map((d) => {
                   const share = Math.round((d.value / donutTotal) * 100);
                   return (
-                    <div key={d.name} className="flex items-center gap-2 text-xs">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="font-medium text-foreground">{d.name}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {d.value} <span className="text-[10px]">({share}%)</span>
+                    <li key={d.name} className="flex items-center justify-between gap-2 rounded-full bg-muted/60 px-3 py-1.5 text-xs">
+                      <span className="flex items-center gap-2 font-medium text-foreground">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                        {d.name}
                       </span>
-                    </div>
+                      <span className="font-semibold tabular-nums text-foreground">
+                        {d.value} · {share}%
+                      </span>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </>
           ) : null}
         </section>
@@ -534,10 +651,11 @@ function CrmParentsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{t.familles.clientList}</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1080px] text-left text-sm">
+          <table className="w-full min-w-[1200px] text-left text-sm">
             <thead>
               <tr className="border-b border-[#28396C]/10 bg-muted/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="px-4 py-3">{t.familles.table.parent}</th>
+                <th className="px-4 py-3">Élève(s)</th>
                 <th className="px-4 py-3">Niveau</th>
                 <th className="px-4 py-3">Emails des parents</th>
                 <th className="px-4 py-3">{t.familles.table.contact}</th>
@@ -556,10 +674,24 @@ function CrmParentsPage() {
                 >
                   <td className="px-4 py-3 font-medium text-foreground">
                     <span className="block">{c.parent_name}</span>
-                    <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                      {c.child_name}
-                      {c.child_subtitle ? `   ${c.child_subtitle}` : ""}
-                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-foreground">
+                    {(c.child_names ?? []).filter((ch) => ch.name?.trim()).length > 0 ? (
+                      <div className="space-y-0.5">
+                        {(c.child_names ?? [])
+                          .filter((ch) => ch.name?.trim())
+                          .map((ch, i) => (
+                            <span key={i} className="block font-medium">{ch.name}</span>
+                          ))}
+                      </div>
+                    ) : (
+                      <span className="block font-medium">{dash(c.child_name)}</span>
+                    )}
+                    {c.child_subtitle ? (
+                      <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                        {c.child_subtitle}
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{dash(c.level)}</td>
                   <td className="px-4 py-3 text-muted-foreground">
@@ -585,6 +717,15 @@ function CrmParentsPage() {
                         {Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad} après remise
                       </span>
                     ) : null}
+                    {/* Reflète le paiement : recalc_client_debt met à jour debt/statut après chaque paiement.
+                        Un client sans recalc a debt=0 mais n'est pas payé, d'où le test sur le statut. */}
+                    {c.payment_status === "paye" ? (
+                      <span className="mt-1 block text-xs font-medium text-[#6BA53A]">Mois payé</span>
+                    ) : (
+                      <span className="mt-1 block text-xs font-medium text-[#E25C5C]">
+                        Reste : {(c.debt ?? 0) > 0 ? c.debt : Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100))} {t.common.mad}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
@@ -1058,6 +1199,22 @@ function PaymentDialog({
   );
 }
 
+/** Liste d'élèves de départ pour l'édition : child_names si présent, sinon
+ *  un élève reconstruit depuis les champs hérités (child_name / dob / level). */
+function initialChildren(client: FlatClient): ChildFormData[] {
+  if (client.child_names && client.child_names.length > 0) {
+    return client.child_names.map((c) => ({
+      name: c.name ?? "",
+      dob: c.dob ?? "",
+      cycle: c.cycle ?? "",
+      level: c.level ?? "",
+      services: c.services ?? [],
+      frais: c.frais ?? [],
+    }));
+  }
+  return [{ name: client.child_name ?? "", dob: client.dob ?? "", cycle: "", level: client.level ?? "", services: [], frais: [] }];
+}
+
 function EditClientDialog({
   client,
   open,
@@ -1074,12 +1231,14 @@ function EditClientDialog({
   const [subscribed, setSubscribed] = useState<string[]>(initialSubscribed);
   const [fratrie, setFratrie] = useState<number>(client.fratrie ?? 1);
   const [remise, setRemise] = useState<number>(client.remise ?? 0);
+  const [children, setChildren] = useState<ChildFormData[]>(() => initialChildren(client));
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setSubscribed(client.subscribed_services ?? []);
     setFratrie(client.fratrie ?? 1);
     setRemise(client.remise ?? 0);
+    setChildren(initialChildren(client));
   }, [client]);
 
   const { t } = useDashboardI18n();
@@ -1091,6 +1250,12 @@ function EditClientDialog({
       prev.includes(name) ? prev.filter((s) => s !== name) : [...prev, name],
     );
   };
+
+  const addStudent = () => setChildren((prev) => [...prev, emptyChild()]);
+  const removeStudent = (i: number) =>
+    setChildren((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev));
+  const updateStudent = (i: number, patch: Partial<ChildFormData>) =>
+    setChildren((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -1107,12 +1272,16 @@ function EditClientDialog({
               ev.preventDefault();
               setBusy(true);
               const fd = new FormData(ev.currentTarget);
+              // On ne garde que les élèves nommés ; le 1er alimente les champs hérités.
+              const cleanChildren = children.filter((c) => c.name.trim() !== "");
+              const firstChild = cleanChildren[0];
               try {
                 await updateClient({
                   data: {
                     id: client.id,
                     parent_name: String(fd.get("parent_name") ?? client.parent_name),
-                    child_name: String(fd.get("child_name") ?? client.child_name),
+                    child_name: firstChild?.name ?? client.child_name,
+                    child_names: cleanChildren,
                     email: String(fd.get("email") ?? client.email),
                     email2: String(fd.get("email2") ?? client.email2),
                     phone: String(fd.get("phone") ?? client.phone),
@@ -1120,8 +1289,8 @@ function EditClientDialog({
                     father_name: String(fd.get("father_name") ?? client.father_name),
                     mother_name: String(fd.get("mother_name") ?? client.mother_name),
                     cin: String(fd.get("cin") ?? client.cin),
-                    dob: String(fd.get("dob") ?? client.dob),
-                    level: String(fd.get("level") ?? client.level),
+                    dob: firstChild?.dob ?? client.dob,
+                    level: firstChild?.level ?? client.level,
                     notes: String(fd.get("notes") ?? client.notes),
                     fratrie,
                     remise,
@@ -1143,15 +1312,65 @@ function EditClientDialog({
               <Field id="e-parent" label={t.common.parent}>
                 <Input id="e-parent" name="parent_name" defaultValue={client.parent_name} className={inputClass} />
               </Field>
-              <Field id="e-child" label={t.common.child}>
-                <Input id="e-child" name="child_name" defaultValue={client.child_name} className={inputClass} />
-              </Field>
-              <Field id="e-dob" label={f.birthDate}>
-                <Input id="e-dob" name="dob" defaultValue={client.dob} className={inputClass} />
-              </Field>
-              <Field id="e-level" label={f.level}>
-                <Input id="e-level" name="level" defaultValue={client.level} className={inputClass} />
-              </Field>
+              <div className="sm:col-span-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label className={labelClass}>Élèves de la famille</Label>
+                  <button
+                    type="button"
+                    onClick={addStudent}
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Ajouter un élève
+                  </button>
+                </div>
+                <div className="mt-2 space-y-3">
+                  {children.map((ch, i) => (
+                    <div key={i} className="rounded-xl border border-[#28396C]/10 bg-muted/30 p-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Élève {i + 1}
+                        </p>
+                        {children.length > 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => removeStudent(i)}
+                            className="text-[#E25C5C] transition hover:opacity-70"
+                            aria-label={`Retirer l'élève ${i + 1}`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <div className="space-y-1.5">
+                          <Label className={labelClass}>{t.common.child}</Label>
+                          <Input
+                            value={ch.name}
+                            onChange={(ev) => updateStudent(i, { name: ev.target.value })}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className={labelClass}>{f.level}</Label>
+                          <Input
+                            value={ch.level}
+                            onChange={(ev) => updateStudent(i, { level: ev.target.value })}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className={labelClass}>{f.birthDate}</Label>
+                          <Input
+                            value={ch.dob}
+                            onChange={(ev) => updateStudent(i, { dob: ev.target.value })}
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <Field id="e-father" label={f.fatherName}>
                 <Input id="e-father" name="father_name" defaultValue={client.father_name} className={inputClass} />
               </Field>

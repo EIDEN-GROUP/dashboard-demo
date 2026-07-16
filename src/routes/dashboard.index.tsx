@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getDashboardStats } from "@/lib/server-dashboard";
 import { listPayments } from "@/lib/server-payments";
 import { listClients } from "@/lib/server-clients";
-import { sendBroadcast } from "@/lib/server-whatsapp";
+import { sendBroadcast, sendClientMessage } from "@/lib/server-whatsapp";
 import {
   getInvoiceAnalytics,
   getOutstanding,
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/dashboard/")({
 // ──────────────────────────────────────────────────────────
 // Données démo   statistique générale (encaissé en k MAD + nb de paiements)
 // ──────────────────────────────────────────────────────────
-type Grain = "mensuel" | "annuel";
+type Grain = "mensuel" | "trimestriel" | "annuel";
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
 type SeriesKey = "encaisse" | "impaye" | "retard";
@@ -103,7 +103,14 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
-
+/** Jours de retard depuis l'échéance du mois courant (borne à 0, jour ≤ 28). */
+function daysOverdue(paymentDay?: number): number {
+  const now = new Date();
+  const day = Math.min(Math.max(Number(paymentDay) || 1, 1), 28);
+  const due = new Date(now.getFullYear(), now.getMonth(), day);
+  const diff = Math.floor((now.getTime() - due.getTime()) / 86_400_000);
+  return Math.max(0, diff);
+}
 
 function CrmDash() {
   const { t } = useDashboardI18n();
@@ -158,6 +165,30 @@ function CrmDash() {
     return c;
   }, [clients]);
 
+  // Familles en attente de paiement (impayé + en retard), triées du plus ancien
+  // retard au plus récent — c'est la file de relance affichée sous les paiements.
+  const pendingDues = useMemo(() => {
+    return (clients as any[])
+      .filter((c: any) => c.payment_status === "impaye" || c.payment_status === "retard")
+      .map((c: any) => {
+        const net = Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100));
+        return {
+          id: c.id as string,
+          name: (c.parent_name || c.child_name || "") as string,
+          level: (c.level || "") as string,
+          status: c.payment_status as "impaye" | "retard",
+          days: c.payment_status === "retard" ? daysOverdue(c.payment_day) : 0,
+          amount: (c.debt ?? 0) > 0 ? (c.debt as number) : net,
+        };
+      })
+      .sort((a, b) => b.days - a.days || b.amount - a.amount);
+  }, [clients]);
+
+  const pendingTotal = useMemo(
+    () => pendingDues.reduce((s, d) => s + d.amount, 0),
+    [pendingDues],
+  );
+
   // Last 4 payments
   const lastPayments = useMemo(() => {
     return dbPayments.slice(0, 4).map((p) => ({
@@ -189,6 +220,7 @@ function CrmDash() {
       icon: Users,
       to: "/dashboard/familles",
       search: {},
+      extra: null as string | null,
     },
     {
       k: "02",
@@ -200,6 +232,7 @@ function CrmDash() {
       icon: CreditCard,
       to: "/dashboard/familles",
       search: { statut: "paye" },
+      extra: null as string | null,
     },
     {
       k: "03",
@@ -211,6 +244,7 @@ function CrmDash() {
       icon: Clock,
       to: "/dashboard/familles",
       search: { statut: "retard" },
+      extra: null as string | null,
     },
     {
       k: "04",
@@ -222,6 +256,8 @@ function CrmDash() {
       icon: AlertCircle,
       to: "/dashboard/familles",
       search: { statut: "impaye" },
+      // Analyse express : montant total en attente de recouvrement.
+      extra: `${(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD en attente`,
     },
   ] as const;
 
@@ -231,6 +267,17 @@ function CrmDash() {
     mutationFn: () => sendBroadcast({ data: { content: "Rappel de paiement", filterOverdue: true } }),
     onSuccess: (res) => {
       toast.success(`Rappel envoyé à ${res.success} clients`);
+      queryClient.invalidateQueries({ queryKey: ["message-history"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Relance individuelle depuis la file "Paiements en attente".
+  const remindMutation = useMutation({
+    mutationFn: (clientId: string) =>
+      sendClientMessage({ data: { clientId, content: "Rappel de paiement" } }),
+    onSuccess: () => {
+      toast.success("Rappel envoyé");
       queryClient.invalidateQueries({ queryKey: ["message-history"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -306,6 +353,14 @@ function CrmDash() {
             </div>
             <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground">{card.value}</p>
             <p className="mt-1 text-xs text-muted-foreground">{card.sub}</p>
+            {card.extra ? (
+              <p
+                className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums"
+                style={{ backgroundColor: card.tint, color: card.accent }}
+              >
+                {card.extra}
+              </p>
+            ) : null}
             <span className="mt-3 block h-1 w-10 rounded-full" style={{ backgroundColor: card.accent }} />
           </Link>
         ))}
@@ -330,10 +385,11 @@ function CrmDash() {
                   </SelectTrigger>
                   <SelectContent className={softSelectContent}>
                     <SelectItem value="mensuel">Mensuel</SelectItem>
+                    <SelectItem value="trimestriel">3 mois</SelectItem>
                     <SelectItem value="annuel">Annuel</SelectItem>
                   </SelectContent>
                 </Select>
-                {/* In annual mode every year is already on screen, so the year picker is moot. */}
+                {/* Only monthly is scoped to a year; "3 mois" is the last 3 months from today and annual shows every year. */}
                 {grain === "mensuel" ? (
                   <Select value={year} onValueChange={setYear}>
                     <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[6.5rem] rounded-xl")} aria-label="Année">
@@ -420,7 +476,12 @@ function CrmDash() {
                 );
               })}
               <li className="ml-1 text-xs text-muted-foreground">
-                {grain === "mensuel" ? `Par mois · ${year}` : "Par année"} · MAD
+                {grain === "mensuel"
+                  ? `Par mois · ${year}`
+                  : grain === "trimestriel"
+                    ? "3 derniers mois"
+                    : "Par année"}{" "}
+                · MAD
               </li>
             </ul>
           </div>
@@ -494,6 +555,8 @@ function CrmDash() {
 
       {/* Activité récente + relance rapide + actions rapides */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)] lg:items-start">
+        {/* Colonne principale : activité récente + créances en attente à relancer */}
+        <div className="space-y-5">
         {/* Derniers paiements (Activité récente) */}
         <div className={cn(softCard, "p-5 sm:p-6")}>
           <div className="flex items-center justify-between gap-3">
@@ -528,6 +591,74 @@ function CrmDash() {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Paiements en attente — file de relance : uniquement impayés et retards. */}
+        <div className={cn(softCard, "overflow-hidden")}>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-5 py-4 sm:px-6">
+            <div>
+              <p className={eyebrowClass}>Créances</p>
+              <h2 className="mt-1 font-display text-xl text-foreground">Paiements en attente</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">Familles impayées ou en retard à relancer</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-[#F4E3C0] px-3 py-1 text-xs font-semibold text-[#8A5A16]">
+                {pendingDues.length} famille{pendingDues.length > 1 ? "s" : ""}
+              </span>
+              {pendingTotal > 0 ? (
+                <span className="rounded-full bg-[#28396C]/8 px-3 py-1 text-xs font-semibold tabular-nums text-[#28396C]">
+                  {pendingTotal.toLocaleString("fr-FR")} MAD
+                </span>
+              ) : null}
+            </div>
+          </div>
+          {pendingDues.length === 0 ? (
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+              Aucun paiement en attente. Tout est à jour.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[#28396C]/8">
+              {pendingDues.map((d) => (
+                <li key={d.id} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#28396C]/8 text-xs font-bold text-[#28396C]">
+                    {initials(d.name)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-foreground">{d.name}</p>
+                      {d.status === "retard" && d.days > 0 ? (
+                        <span
+                          className={cn(
+                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                            d.days > 14 ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]",
+                          )}
+                        >
+                          {d.days}j de retard
+                        </span>
+                      ) : (
+                        <span className="shrink-0 rounded-full bg-[#F4E3C0] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A16]">
+                          En attente
+                        </span>
+                      )}
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">{d.level || "Niveau non défini"}</p>
+                  </div>
+                  <p className="hidden shrink-0 text-right text-sm font-semibold tabular-nums text-foreground sm:block">
+                    {d.amount.toLocaleString("fr-FR")} MAD
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => remindMutation.mutate(d.id)}
+                    disabled={remindMutation.isPending}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15 disabled:opacity-50"
+                  >
+                    <Send className="h-3.5 w-3.5" /> Relancer
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         </div>
 
         {/* Colonne latérale   relance rapide + actions rapides */}

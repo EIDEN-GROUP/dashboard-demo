@@ -556,12 +556,10 @@ export function DashShell({
       <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_45%,#EEF6E0_100%)]" dir={shellDir}>
         <header className="z-30 shrink-0 border-b border-[#28396C]/10 bg-white/85 backdrop-blur-xl">
           {/* Mobile: compact top bar (tabs live in bottom nav) */}
-          <div className="flex items-start justify-between gap-3 px-4 py-3 lg:hidden">
+          <div className="flex items-center justify-between gap-3 px-4 lg:hidden">
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex min-w-0 items-center">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#28396C]">
-                  <GraduationCap className="h-[18px] w-[18px] text-[#B5E18B]" />
-                </span>
+                <img src="/public/edu-logo.png" alt={`${brand} logo`} className="h-15 w-15" />
               </Link>
               {switchTo && switchLabel ? (
                 <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-[#B5E18B]/15">
@@ -582,12 +580,10 @@ export function DashShell({
           </div>
 
           {/* Desktop: full header */}
-          <div className="hidden grid-cols-1 items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
+          <div className="hidden grid-cols-1 items-center gap-3 px-4 py-0 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-6 lg:py-2.5 lg:min-h-16">
             <div className="flex min-w-0 flex-col justify-center justify-self-start gap-1.5">
               <Link to={topNav[0]?.to ?? "/dashboard"} className="flex items-center">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#28396C] shadow-[0_10px_24px_-12px_rgba(40,57,108,0.6)]">
-                  <GraduationCap className="h-[24px] w-[24px] text-[#B5E18B]" />
-                </span>
+                <img src="/public/edu-logo.png" alt={`${brand} logo`} className="h-15 w-15" />
               </Link>
               {switchTo && switchLabel ? (
                 <Link to={switchTo} className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-dashed border-[#28396C]/25 px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-[#B5E18B]/15 w-fit" >

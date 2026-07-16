@@ -161,19 +161,12 @@ function Header() {
               : "border-transparent bg-white/60",
           )}
         >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link
             to="/"
             className="flex min-w-0 shrink items-center gap-2 sm:gap-3 transition-colors text-[#28396C] hover:text-[#28396C]/80"
           >
-            <motion.div
-              whileHover={{ rotate: -8, scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#28396C] shadow-[0_8px_20px_-8px_rgba(40,57,108,0.5)] sm:h-10 sm:w-10"
-            >
-              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-[#B5E18B]" />
-            </motion.div>
-            <span className="truncate text-base font-bold tracking-tight sm:text-lg">Gestio</span>
+                <img src="/public/edu-logo.png" alt="Edu logo" className="h-20 w-auto" />
           </Link>
           <nav className="hidden items-center gap-1 sm:flex sm:gap-2 md:gap-3">
             {[

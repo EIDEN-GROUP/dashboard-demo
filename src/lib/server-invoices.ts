@@ -59,7 +59,7 @@ export const listInvoices = createServerFn({ method: "GET" }).handler(async () =
  * due date (+ grace) has passed.
  */
 export const getInvoiceAnalytics = createServerFn({ method: "GET" })
-  .inputValidator((input: { grain: "mensuel" | "annuel"; year?: string }) => input)
+  .inputValidator((input: { grain: "mensuel" | "trimestriel" | "annuel"; year?: string }) => input)
   .handler(async ({ data: input }): Promise<InvoicePoint[]> => {
     const { data, error } = await supabaseAdmin
       .from("invoices")
@@ -117,6 +117,24 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
         add(byYear.get(y)!, r);
       }
       return [...byYear.values()].sort((a, b) => a.bucket.localeCompare(b.bucket)).map(round);
+    }
+
+    if (input.grain === "trimestriel") {
+      // "3 mois" = the last three calendar months, most recent last. This is
+      // relative to today and can span a year boundary (e.g. Nov, Déc, Jan).
+      const now = new Date();
+      const keyFor = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const slots = [2, 1, 0].map((back) => {
+        const d = new Date(now.getFullYear(), now.getMonth() - back, 1);
+        return { key: keyFor(d), point: empty(MONTH_LABELS[d.getMonth()]) };
+      });
+      const byKey = new Map(slots.map((s) => [s.key, s.point]));
+      for (const r of rows) {
+        const key = (r.period ?? "").slice(0, 7);
+        const point = byKey.get(key);
+        if (point) add(point, r);
+      }
+      return slots.map((s) => round(s.point));
     }
 
     const year = input.year ?? String(new Date().getFullYear());

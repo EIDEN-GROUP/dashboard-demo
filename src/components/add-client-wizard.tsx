@@ -70,12 +70,6 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
-function remiseAuto(fratrie: number) {
-  if (fratrie >= 4) return 15;
-  if (fratrie >= 3) return 10;
-  return 0;
-}
-
 export function emptyChild(): ChildFormData {
   return { name: "", dob: "", cycle: "", level: "", services: [], frais: [] };
 }
@@ -114,6 +108,10 @@ export function AddClientDialog({
   const services: Array<{ name: string; price: number; enabled: boolean }> = settings?.services ?? [];
   const frais: Array<{ name: string; price: number; enabled: boolean }> = settings?.frais ?? [];
   const [busy, setBusy] = useState(false);
+  // Applique (ou non) la réduction fratrie pour cette famille. Remplace l'ancien
+  // interrupteur global des paramètres : la réduction se décide désormais par client,
+  // au récapitulatif. Désactivée par défaut — c'est un choix explicite.
+  const [reductionEnabled, setReductionEnabled] = useState(false);
 
   const allCycles = useMemo(
     () => [...new Set((levels ?? []).map((l) => l.cycle).filter(Boolean))].sort(),
@@ -133,7 +131,11 @@ export function AddClientDialog({
   const totalSteps = 6;
   const children = wizard.children;
   const fratrie = children.length;
-  const remise = remiseAuto(fratrie);
+  // Réduction fratrie : pourcentage configuré dans les paramètres. Elle s'applique
+  // dès que l'utilisateur l'active au récapitulatif, quel que soit le nombre
+  // d'élèves (un seul élève suffit).
+  const discountPct = Number(settings?.sibling_discount?.value ?? 10);
+  const remise = reductionEnabled ? discountPct : 0;
 
   const totalFromLevels = useMemo(() => {
     if (!levels) return 0;
@@ -207,6 +209,7 @@ export function AddClientDialog({
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success("Famille créée");
       setWizard(emptyWizard());
+      setReductionEnabled(false);
       onOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erreur");
@@ -528,11 +531,28 @@ export function AddClientDialog({
             </p>
             {remise > 0 ? (
               <p className="text-xs text-muted-foreground">
-                Réduction fratrie ({fratrie} enfants) : -{remise} %
+                Réduction fratrie ({fratrie} élève{fratrie > 1 ? "s" : ""}) : -{remise} %
               </p>
             ) : null}
           </div>
         </div>
+      </div>
+
+      <div className={cn(softCard, "p-4")}>
+        <label className="flex items-center gap-2.5 text-sm font-medium text-foreground">
+          <input
+            type="checkbox"
+            checked={reductionEnabled}
+            onChange={(e) => setReductionEnabled(e.target.checked)}
+            className="h-4 w-4 rounded border-[#28396C]/25 accent-[#6BA53A]"
+          />
+          Activer la réduction fratrie
+        </label>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {reductionEnabled
+            ? `Réduction appliquée : -${discountPct} % (applicable même pour un seul élève).`
+            : "La réduction fratrie ne sera pas appliquée."}
+        </p>
       </div>
     </div>,
   ];
