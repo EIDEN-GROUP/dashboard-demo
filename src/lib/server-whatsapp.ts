@@ -74,6 +74,76 @@ async function sendViaMeta(cleanPhone: string, content: string): Promise<SendRes
   }
 }
 
+async function sendDocumentViaN8n(cleanPhone: string, pdfUrl: string, filename: string, caption: string): Promise<SendResult> {
+  try {
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(N8N_WEBHOOK_SECRET ? { "X-Webhook-Secret": N8N_WEBHOOK_SECRET } : {}),
+      },
+      body: JSON.stringify({ phone: cleanPhone, content: caption, document: { url: pdfUrl, filename } }),
+    });
+
+    const body = await res.json().catch(() => ({}) as Record<string, unknown>);
+    if (!res.ok || body.ok === false) {
+      const err = (body.error as string) ?? `n8n HTTP ${res.status}`;
+      return { ok: false, error: err };
+    }
+    const waId = (body.waId ?? body.messageId ?? body.id) as string | undefined;
+    return { ok: true, waId };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Erreur inconnue" };
+  }
+}
+
+async function sendDocumentViaMeta(cleanPhone: string, pdfUrl: string, filename: string, caption: string): Promise<SendResult> {
+  if (!WA_PHONE_ID || !WA_TOKEN) {
+    return { ok: false, error: "WhatsApp API non configurée" };
+  }
+
+  try {
+    const res = await fetch(WA_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${WA_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: cleanPhone,
+        type: "document",
+        document: {
+          link: pdfUrl,
+          filename,
+          caption,
+        },
+      }),
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      return { ok: false, error: body.error?.message ?? `Erreur ${res.status}` };
+    }
+    return { ok: true, waId: body.messages?.[0]?.id };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Erreur inconnue" };
+  }
+}
+
+export async function sendWhatsAppDocument(phone: string, pdfUrl: string, filename: string, caption: string): Promise<SendResult> {
+  const cleanPhone = phone.replace(/\D/g, "");
+  if (cleanPhone.length < 8) {
+    return { ok: false, error: "Numéro de téléphone invalide" };
+  }
+
+  if (N8N_WEBHOOK_URL) {
+    return sendDocumentViaN8n(cleanPhone, pdfUrl, filename, caption);
+  }
+  return sendDocumentViaMeta(cleanPhone, pdfUrl, filename, caption);
+}
+
 export async function sendWhatsAppMessage(phone: string, content: string): Promise<SendResult> {
   const cleanPhone = phone.replace(/\D/g, "");
   if (cleanPhone.length < 8) {
@@ -321,4 +391,95 @@ export const sendPaymentReceipt = createServerFn({ method: "POST" })
       });
       return { ok: false, error: err instanceof Error ? err.message : "Unknown error" };
     }
+  });
+
+/** Send payment confirmation via both WhatsApp (message + PDF) and email (same PDF). */
+export const sendPaymentConfirmation = createServerFn({ method: "POST" })
+  .inputValidator(
+    (input: {
+      to: string;
+      parentName: string;
+      receipt: string;
+      amount: number;
+      date: string;
+      mode: string;
+      period: string;
+      pdfUrl: string;
+      clientPhone?: string;
+      whatsappOptin?: boolean;
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    const results: { email: { ok: boolean; error?: string }; whatsapp: { ok: boolean; error?: string } | null } = {
+      email: { ok: false },
+      whatsapp: null,
+    };
+
+    const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
+    const SUPABASE_ANON = process.env.SUPABASE_ANON ?? "";
+    const mail = renderPaymentReceiptEmail(data);
+
+    // Send email
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+        },
+        body: JSON.stringify({
+          to: data.to,
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Edge function: ${res.status} ${text}`);
+      }
+
+      await supabaseAdmin.from("email_logs").insert({
+        recipient: data.to,
+        subject: mail.subject,
+        type: "receipt",
+        status: "sent",
+      });
+
+      results.email = { ok: true };
+    } catch (err) {
+      await supabaseAdmin.from("email_logs").insert({
+        recipient: data.to,
+        subject: mail.subject,
+        type: "receipt",
+        status: "failed",
+        error_msg: err instanceof Error ? err.message : "Unknown error",
+      });
+      results.email = { ok: false, error: err instanceof Error ? err.message : "Unknown error" };
+    }
+
+    // Send WhatsApp with PDF if client has opted in
+    if (data.clientPhone && data.whatsappOptin) {
+      const caption = `Centre de messages\n\nReçu de paiement ${data.receipt} — ${data.amount.toLocaleString("fr-FR")} MAD — Merci pour votre règlement.`;
+      const waResult = await sendWhatsAppDocument(
+        data.clientPhone,
+        data.pdfUrl,
+        `recu-${data.receipt}.pdf`,
+        caption,
+      );
+
+      await supabaseAdmin.from("whatsapp_messages").insert({
+        client_id: null,
+        phone: data.clientPhone,
+        direction: "sent",
+        content: caption,
+        status: waResult.ok ? "sent" : "failed",
+        wa_message_id: waResult.waId ?? "",
+      });
+
+      results.whatsapp = waResult;
+    }
+
+    return results;
   });

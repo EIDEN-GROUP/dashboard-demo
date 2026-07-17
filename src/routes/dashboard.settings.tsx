@@ -84,6 +84,7 @@ function SettingsPage() {
         <FraisSection />
         <SiblingDiscountSection />
         <PaymentDueSection />
+        <SchoolInfoSection />
         <DocumentsSection />
         <PdfTemplateEditorSection />
       </div>
@@ -895,6 +896,89 @@ function PaymentDueSection() {
         <div className="flex justify-end border-t border-[#28396C]/10 pt-4">
           <button
             onClick={() => save.mutate({ day: Number(day), grace_days: Number(graceDays) })}
+            disabled={save.isPending}
+            className={cn(primaryPill, "w-full justify-center disabled:opacity-50 sm:w-auto")}
+          >
+            <Save className="h-4 w-4" /> {save.isPending ? "Enregistrement..." : "Enregistrer"}
+          </button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function SchoolInfoSection() {
+  const queryClient = useQueryClient();
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    if (settings?.school_info) {
+      setName(settings.school_info.name ?? "");
+      setAddress(settings.school_info.address ?? "");
+      setPhone(settings.school_info.phone ?? "");
+    } else {
+      setName(settings?.school_name ?? "");
+      setAddress(settings?.school_address ?? "");
+      setPhone(settings?.school_phone ?? "");
+    }
+  }, [settings?.school_info, settings?.school_name, settings?.school_address, settings?.school_phone]);
+
+  const save = useMutation({
+    mutationFn: (val: any) => updateSetting({ data: { key: "school_info", value: val } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toast.success("Informations de l'école mises à jour");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
+
+  if (!settings) return null;
+
+  return (
+    <Section
+      icon={GraduationCap}
+      title="Informations de l'école"
+      description="Ces informations apparaîtront sur les reçus PDF et dans les notifications WhatsApp"
+    >
+      <div className="space-y-5 px-4 py-5 sm:px-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="school-name" className={labelClass}>Nom de l'école</label>
+            <input
+              id="school-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={cn(fieldClass, "w-full")}
+              placeholder="Ex: Groupe Scolaire..."
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="school-phone" className={labelClass}>Téléphone</label>
+            <input
+              id="school-phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={cn(fieldClass, "w-full")}
+              placeholder="Ex: 05 28 XX XX XX"
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor="school-address" className={labelClass}>Adresse</label>
+          <input
+            id="school-address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className={cn(fieldClass, "w-full")}
+            placeholder="Ex: Agadir Bay, Technopole 1 Bloc B, Agadir"
+          />
+        </div>
+        <div className="flex justify-end border-t border-[#28396C]/10 pt-4">
+          <button
+            onClick={() => save.mutate({ name, address, phone })}
             disabled={save.isPending}
             className={cn(primaryPill, "w-full justify-center disabled:opacity-50 sm:w-auto")}
           >

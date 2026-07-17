@@ -79,7 +79,7 @@ import { usePagination, TablePagination } from "@/components/table-pagination";
 import { AddClientDialog, emptyChild, emptyWizard, type WizardData, type ChildFormData } from "@/components/add-client-wizard";
 import { createPayment, updatePaymentInvoice } from "@/lib/server-payments";
 import { generateReceiptPdf } from "@/lib/server-receipt";
-import { sendClientMessage, sendBroadcast, sendPaymentReceipt } from "@/lib/server-whatsapp";
+import { sendClientMessage, sendBroadcast, sendPaymentConfirmation } from "@/lib/server-whatsapp";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/familles")({
@@ -1265,17 +1265,20 @@ function PaymentDialog({
           period: period || undefined,
         },
       });
-      if (clientEmail) {
-        const clientData = await getClient({ data: clientId });
+      const clientData = clientEmail ? await getClient({ data: clientId }) : null;
+      const settings = clientEmail ? await getSettings({}) : null;
+      const schoolInfo = settings?.school_info ?? {};
+      let pdfUrl = "";
+      if (clientData) {
         const children = (clientData as any)?.child_names ?? [];
         const pdfResult = await generateReceiptPdf({
           data: {
             clientId,
             paymentId: payment.id,
             data: {
-              school_name: "",
-              school_address: "",
-              school_phone: "",
+              school_name: schoolInfo.name ?? "",
+              school_address: schoolInfo.address ?? "",
+              school_phone: schoolInfo.phone ?? "",
               receipt_number: payment.receipt,
               date: String(payment.date),
               parent_name: clientLabel,
@@ -1293,7 +1296,10 @@ function PaymentDialog({
             },
           },
         });
-        await sendPaymentReceipt({
+        pdfUrl = pdfResult.url;
+      }
+      if (clientEmail && pdfUrl) {
+        await sendPaymentConfirmation({
           data: {
             to: clientEmail,
             parentName: clientLabel,
@@ -1302,7 +1308,9 @@ function PaymentDialog({
             date: String(payment.date),
             mode: String(payment.mode),
             period: String(payment.period),
-            pdfUrl: pdfResult.url,
+            pdfUrl,
+            clientPhone: String((clientData as any)?.phone ?? ""),
+            whatsappOptin: Boolean((clientData as any)?.whatsapp_optin),
           },
         });
       }

@@ -49,6 +49,68 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-document",
+              "leftValue": "={{ $json.body.document }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [460, -100],
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Has document?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://eiden-waha:3000/api/sendFile",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "={{ $env.WAHA_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ session: 'n8ndemo', chatId: ($json.body.phone.startsWith('0') ? '212' + $json.body.phone.slice(1) : $json.body.phone) + '@c.us', file: $json.body.document.url, filename: $json.body.document.filename, caption: $json.body.content }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, -260],
+      "id": "a1000000-0000-4000-8000-000000000008",
+      "name": "WAHA sendFile",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "http://eiden-waha:3000/api/sendText",
         "sendHeaders": true,
@@ -73,7 +135,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, -100],
+      "position": [660, -100],
       "id": "a1000000-0000-4000-8000-000000000003",
       "name": "WAHA sendText",
       "onError": "continueErrorOutput"
@@ -86,7 +148,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, -180],
+      "position": [900, -260],
       "id": "a1000000-0000-4000-8000-000000000004",
       "name": "Respond OK"
     },
@@ -100,7 +162,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [700, -20],
+      "position": [900, 0],
       "id": "a1000000-0000-4000-8000-000000000005",
       "name": "Respond WAHA error"
     },
@@ -125,8 +187,20 @@
     },
     "Check secret": {
       "main": [
-        [{ "node": "WAHA sendText", "type": "main", "index": 0 }],
+        [{ "node": "Has document?", "type": "main", "index": 0 }],
         [{ "node": "Respond unauthorized", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has document?": {
+      "main": [
+        [{ "node": "WAHA sendFile", "type": "main", "index": 0 }],
+        [{ "node": "WAHA sendText", "type": "main", "index": 0 }]
+      ]
+    },
+    "WAHA sendFile": {
+      "main": [
+        [{ "node": "Respond OK", "type": "main", "index": 0 }],
+        [{ "node": "Respond WAHA error", "type": "main", "index": 0 }]
       ]
     },
     "WAHA sendText": {
