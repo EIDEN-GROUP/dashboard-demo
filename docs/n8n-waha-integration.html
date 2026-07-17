@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gestio CRM — WhatsApp via n8n + WAHA: what was done and why</title>
+<title>Gestio CRM   WhatsApp via n8n + WAHA: what was done and why</title>
 <style>
   :root {
     --bg: #fbfbfa;
@@ -199,17 +199,17 @@
   <span class="tag">In one paragraph</span>
   <p>
     Gestio CRM sends WhatsApp messages to parents. Until now those went through
-    <strong>Meta</strong>, the company that owns WhatsApp — reliable, but it means depending on
+    <strong>Meta</strong>, the company that owns WhatsApp   reliable, but it means depending on
     them and paying them. Someone had started building a replacement that sends messages
     through <strong>our own server</strong> instead, but left it half-finished: the app code was
     written but switched off, and the server had no way to receive requests from the internet.
     We finished the server half, connected the two, and proved a real message travels the whole
-    chain. It is switched on for development only — turning it on for real parents needs a
+    chain. It is switched on for development only   turning it on for real parents needs a
     dedicated phone number first, for reasons explained at the bottom.
   </p>
 </div>
 
-<h2>Part 1 — The words, explained</h2>
+<h2>Part 1   The words, explained</h2>
 
 <p>
   Most of the confusion in this project comes from vocabulary rather than difficulty.
@@ -221,7 +221,7 @@
   <dt>Gestio CRM <span class="kind">our product</span></dt>
   <dd>
     The app in this repository. A <em>CRM</em> ("customer relationship management") is
-    software for tracking the people a business deals with — here, the families at a
+    software for tracking the people a business deals with   here, the families at a
     specialised centre: their files, payments and appointments. Note the repository is
     named <code>dashboard-demo</code>, which is <strong>not</strong> the product name. That
     mismatch caused real confusion during this work.
@@ -236,22 +236,22 @@
 
   <dt>WAHA <span class="kind">the new way</span></dt>
   <dd>
-    "WhatsApp HTTP API" — software we run on our own server that talks to WhatsApp by
+    "WhatsApp HTTP API"   software we run on our own server that talks to WhatsApp by
     pretending to be <em>WhatsApp Web</em> (the version you use in a browser by scanning a
     QR code with your phone). It is <strong>unofficial</strong>: Meta does not bless it. That
-    is the entire trade — independence from Meta, in exchange for losing Meta's protection.
+    is the entire trade   independence from Meta, in exchange for losing Meta's protection.
   </dd>
 
   <dt>n8n <span class="kind">the glue</span></dt>
   <dd>
-    An automation tool. You draw a flowchart of boxes — "when a request arrives, check
-    this, then call that, then reply with this" — and it runs. It sits between our app and
+    An automation tool. You draw a flowchart of boxes   "when a request arrives, check
+    this, then call that, then reply with this"   and it runs. It sits between our app and
     WAHA, so the logic can change without redeploying the app.
   </dd>
 
   <dt>VPS <span class="kind">the machine</span></dt>
   <dd>
-    "Virtual private server" — a rented computer in a data centre that is always on.
+    "Virtual private server"   a rented computer in a data centre that is always on.
     Ours lives at the address <code>76.13.58.6</code> and runs Ubuntu Linux.
   </dd>
 
@@ -260,7 +260,7 @@
     A container is a program packed with everything it needs, kept in its own sealed box so
     it cannot interfere with its neighbours. Our server runs seven of them: n8n, WAHA, a
     database, a web server, and others. <strong>This causes a specific illusion that fooled
-    us — see the correction at the end.</strong>
+    us   see the correction at the end.</strong>
   </dd>
 
   <dt>nginx / reverse proxy <span class="kind">the doorman</span></dt>
@@ -280,10 +280,10 @@
   <dt>TLS certificate / Let's Encrypt / certbot <span class="kind">the padlock</span></dt>
   <dd>
     A certificate is what makes an address work over <code>https</code> rather than
-    <code>http</code> — the padlock in the browser. It proves the server really is who it
+    <code>http</code>   the padlock in the browser. It proves the server really is who it
     claims and encrypts the traffic. <em>Let's Encrypt</em> issues them free;
     <em>certbot</em> is the tool that asks for them. They expire every 90 days and must be
-    renewed — which matters a great deal here.
+    renewed   which matters a great deal here.
   </dd>
 
   <dt>Webhook <span class="kind">the doorbell</span></dt>
@@ -315,7 +315,7 @@
 
   <dt>Vercel <span class="kind">where our app lives</span></dt>
   <dd>
-    The hosting service running Gestio CRM. Importantly, it is <strong>not</strong> our VPS —
+    The hosting service running Gestio CRM. Importantly, it is <strong>not</strong> our VPS  
     they are different machines. This is precisely why the server needed a public address and
     a padlock: our app has to reach it across the open internet.
   </dd>
@@ -329,14 +329,14 @@
 
   <dt>SSH / RDP <span class="kind">remote access</span></dt>
   <dd>
-    Two ways to use a distant computer. <strong>SSH</strong> gives a text terminal — this is
+    Two ways to use a distant computer. <strong>SSH</strong> gives a text terminal   this is
     how the work was done. <strong>RDP</strong> gives a full graphical desktop, which is what
     you were using. RDP compresses the picture, and that turned out to matter.
   </dd>
 
   <dt>Swap / OOM <span class="kind">memory safety</span></dt>
   <dd>
-    <em>Swap</em> is spare disk space a machine borrows when it runs out of memory — a shock
+    <em>Swap</em> is spare disk space a machine borrows when it runs out of memory   a shock
     absorber. Our server has <strong>none</strong>. Without it, running out of memory triggers
     the <em>OOM killer</em> ("out of memory"), which kills a program at random to survive.
     That is why memory was watched closely here.
@@ -344,9 +344,9 @@
 
 </dl>
 
-<h2>Part 2 — What the chain looks like</h2>
+<h2>Part 2   What the chain looks like</h2>
 
-<p><strong>Before</strong> — everything goes through Meta:</p>
+<p><strong>Before</strong>   everything goes through Meta:</p>
 <div class="chain">
   <span class="box">Gestio CRM<small>on Vercel</small></span>
   <span class="arrow">→</span>
@@ -355,7 +355,7 @@
   <span class="box">Parent's phone</span>
 </div>
 
-<p><strong>After</strong> — what we built, currently used by local development only:</p>
+<p><strong>After</strong>   what we built, currently used by local development only:</p>
 <div class="chain">
   <span class="box">Gestio CRM<small>on Vercel</small></span>
   <span class="arrow">→</span>
@@ -371,11 +371,11 @@
 <p>
   The app decides between the two by a single test: is <code>N8N_WEBHOOK_URL</code> set?
   If yes, the new path. If no, Meta. Nothing else changes. That design is why the work
-  could sit finished-but-invisible for weeks — the code was present and correct, but the
+  could sit finished-but-invisible for weeks   the code was present and correct, but the
   switch was never flipped, so it behaved exactly as if nothing had been done.
 </p>
 
-<h2>Part 3 — The process, and the reason for each step</h2>
+<h2>Part 3   The process, and the reason for each step</h2>
 
 <ol class="steps">
 
@@ -391,7 +391,7 @@
   </li>
 
   <li class="done">
-    <h3>DNS — created the name <code>n8n.eiden-group.com</code></h3>
+    <h3>DNS   created the name <code>n8n.eiden-group.com</code></h3>
     <p>
       Added an A record in Hostinger pointing the name at <code>76.13.58.6</code>, then
       confirmed it resolved from three independent places.
@@ -405,17 +405,17 @@
     <h3>Linked a WhatsApp account to WAHA</h3>
     <p>
       WAHA had zero accounts connected. The QR code could not be scanned, so a
-      <strong>pairing code</strong> was used instead — an eight-character code typed into the
+      <strong>pairing code</strong> was used instead   an eight-character code typed into the
       phone, no camera involved.
     </p>
     <p class="why"><b>Why the QR failed:</b> the browser was running on the server's desktop,
       viewed through RDP, which compresses the image. QR codes are fine detail; compression
-      destroys them. WhatsApp also expires each QR in 20–60 seconds and gives up after six —
+      destroys them. WhatsApp also expires each QR in 20–60 seconds and gives up after six  
       which is exactly why the session kept dying. The pairing code sidesteps the camera
       entirely and worked first time.</p>
     <p class="why"><b>Why the name matters:</b> the session was created through the API rather
       than the dashboard, to force the name <code>n8ndemo</code>. Left blank, WAHA invents a
-      random name like <code>session_01kxn6tr0x…</code>, which then has to be hardcoded — and
+      random name like <code>session_01kxn6tr0x…</code>, which then has to be hardcoded   and
       changes every time the session is recreated, silently breaking everything.</p>
   </li>
 
@@ -427,7 +427,7 @@
       restored headroom to 1.1 GB.
     </p>
     <p class="why"><b>Why it mattered:</b> with no swap, the next spike would have triggered
-      the OOM killer — and it does not choose politely. It could have killed the database
+      the OOM killer   and it does not choose politely. It could have killed the database
       belonging to the <em>other</em> project on that machine. This was a real risk, not
       housekeeping.</p>
   </li>
@@ -438,7 +438,7 @@
       A standalone certificate for <code>n8n.eiden-group.com</code>, tested against a practice
       server first, leaving the existing certificate for the other project untouched.
     </p>
-    <p class="why"><b>Why standalone:</b> the safest of the options — it cannot affect the
+    <p class="why"><b>Why standalone:</b> the safest of the options   it cannot affect the
       other project's padlock. The alternative would have fixed more but risked more.</p>
     <p class="why"><b>Why the practice run:</b> Let's Encrypt limits how often you may ask.
       A dry run proves the real attempt will succeed while writing nothing and risking nothing.</p>
@@ -448,7 +448,7 @@
     <h3>Told nginx about the new address</h3>
     <p>
       Added a block routing <code>n8n.eiden-group.com</code> to the n8n container, tested the
-      configuration, <em>then</em> applied it — and confirmed the other project's addresses
+      configuration, <em>then</em> applied it   and confirmed the other project's addresses
       still worked afterwards.
     </p>
     <p class="why"><b>Why the certificate came first:</b> nginx refuses to start if told to
@@ -472,12 +472,12 @@
 
   <li class="done">
     <h3>Tested it, including the ways it should fail</h3>
-    <p>Called from outside, across the public internet — the same path Vercel will use:</p>
+    <p>Called from outside, across the public internet   the same path Vercel will use:</p>
     <pre><code>no secret       → 401  {"ok":false,"error":"unauthorized"}
 wrong secret    → 401  {"ok":false,"error":"unauthorized"}
 correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message arrived</code></pre>
     <p class="why"><b>Why test the failures:</b> proving it sends is easy. Proving it
-      <em>refuses</em> strangers is what shows the door is locked — and that test caught a
+      <em>refuses</em> strangers is what shows the door is locked   and that test caught a
       genuine bug where nothing was being rejected at all.</p>
   </li>
 
@@ -500,19 +500,19 @@ correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message 
 
 </ol>
 
-<h2>Part 4 — Two bugs that would never have announced themselves</h2>
+<h2>Part 4   Two bugs that would never have announced themselves</h2>
 
 <p>
   Both of these produce <em>no error</em>. Everything looks healthy while quietly doing the
-  wrong thing — the most expensive kind of bug, and the reason the testing above was worth
+  wrong thing   the most expensive kind of bug, and the reason the testing above was worth
   the time.
 </p>
 
 <div class="note bad">
-  <span class="tag">Bug 1 — the message ID hides in a different place</span>
+  <span class="tag">Bug 1   the message ID hides in a different place</span>
   <p>
     WAHA reports the sent message's id as <code>key.id</code>. Our app looks for
-    <code>waId</code>, <code>messageId</code> or <code>id</code> — none of which exist in
+    <code>waId</code>, <code>messageId</code> or <code>id</code>   none of which exist in
     WAHA's reply. Passing WAHA's answer straight through would record every message as
     <strong>sent successfully with an empty id</strong>, losing the ability to trace any
     message ever sent. The workflow now copies <code>key.id</code> across explicitly.
@@ -520,18 +520,18 @@ correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message 
 </div>
 
 <div class="note bad">
-  <span class="tag">Bug 2 — a blank reply counts as success</span>
+  <span class="tag">Bug 2   a blank reply counts as success</span>
   <p>
     n8n refuses to read passwords from its environment unless explicitly permitted. Without
     that permission it failed and returned an <strong>empty "200 OK"</strong>. Our app treats a
-    blank reply as success, because it only fails when told <code>ok: false</code> — and blank
+    blank reply as success, because it only fails when told <code>ok: false</code>   and blank
     says nothing at all. Every message would have reported success while none were sent. Fixed
     by permitting it (<code>N8N_BLOCK_ENV_ACCESS_IN_NODE=false</code>). If sending ever goes
     quiet, check this first.
   </p>
 </div>
 
-<h2>Part 5 — A correction worth recording</h2>
+<h2>Part 5   A correction worth recording</h2>
 
 <div class="note warn">
   <span class="tag">The runbook was wrong, and so was I</span>
@@ -556,24 +556,24 @@ correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message 
   </p>
 </div>
 
-<h2>Part 6 — Before this touches real parents</h2>
+<h2>Part 6   Before this touches real parents</h2>
 
 <div class="note warn">
   <span class="tag">Read before switching production on</span>
   <p>
     WAHA is <strong>unofficial</strong>. WhatsApp bans numbers for behaviour that looks
-    automated — and bans are driven mostly by <strong>recipients reporting or blocking you</strong>,
+    automated   and bans are driven mostly by <strong>recipients reporting or blocking you</strong>,
     plus machine-like patterns: bursts, identical text to many people, messaging strangers.
   </p>
   <p>
     The risk is a gradient, not a switch. Occasional one-to-one messages to parents who know
-    the centre and expect them are low risk. <code>sendBroadcast</code> — the same text to the
-    whole client list at once — is the pattern that gets numbers banned.
+    the centre and expect them are low risk. <code>sendBroadcast</code>   the same text to the
+    whole client list at once   is the pattern that gets numbers banned.
   </p>
   <p>
     <strong>Use a dedicated SIM you can afford to lose.</strong> Losing a personal WhatsApp
     account is not the same as losing this integration. Note also that a number cannot be on
-    Meta's official API and WAHA at the same time — so parents will see a different sender than
+    Meta's official API and WAHA at the same time   so parents will see a different sender than
     they do today. That is a product decision, not just a technical one.
   </p>
   <p>
@@ -584,7 +584,7 @@ correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message 
   </p>
 </div>
 
-<h2>Part 7 — The October deadline</h2>
+<h2>Part 7   The October deadline</h2>
 
 <div class="note warn">
   <span class="tag">Nothing renews these automatically</span>
@@ -620,26 +620,26 @@ correct secret  → 200  {"ok":true,"waId":"3EB00F2590F79A90D4017B"}  + message 
   certbot/certbot renew --cert-name n8n.eiden-group.com \
   --webroot -w /var/www/certbot
 
-docker exec eiden-nginx nginx -s reload   # required — renewing alone is not enough</code></pre>
+docker exec eiden-nginx nginx -s reload   # required   renewing alone is not enough</code></pre>
   <p>
     Automating it later is a two-line scheduled job and needs no special privileges. The full
     detail is in <code>docs/n8n-waha-integration.md</code>.
   </p>
 </div>
 
-<h2>Part 8 — Where everything lives</h2>
+<h2>Part 8   Where everything lives</h2>
 
 <div class="scroll">
   <table>
     <thead><tr><th>Thing</th><th>Where</th></tr></thead>
     <tbody>
-      <tr><td>The switch that turns this on</td><td><code>N8N_WEBHOOK_URL</code> — local <code>.env</code> now; Vercel later</td></tr>
+      <tr><td>The switch that turns this on</td><td><code>N8N_WEBHOOK_URL</code>   local <code>.env</code> now; Vercel later</td></tr>
       <tr><td>App-side code</td><td><code>src/lib/server-whatsapp.ts</code></td></tr>
       <tr><td>The n8n workflow, as a file</td><td><code>docs/n8n-whatsapp-send.workflow.json</code></td></tr>
       <tr><td>Full technical runbook</td><td><code>docs/n8n-waha-integration.md</code></td></tr>
       <tr><td>Server stack definition</td><td><code>~/n8n-stack/docker-compose.yml</code> on the VPS</td></tr>
-      <tr><td>Passwords (server)</td><td><code>~/n8n-stack/.env</code> on the VPS — never in the repository</td></tr>
-      <tr><td>nginx front door</td><td><code>~/crm-edien/docker/nginx/sites/eiden.conf</code> — shared with the other project</td></tr>
+      <tr><td>Passwords (server)</td><td><code>~/n8n-stack/.env</code> on the VPS   never in the repository</td></tr>
+      <tr><td>nginx front door</td><td><code>~/crm-edien/docker/nginx/sites/eiden.conf</code>   shared with the other project</td></tr>
       <tr><td>WAHA dashboard</td><td><code>http://localhost:3000/dashboard</code>, from the server's desktop only</td></tr>
       <tr><td>n8n editor</td><td><code>https://n8n.eiden-group.com</code></td></tr>
     </tbody>
@@ -651,7 +651,7 @@ docker exec eiden-nginx nginx -s reload   # required — renewing alone is not e
   <p>
     DNS, certificate, front door, workflow and linked phone all working, and proven with a real
     message across the public internet. Live for development only. Production continues on Meta
-    until a dedicated SIM exists — which is the correct and deliberate position, not an
+    until a dedicated SIM exists   which is the correct and deliberate position, not an
     unfinished one.
   </p>
 </div>
@@ -659,7 +659,7 @@ docker exec eiden-nginx nginx -s reload   # required — renewing alone is not e
 <footer>
   Written 16 July 2026 · Gestio CRM (<code>dashboard-demo</code>) · Companion to
   <code>docs/n8n-waha-integration.md</code>, which carries the technical detail.
-  Every claim here was verified against the live server rather than taken from prior notes —
+  Every claim here was verified against the live server rather than taken from prior notes  
   which is how the two silent bugs and one incorrect instruction were caught.
 </footer>
 

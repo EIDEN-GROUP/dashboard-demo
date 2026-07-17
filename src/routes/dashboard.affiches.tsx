@@ -948,7 +948,7 @@ function AffichesPage() {
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{a.subtitle}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <input
               ref={fileRef}
               type="file"
@@ -963,7 +963,7 @@ function AffichesPage() {
               {importCsv.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
               Importer
             </button>
-            <button type="button" onClick={() => setAddOpen(true)} className={cn(primaryPill, "shrink-0")}>
+            <button type="button" onClick={() => setAddOpen(true)} className={cn(primaryPill, "w-full justify-center sm:w-auto sm:shrink-0")}>
               <Plus className="h-4 w-4" />
               Ajouter un employé
             </button>
@@ -995,7 +995,71 @@ function AffichesPage() {
         <div className="border-b border-[#28396C]/10 px-5 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{a.employeeList}</p>
         </div>
-        <div className="overflow-x-auto scroll-touch">
+        {/* Mobile : liste de cartes   le tableau large passe en scroll horizontal pénible sur téléphone. */}
+        <ul className="divide-y divide-border sm:hidden">
+          {pager.pageItems.map((e) => {
+            const st = congeState(e);
+            const tone = st === "aucun" ? null : CONGE_TONE[st];
+            return (
+              <li key={e.id} className="px-4 py-3.5">
+                <button
+                  type="button"
+                  onClick={() => { setDetailId(e.id); setEditId(null); }}
+                  className="block w-full text-left"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="min-w-0 truncate text-sm font-semibold text-foreground">{e.nomComplet}</p>
+                    <Badge variant={e.statut === "actif" ? "dark" : "neutral"}>
+                      {e.statut === "actif" ? t.status.actif : t.status.inactif}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {[e.poste, e.departement].filter(Boolean).join(" · ") || " "}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+                    {formatSalaire(e.salaire)} <span className="text-xs font-normal text-muted-foreground">{t.common.mad}</span>
+                  </p>
+                </button>
+                <div className="mt-2 flex items-center gap-1.5">
+                  {tone ? (
+                    <button
+                      type="button"
+                      onClick={() => setCongeId(e.id)}
+                      aria-label={`Congés de ${e.nomComplet}`}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition hover:brightness-95",
+                        tone.chip,
+                      )}
+                    >
+                      <CalendarDays className="h-3 w-3" />
+                      {tone.label}
+                    </button>
+                  ) : null}
+                  <div className="ml-auto flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => { setEditId(e.id); setDetailId(null); }}
+                      className={iconButton}
+                      aria-label={interpolate(a.editAria, { name: e.nomComplet })}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteId(e.id)}
+                      className={cn(iconButton, "hover:border-[#E25C5C]/40 hover:bg-[#F6D8D8] hover:text-[#9A2F2F]")}
+                      aria-label={`Supprimer ${e.nomComplet}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="hidden overflow-x-auto scroll-touch sm:block">
           <table className="w-full min-w-[860px] text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

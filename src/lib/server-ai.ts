@@ -41,7 +41,7 @@ async function callGroq(
 Analyse the layout and tell me where to place each of these fields on the page.
 Fields: ${ALL_FIELDS.join(", ")}
 
-The "stamp" field is a circular school stamp (120px wide) — place it where a stamp would naturally go (centred on x,y). All other fields are text (11px font).
+The "stamp" field is a circular school stamp (120px wide)   place it where a stamp would naturally go (centred on x,y). All other fields are text (11px font).
 
 Return ONLY a valid JSON array with objects {key: string, x: number, y: number} where x and y are percentage positions (0-100, where 0,0 = top-left corner of the page).
 

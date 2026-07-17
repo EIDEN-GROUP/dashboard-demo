@@ -461,7 +461,7 @@ export const sendPaymentConfirmation = createServerFn({ method: "POST" })
 
     // Send WhatsApp with PDF if client has opted in
     if (data.clientPhone && data.whatsappOptin) {
-      const caption = `Centre de messages\n\nReçu de paiement ${data.receipt} — ${data.amount.toLocaleString("fr-FR")} MAD — Merci pour votre règlement.`;
+      const caption = `Centre de messages\n\nReçu de paiement ${data.receipt}   ${data.amount.toLocaleString("fr-FR")} MAD   Merci pour votre règlement.`;
       const waResult = await sendWhatsAppDocument(
         data.clientPhone,
         data.pdfUrl,

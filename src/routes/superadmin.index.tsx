@@ -6,15 +6,7 @@ import {
   getCentersByPlan,
   listCenters,
 } from "@/lib/server-superadmin";
-import {
-  Building2,
-  UserCog,
-  Users,
-  CreditCard,
-  TrendingUp,
-  Inbox,
-  ArrowUpRight,
-} from "lucide-react";
+import { Building2, UserCog, Inbox, ArrowUpRight } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -22,6 +14,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
   CartesianGrid,
   PieChart,
   Pie,
@@ -85,7 +78,7 @@ function SuperadminOverview() {
     <div>
       <PageTitle eyebrow={st.eyebrow} title={st.pageTitle} />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label={st.activeCenters}
           value={fmt(stats?.active_centers ?? 0)}
@@ -100,24 +93,6 @@ function SuperadminOverview() {
           monochrome
         />
         <StatCard
-          label={st.students}
-          value={fmt(stats?.total_students ?? 0)}
-          icon={Users}
-          monochrome
-        />
-        <StatCard
-          label={st.platformRevenue}
-          value={`${fmt(stats?.platform_revenue ?? 0)} ${t.common.mad}`}
-          icon={CreditCard}
-          monochrome
-        />
-        <StatCard
-          label={st.mrr}
-          value={`${fmt(stats?.mrr ?? 0)} ${t.common.mad}`}
-          icon={TrendingUp}
-          monochrome
-        />
-        <StatCard
           label={st.pendingRequests}
           value={fmt(stats?.pending_demo_requests ?? 0)}
           icon={Inbox}
@@ -125,17 +100,19 @@ function SuperadminOverview() {
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[2fr_1fr]">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
         <div className={`${softCard} p-5`}>
           <h2 className="mb-4 text-sm font-semibold text-foreground">{st.monthlyRevenueTitle}</h2>
-          <div className="h-72">
+          <div className="h-60 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenue} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.08)" vertical={false} />
                 <XAxis dataKey="m" tickLine={false} axisLine={false} fontSize={12} />
                 <YAxis tickLine={false} axisLine={false} fontSize={12} />
                 <Tooltip contentStyle={dashTooltip} cursor={{ fill: "rgba(40,57,108,0.05)" }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="v" name={st.platformRevenue} fill="#28396C" radius={[6, 6, 0, 0]} maxBarSize={42} />
+                <Bar dataKey="mrr" name={st.mrr} fill="#8FA3CF" radius={[6, 6, 0, 0]} maxBarSize={42} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -186,7 +163,7 @@ function SuperadminOverview() {
       </div>
 
       <div className={`${softCard} mt-6 overflow-hidden`}>
-        <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-4 sm:px-5">
           <h2 className="text-sm font-semibold text-foreground">{st.latestCentersTitle}</h2>
           <Link
             to="/superadmin/centres"
@@ -203,19 +180,19 @@ function SuperadminOverview() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-t border-[#28396C]/10 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">{t.superadmin.centres.name}</th>
-                  <th className="px-5 py-3 font-medium">{t.superadmin.centres.city}</th>
-                  <th className="px-5 py-3 font-medium">{t.superadmin.centres.plan}</th>
-                  <th className="px-5 py-3 font-medium">{t.superadmin.centres.status}</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium sm:px-5">{t.superadmin.centres.name}</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium sm:px-5">{t.superadmin.centres.city}</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium sm:px-5">{t.superadmin.centres.plan}</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium sm:px-5">{t.superadmin.centres.status}</th>
                 </tr>
               </thead>
               <tbody>
                 {latest.map((c) => (
                   <tr key={c.id} className="border-t border-[#28396C]/10">
-                    <td className="px-5 py-3 font-medium text-foreground">{c.name}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{c.city || " "}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{planLabel(c.plan)}</td>
-                    <td className="px-5 py-3">
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground sm:px-5">{c.name}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground sm:px-5">{c.city || " "}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground sm:px-5">{planLabel(c.plan)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 sm:px-5">
                       <span className={statusPill(statusTone(c.status))}>{statusLabel(c.status)}</span>
                     </td>
                   </tr>

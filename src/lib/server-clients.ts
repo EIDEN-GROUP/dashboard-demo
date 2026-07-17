@@ -42,7 +42,7 @@ function parseCsv(text: string): Record<string, string>[] {
   // Normalise line endings: \r\n → \n, then \r → \n
   text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
-  // Naive line split — same as client-side parser (handles quoted commas correctly
+  // Naive line split   same as client-side parser (handles quoted commas correctly
   // because field-level parsing is delegated to parseCsvLine)
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
