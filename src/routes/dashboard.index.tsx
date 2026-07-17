@@ -52,6 +52,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { interpolate, useDashboardI18n } from "@/lib/landing-i18n";
 import {
   softCard,
@@ -116,6 +117,7 @@ const daysOverdue = (paymentDay?: number): number => {
 
 function CrmDash() {
   const { t } = useDashboardI18n();
+  const isMobile = useIsMobile();
   const [addClientOpen, setAddClientOpen] = useState(false);
   const [wizard, setWizard] = useState<WizardData>(emptyWizard);
   const updateWizard = (patch: Partial<WizardData>) => setWizard((prev) => ({ ...prev, ...patch }));
@@ -381,14 +383,14 @@ function CrmDash() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{t.home.subtitle}</p>
         </div>
-        <button type="button" onClick={() => setAddClientOpen(true)} className={cn(primaryPill, "shrink-0")}>
+        <button type="button" onClick={() => setAddClientOpen(true)} className={cn(primaryPill, "w-full justify-center sm:w-auto sm:shrink-0")}>
           <Plus className="h-4 w-4" />
           {t.home.quickActions.addClient.title}
         </button>
       </header>
 
       {/* 4 cartes indicateurs   total / payé / en retard / impayé */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((card) => (
           <Link
             key={card.k}
@@ -423,9 +425,9 @@ function CrmDash() {
 
       {/* Statistique générale   barres (encaissé) + courbe (paiements reçus) et colonne d'indicateurs */}
       <div className={cn(softCard, "overflow-hidden")}>
-        <div className="grid lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_17rem]">
           {/* Graphique */}
-          <div className="min-w-0 p-5 sm:p-6">
+          <div className="min-w-0 p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className={eyebrowClass}>Vue d'ensemble</p>
@@ -433,7 +435,7 @@ function CrmDash() {
                   Statistique <span className="font-normal italic text-muted-foreground">générale</span>
                 </h2>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Select value={grain} onValueChange={(v) => setGrain(v as Grain)}>
                   <SelectTrigger className={cn(softSelectTrigger, "h-9 w-[7.5rem] rounded-xl")} aria-label="Granularité">
                     <SelectValue />
@@ -462,26 +464,32 @@ function CrmDash() {
               </div>
             </div>
 
-            <div className="mt-6 h-[20rem] w-full min-w-0 sm:h-[24rem]">
+            <div className="mt-5 h-64 w-full min-w-0 sm:mt-6 sm:h-[24rem]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(40,57,108,0.08)" vertical={false} />
                   <XAxis
                     dataKey="bucket"
                     stroke="var(--muted-foreground)"
-                    fontSize={12}
+                    fontSize={isMobile ? 11 : 12}
                     tickLine={false}
                     axisLine={false}
                     dy={6}
+                    minTickGap={isMobile ? 16 : 5}
                   />
-                  {/* Width fits 4-digit MAD ticks   a tighter axis clips the leading digit. */}
+                  {/* Width fits 4-digit MAD ticks   a tighter axis clips the leading digit.
+                      On mobile the ticks compact to "12k" so the axis stays narrow. */}
                   <YAxis
                     stroke="var(--muted-foreground)"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
-                    width={64}
-                    tickFormatter={(v: number) => v.toLocaleString("fr-FR")}
+                    width={isMobile ? 40 : 64}
+                    tickFormatter={(v: number) =>
+                      isMobile && Math.abs(v) >= 1000
+                        ? `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}k`
+                        : v.toLocaleString("fr-FR")
+                    }
                   />
                   <Tooltip
                     contentStyle={dashTooltip}
@@ -544,13 +552,13 @@ function CrmDash() {
           {/* Colonne d'indicateurs   impayé / retard sont cliquables : ils ouvrent la liste filtrée. */}
           <div className="border-t border-[#28396C]/10 lg:border-l lg:border-t-0">
             <ul className="divide-y divide-[#28396C]/10">
-              <li className="px-5 py-5 sm:px-6">
+              <li className="px-4 py-5 sm:px-6">
                 <p className="text-xs text-muted-foreground">Total encaissé</p>
                 <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
                   {(stats?.total_revenue ?? 0).toLocaleString("fr-FR")} MAD
                 </p>
               </li>
-              <li className="px-5 py-5 sm:px-6">
+              <li className="px-4 py-5 sm:px-6">
                 <p className="text-xs text-muted-foreground">Encaissé ce mois</p>
                 <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
                   {(stats?.paid_this_month ?? 0).toLocaleString("fr-FR")} MAD
@@ -561,7 +569,7 @@ function CrmDash() {
                 <Link
                   to="/dashboard/familles"
                   search={{ statut: "en_attente" }}
-                  className="block px-5 py-5 transition-colors hover:bg-[#F4E3C0]/40 sm:px-6"
+                  className="block px-4 py-5 transition-colors hover:bg-[#F4E3C0]/40 sm:px-6"
                 >
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.en_attente }} />
@@ -581,7 +589,7 @@ function CrmDash() {
                 <Link
                   to="/dashboard/familles"
                   search={{ statut: "retard" }}
-                  className="block px-5 py-5 transition-colors hover:bg-[#F6D8D8]/40 sm:px-6"
+                  className="block px-4 py-5 transition-colors hover:bg-[#F6D8D8]/40 sm:px-6"
                 >
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.retard }} />
@@ -597,7 +605,7 @@ function CrmDash() {
                 </Link>
               </li>
 
-              <li className="px-5 py-5 sm:px-6">
+              <li className="px-4 py-5 sm:px-6">
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: PENDING_COLOR }} />
                   En attente
@@ -617,9 +625,9 @@ function CrmDash() {
       {/* Activité récente + relance rapide + actions rapides */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)] lg:items-start">
         {/* Colonne principale : activité récente + créances en attente à relancer */}
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
         {/* Derniers paiements (Activité récente) */}
-        <div className={cn(softCard, "p-5 sm:p-6")}>
+        <div className={cn(softCard, "p-4 sm:p-6")}>
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className={eyebrowClass}>Activité récente</p>
@@ -641,6 +649,9 @@ function CrmDash() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{p.who}</p>
                   <p className="truncate text-xs text-muted-foreground">{p.note}</p>
+                  <p className="mt-0.5 text-xs font-semibold tabular-nums text-foreground sm:hidden">
+                    {p.amount} MAD <span className="font-normal text-muted-foreground">· {p.date}</span>
+                  </p>
                 </div>
                 <div className="hidden shrink-0 text-right sm:block">
                   <p className="text-sm font-semibold tabular-nums text-foreground">{p.amount} MAD</p>
@@ -656,13 +667,13 @@ function CrmDash() {
 
         {/* Paiements en attente   file de relance : uniquement impayés et retards. */}
         <div className={cn(softCard, "overflow-hidden")}>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#28396C]/10 px-4 py-4 sm:px-6">
             <div>
               <p className={eyebrowClass}>Créances</p>
               <h2 className="mt-1 font-display text-xl text-foreground">Paiements en attente</h2>
               <p className="mt-0.5 text-xs text-muted-foreground">Familles impayées ou en retard à relancer</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#F4E3C0] px-3 py-1 text-xs font-semibold text-[#8A5A16]">
                 {pendingDues.length} famille{pendingDues.length > 1 ? "s" : ""}
               </span>
@@ -680,41 +691,57 @@ function CrmDash() {
           ) : (
             <ul className="divide-y divide-[#28396C]/8">
               {pendingDues.map((d) => (
-                <li key={d.id} className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#28396C]/8 text-xs font-bold text-[#28396C]">
-                    {initials(d.name)}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-foreground">{d.name}</p>
-                      {d.status === "retard" && d.days > 0 ? (
-                        <span
-                          className={cn(
-                            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                            d.days > 14 ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]",
-                          )}
-                        >
-                          {d.days}j de retard
-                        </span>
-                      ) : (
-                        <span className="shrink-0 rounded-full bg-[#F4E3C0] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A16]">
+                <li key={d.id} className="px-4 py-3.5 sm:px-6">
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#28396C]/8 text-xs font-bold text-[#28396C]">
+                      {initials(d.name)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-semibold text-foreground">{d.name}</p>
+                        {d.status === "retard" && d.days > 0 ? (
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                              d.days > 14 ? "bg-[#F6D8D8] text-[#9A2F2F]" : "bg-[#F4E3C0] text-[#8A5A16]",
+                            )}
+                          >
+                            {d.days}j de retard
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-[#F4E3C0] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A16]">
 En attente
-                        </span>
-                      )}
+                          </span>
+                        )}
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">{d.level || "Niveau non défini"}</p>
                     </div>
-                    <p className="truncate text-xs text-muted-foreground">{d.level || "Niveau non défini"}</p>
+                    <p className="hidden shrink-0 text-right text-sm font-semibold tabular-nums text-foreground sm:block">
+                      {d.amount.toLocaleString("fr-FR")} MAD
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => remindMutation.mutate(d.id)}
+                      disabled={remindMutation.isPending}
+                      className="hidden shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15 disabled:opacity-50 sm:inline-flex"
+                    >
+                      <Send className="h-3.5 w-3.5" /> Relancer
+                    </button>
                   </div>
-                  <p className="hidden shrink-0 text-right text-sm font-semibold tabular-nums text-foreground sm:block">
-                    {d.amount.toLocaleString("fr-FR")} MAD
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => remindMutation.mutate(d.id)}
-                    disabled={remindMutation.isPending}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15 disabled:opacity-50"
-                  >
-                    <Send className="h-3.5 w-3.5" /> Relancer
-                  </button>
+                  {/* Mobile : montant + relance sur leur propre ligne */}
+                  <div className="mt-2 flex items-center justify-between gap-2 pl-[3.25rem] sm:hidden">
+                    <p className="text-sm font-semibold tabular-nums text-foreground">
+                      {d.amount.toLocaleString("fr-FR")} MAD
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => remindMutation.mutate(d.id)}
+                      disabled={remindMutation.isPending}
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#28396C]/15 px-3 py-1.5 text-xs font-semibold text-[#28396C] transition hover:bg-[#B5E18B]/15 disabled:opacity-50"
+                    >
+                      <Send className="h-3.5 w-3.5" /> Relancer
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -723,10 +750,10 @@ En attente
         </div>
 
         {/* Colonne latérale   relance rapide + actions rapides */}
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           {/* Relance rapide */}
           <div className={cn(softCard, "overflow-hidden")}>
-            <div className="bg-[#28396C] p-5 text-white">
+            <div className="bg-[#28396C] p-4 text-white sm:p-5">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#B5E18B]">Relance rapide</p>
                 <Link to="/dashboard/familles" className="text-[11px] font-medium text-white/70 hover:text-white">
@@ -734,7 +761,7 @@ En attente
                 </Link>
               </div>
               <h3 className="mt-1 font-display text-lg font-semibold">Rappel de paiement</h3>
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 {relanceCandidates.length > 4 && (
                   <button
                     type="button"
@@ -777,7 +804,7 @@ En attente
               </p>
             </div>
             <form
-              className="space-y-3 p-5"
+              className="space-y-3 p-4 sm:p-5"
               onSubmit={(e) => {
                 e.preventDefault();
                 relanceMutation.mutate();
@@ -810,7 +837,7 @@ En attente
           </div>
 
           {/* Actions rapides */}
-          <div className={cn(softCard, "p-5 sm:p-6")}>
+          <div className={cn(softCard, "p-4 sm:p-6")}>
             <p className={eyebrowClass}>{t.home.quickActionsEyebrow}</p>
             <h3 className="mt-1 font-display text-lg text-foreground">{t.home.quickNavBold}</h3>
             <ul className="mt-3 space-y-1.5">

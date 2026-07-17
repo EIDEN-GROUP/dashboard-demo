@@ -133,7 +133,12 @@ export const getPlatformMonthlyRevenue = createServerFn({ method: "GET" })
     const now = new Date();
     const currentMonth = now.getMonth();
 
-    const results: Array<{ m: string; v: number }> = [];
+    const { data: centersData } = await supabaseAdmin
+      .from("centers")
+      .select("status, monthly_price, created_at");
+    const activeCenters = (centersData ?? []).filter((c) => c.status === "actif");
+
+    const results: Array<{ m: string; v: number; mrr: number }> = [];
 
     for (let i = 6; i >= 0; i--) {
       let m = currentMonth - i;
@@ -147,7 +152,11 @@ export const getPlatformMonthlyRevenue = createServerFn({ method: "GET" })
         .gte("date", first)
         .lte("date", last);
       const total = (data ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
-      results.push({ m: months[m], v: total });
+      const monthEnd = new Date(y, m + 1, 0, 23, 59, 59);
+      const mrr = activeCenters
+        .filter((c) => new Date(c.created_at) <= monthEnd)
+        .reduce((sum, c) => sum + Number(c.monthly_price), 0);
+      results.push({ m: months[m], v: total, mrr });
     }
 
     return results;
