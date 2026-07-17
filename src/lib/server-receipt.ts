@@ -17,7 +17,10 @@ export const generateReceiptPdf = createServerFn({ method: "POST" })
 
     const templateMeta = settings.pdf_template as { url?: string } | undefined;
     const stampMeta = settings.stamp as { url?: string } | undefined;
-    const fields: FieldPos[] = settings.receipt_fields ?? [];
+    const fieldSource = settings.active_field_source as string | undefined;
+    const fields: FieldPos[] = fieldSource === "ai"
+      ? (settings.receipt_fields_ai as FieldPos[] | undefined) ?? []
+      : (settings.receipt_fields as FieldPos[] | undefined) ?? [];
 
     if (!templateMeta?.url) throw new Error("Aucun template PDF configuré");
 

@@ -11,6 +11,7 @@ import {
   updateSetting,
 } from "@/lib/server-settings";
 import { uploadSchoolFile, deleteSchoolFile } from "@/lib/server-storage";
+import { analyzePdfTemplate } from "@/lib/server-ai";
 import { cn } from "@/lib/utils";
 import {
   softCard,
@@ -22,7 +23,7 @@ import {
   iconButton,
 } from "@/lib/dash-ui";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign, ChevronDown, Upload, FileText, Image as ImageIcon, GripVertical, Maximize2 } from "lucide-react";
+import { Plus, Trash2, Save, Percent, Calendar, Package, GraduationCap, X, BadgeDollarSign, ChevronDown, Upload, FileText, Image as ImageIcon, GripVertical, Maximize2, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "Paramètres - CRM" }] }),
@@ -998,6 +999,51 @@ function DocumentsSection() {
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
   const template: DocMeta = settings?.pdf_template ?? { url: "", filename: "", updated_at: "" };
   const stamp: DocMeta = settings?.stamp ?? { url: "", filename: "", updated_at: "" };
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [aiFields, setAiFields] = useState<ReceiptField[]>([]);
+  const [aiError, setAiError] = useState("");
+
+  const handleAiDetect = async () => {
+    if (!template.url || aiStatus === "loading") return;
+    setAiStatus("loading");
+    setAiError("");
+    try {
+      const { getDocument, GlobalWorkerOptions } = await import("pdfjs-dist");
+      GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs`;
+
+      const pdf = await getDocument({ url: template.url }).promise;
+      const page = await pdf.getPage(1);
+      const vp = page.getViewport({ scale: 2 });
+      const canvas = document.createElement("canvas");
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      const ctx = canvas.getContext("2d")!;
+      const task = page.render({ canvasContext: ctx, viewport: vp } as any);
+      await task.promise;
+      const base64Png = canvas.toDataURL("image/png").split(",")[1];
+
+      const result = await analyzePdfTemplate({ data: { base64Png } });
+      if (result.ok) {
+        const fields: ReceiptField[] = result.fields.map((f: any) => ({ key: f.key, x: f.x, y: f.y }));
+        setAiFields(fields);
+        setAiStatus("done");
+        // Save AI fields + switch source to AI
+        await updateSetting({ data: { key: "receipt_fields_ai", value: fields } });
+        await updateSetting({ data: { key: "active_field_source", value: "ai" } });
+        queryClient.invalidateQueries({ queryKey: ["settings"] });
+        toast.success(`${fields.length} champ(s) détectés par l'IA`);
+      } else {
+        setAiError(result.error);
+        setAiStatus("error");
+        toast.error(result.error);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      setAiError(msg);
+      setAiStatus("error");
+      toast.error(msg);
+    }
+  };
 
   const upload = useMutation({
     mutationFn: (input: { key: string; content: string; filename: string; contentType: string }) =>
@@ -1066,6 +1112,50 @@ function DocumentsSection() {
             ) : null}
           </div>
         </div>
+        <div className={cn(rowClass, "border-t border-[#28396C]/8")}>
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <p className="text-sm font-medium text-foreground">Détection automatique des champs</p>
+            <p className="text-xs text-muted-foreground">
+              {aiStatus === "done"
+                ? `${aiFields.length} champ(s) détecté(s) par IA`
+                : aiStatus === "error"
+                  ? aiError
+                  : "Analyse le PDF avec l'IA pour placer les champs automatiquement"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {aiStatus === "done" && (
+              <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Défini
+              </span>
+            )}
+            {aiStatus === "error" && (
+              <span className="flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
+                <AlertCircle className="h-3.5 w-3.5" /> Échec
+              </span>
+            )}
+            {!template.url ? (
+              <span className="text-xs text-muted-foreground">Uploader d'abord un template</span>
+            ) : (
+              <button
+                onClick={handleAiDetect}
+                disabled={aiStatus === "loading"}
+                className={cn(
+                  primaryPill,
+                  "gap-2 px-3 py-1.5 text-xs disabled:opacity-50",
+                  aiStatus === "error" && "bg-red-500 hover:bg-red-600",
+                )}
+              >
+                <Sparkles className={cn("h-3.5 w-3.5", aiStatus === "loading" && "animate-pulse")} />
+                {aiStatus === "loading"
+                  ? "Analyse…"
+                  : aiStatus === "error"
+                    ? "Réessayer"
+                    : "Détection auto par IA"}
+              </button>
+            )}
+          </div>
+        </div>
         <div className={rowClass}>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="text-sm font-medium text-foreground">Tampon de l'école</p>
@@ -1104,10 +1194,15 @@ function PdfTemplateEditorSection() {
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
   const template: DocMeta = settings?.pdf_template ?? { url: "", filename: "", updated_at: "" };
-  const savedFields: ReceiptField[] = settings?.receipt_fields ?? [];
+  const savedManualFields: ReceiptField[] = settings?.receipt_fields ?? [];
+  const savedAiFields: ReceiptField[] = settings?.receipt_fields_ai ?? [];
+  const activeSource = (settings?.active_field_source as string) ?? "manual";
+  const hasAi = savedAiFields.length > 0;
   const [fields, setFields] = useState<ReceiptField[] | null>(null);
-  const current = fields ?? savedFields;
-  const dirty = fields !== null;
+  const [source, setSource] = useState<"manual" | "ai">(activeSource === "ai" && hasAi ? "ai" : "manual");
+  const current = fields ?? (source === "ai" ? savedAiFields : savedManualFields);
+  const isAiMode = source === "ai";
+  const dirty = fields !== null && !isAiMode;
   const [open, setOpen] = useState(false);
   const [dragging, setDragging] = useState<number | null>(null);
 
@@ -1117,6 +1212,15 @@ function PdfTemplateEditorSection() {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
       setFields(null);
       toast.success("Configuration du template sauvegardée");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
+  });
+
+  const saveFieldSource = useMutation({
+    mutationFn: (value: "manual" | "ai") =>
+      updateSetting({ data: { key: "active_field_source", value } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Erreur"),
   });
@@ -1133,16 +1237,16 @@ function PdfTemplateEditorSection() {
   const available = allPlaceholders.filter((p) => !placedKeys.has(p));
 
   const addField = (key: string) => {
-    setFields((prev) => [...(prev ?? savedFields), { key, x: 50, y: 50 }]);
+    setFields((prev) => [...(prev ?? savedManualFields), { key, x: 50, y: 50 }]);
   };
 
   const removeField = (idx: number) => {
-    setFields((prev) => (prev ?? savedFields).filter((_, i) => i !== idx));
+    setFields((prev) => (prev ?? savedManualFields).filter((_, i) => i !== idx));
   };
 
   const updatePos = (idx: number, x: number, y: number) => {
     setFields((prev) =>
-      (prev ?? savedFields).map((f, i) => (i === idx ? { ...f, x, y } : f)),
+      (prev ?? savedManualFields).map((f, i) => (i === idx ? { ...f, x, y } : f)),
     );
   };
 
@@ -1186,23 +1290,28 @@ function PdfTemplateEditorSection() {
       {current.map((f, i) => (
         <div
           key={f.key}
-          onMouseDown={(e) => handleMouseDown(i, e)}
+          onMouseDown={(e) => { if (!isAiMode) handleMouseDown(i, e); }}
           className={cn(
-            "absolute z-10 flex cursor-grab items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-mono font-medium shadow-sm transition-shadow",
-            dragging === i ? "shadow-md ring-2 ring-[#6BA53A] cursor-grabbing" : "hover:shadow-md",
-            f.key === "stamp" ? "bg-[#E25C5C]/15 text-[#E25C5C] ring-[#E25C5C]" : "bg-white/90 text-[#28396C] ring-[#6BA53A]",
+            "absolute z-10 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-mono font-medium shadow-sm transition-shadow",
+            isAiMode
+              ? "cursor-default bg-white/80 text-[#28396C]"
+              : "cursor-grab hover:shadow-md",
+            dragging === i ? "shadow-md ring-2 ring-[#6BA53A] cursor-grabbing" : "",
+            f.key === "stamp" ? "bg-[#E25C5C]/15 text-[#E25C5C] ring-[#E25C5C]" : "",
           )}
           style={{ left: `${f.x}%`, top: `${f.y}%`, transform: "translate(-50%, -50%)" }}
         >
-          <GripVertical className="h-3 w-3 shrink-0 opacity-60" />
+          {!isAiMode && <GripVertical className="h-3 w-3 shrink-0 opacity-60" />}
           <span className="truncate max-w-[120px]">{'{'}{f.key}{'}'}</span>
-          <button
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => removeField(i)}
-            className="ml-0.5 grid h-4 w-4 place-items-center rounded-full hover:bg-black/10"
-          >
-            <X className="h-3 w-3" />
-          </button>
+          {!isAiMode && (
+            <button
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() => removeField(i)}
+              className="ml-0.5 grid h-4 w-4 place-items-center rounded-full hover:bg-black/10"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       ))}
       </div>
@@ -1213,9 +1322,44 @@ function PdfTemplateEditorSection() {
     <Section
       icon={FileText}
       title="Configuration du reçu PDF"
-      description="Placez les champs directement sur le template PDF. Le champ stamp positionne le tampon de l'école."
+      description={
+        isAiMode
+          ? "Champs positionnés par l'IA. Passez en mode Manuel pour modifier."
+          : "Placez les champs directement sur le template PDF. Le champ stamp positionne le tampon de l'école."
+      }
     >
       <div className="space-y-4 px-4 py-5 sm:px-6">
+        {hasAi && (
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
+            <span className="text-xs font-medium text-foreground">Source des champs :</span>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => { setSource("manual"); saveFieldSource.mutate("manual"); }}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition",
+                  !isAiMode
+                    ? "bg-[#28396C] text-white"
+                    : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                Manuel
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSource("ai"); saveFieldSource.mutate("ai"); }}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition",
+                  isAiMode
+                    ? "bg-[#28396C] text-white"
+                    : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                IA {hasAi ? `(${savedAiFields.length} champ${savedAiFields.length > 1 ? "s" : ""})` : ""}
+              </button>
+            </div>
+          </div>
+        )}
         {!template.url ? (
           <p className="text-sm text-muted-foreground">
             Uploader d'abord un template PDF dans la section «Documents» ci-dessus.
@@ -1223,7 +1367,7 @@ function PdfTemplateEditorSection() {
         ) : (
           <>
             <p className="text-sm text-foreground">
-              {current.length} champ(s) positionné(s) sur le template.
+              {current.length} champ(s) positionné(s) sur le template{isAiMode ? " (IA)" : ""}.
               {dirty ? " Modifications non enregistrées." : ""}
             </p>
             <button
@@ -1245,9 +1389,10 @@ function PdfTemplateEditorSection() {
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-foreground">
                 {current.length} champ{current.length !== 1 ? "s" : ""}
+                {isAiMode ? " (IA)" : ""}
                 {dirty ? " · Modifié" : ""}
               </span>
-              {available.length > 0 && (
+              {!isAiMode && available.length > 0 && (
                 <select
                   value=""
                   onChange={(e) => { if (e.target.value) addField(e.target.value); e.target.value = ""; }}
@@ -1258,6 +1403,11 @@ function PdfTemplateEditorSection() {
                     <option key={p} value={p}>{'{'}{p}{'}'}</option>
                   ))}
                 </select>
+              )}
+              {isAiMode && (
+                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                  <Sparkles className="h-3 w-3" /> IA
+                </span>
               )}
             </div>
             <div className="flex items-center gap-2">

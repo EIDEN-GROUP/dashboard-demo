@@ -534,5 +534,15 @@
     "superadmin": "Assistance",
     "newTicket": "Nouveau ticket",
     "reopen": "Rouvrir"
+  },
+  "aiDetection": {
+    "button": "Détection auto par IA",
+    "analyzing": "Analyse en cours…",
+    "detected": "Champs détectés",
+    "failed": "Échec de la détection",
+    "retry": "Réessayer",
+    "fieldSource": "Source des champs",
+    "manual": "Manuel",
+    "aiMode": "IA"
   }
 }
