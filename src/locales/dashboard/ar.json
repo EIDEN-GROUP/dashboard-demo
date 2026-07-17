@@ -518,5 +518,21 @@
       "noRequests": "لا توجد طلبات تجربة حاليًا.",
       "unit": "طلبات"
     }
+  },
+  "supportChat": {
+    "title": "مساعدة",
+    "placeholder": "اكتب رسالتك…",
+    "send": "إرسال",
+    "noMessages": "لا توجد رسائل بعد. أرسل أول رسالة لفتح تذكرة.",
+    "waitingForSuperadmin": "في انتظار وكيل…",
+    "superadminTitle": "الجلسات النشطة",
+    "noSessions": "لا توجد جلسات نشطة.",
+    "sessionWith": "{{name}}",
+    "closeSession": "إغلاق التذكرة",
+    "sessionClosed": "التذكرة مغلقة",
+    "you": "أنت",
+    "superadmin": "المساعدة",
+    "newTicket": "تذكرة جديدة",
+    "reopen": "إعادة فتح"
   }
 }

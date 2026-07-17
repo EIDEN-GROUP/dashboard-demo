@@ -16,13 +16,14 @@ function SuperadminLayout() {
       const timer = setTimeout(() => navigate({ to: "/login" }), 0);
       return () => clearTimeout(timer);
     }
-    if (role !== "superadmin") {
+    // role === null means not yet determined – wait for it
+    if (role !== null && role !== "superadmin") {
       const timer = setTimeout(() => navigate({ to: "/dashboard" }), 0);
       return () => clearTimeout(timer);
     }
   }, [user, role, loading, roleLoading, navigate]);
 
-  if (loading || roleLoading || !user || role !== "superadmin") {
+  if (loading || roleLoading || !user || role === null || role !== "superadmin") {
     return (
       <div className="grid h-dvh place-items-center bg-[linear-gradient(180deg,#ffffff_0%,#F4FAE6_45%,#EEF6E0_100%)]">
         <div className="flex flex-col items-center gap-3">

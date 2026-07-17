@@ -1,7 +1,8 @@
 import { useRouterState } from "@tanstack/react-router";
 import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SupportButton } from "@/components/support-button";
+import { SupportChat } from "@/components/support-chat";
+import { SuperadminSupport } from "@/components/superadmin-support";
 import { useLandingI18nOptional, type LandingLocale } from "@/lib/landing-i18n";
 
 function LanguageToggleButton({
@@ -39,14 +40,13 @@ export function LanguageToggleFloating() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const i18n = useLandingI18nOptional();
 
-  const show = pathname === "/" || pathname.startsWith("/dashboard");
+  const show = pathname === "/" || pathname.startsWith("/dashboard") || pathname.startsWith("/superadmin");
   if (!show || !i18n) return null;
 
   const langLabel = i18n.t.a11y.switchLanguage;
 
-  // The dashboard has a fixed bottom nav below `lg`; sit above it so the button
-  // never covers the last tab.
   const onDashboard = pathname.startsWith("/dashboard");
+  const onSuperadmin = pathname.startsWith("/superadmin");
 
   return (
     <div
@@ -58,9 +58,8 @@ export function LanguageToggleFloating() {
           : "bottom-[max(1rem,env(safe-area-inset-bottom))]",
       )}
     >
-      {/* Assistance : réservée au tableau de bord   la landing a déjà ses propres
-          points de contact (section contact + FAQ). */}
-      {onDashboard ? <SupportButton /> : null}
+      {onDashboard ? <SupportChat /> : null}
+      {onSuperadmin ? <SuperadminSupport /> : null}
       <LanguageToggleButton locale={i18n.locale} onToggle={i18n.toggleLocale} label={langLabel} />
     </div>
   );

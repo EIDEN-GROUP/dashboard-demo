@@ -205,3 +205,26 @@ export type DashboardStats = {
   active_clients: number;
   overdue_count: number;
 };
+
+export type SupportSession = {
+  id: string;
+  center_id: string | null;
+  admin_id: string | null;
+  admin_name: string;
+  status: "open" | "closed";
+  created_at: string;
+  updated_at: string;
+};
+
+export type SupportMessage = {
+  id: string;
+  session_id: string;
+  sender_id: string;
+  sender_role: "admin" | "superadmin";
+  content: string;
+  created_at: string;
+};
+
+export type SupportSessionWithLastMessage = SupportSession & {
+  last_message?: Pick<SupportMessage, "content" | "sender_role" | "created_at"> | null;
+};

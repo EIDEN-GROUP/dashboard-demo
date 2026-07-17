@@ -518,5 +518,21 @@
       "noRequests": "Aucune demande de démonstration pour le moment.",
       "unit": "demandes"
     }
+  },
+  "supportChat": {
+    "title": "Assistance",
+    "placeholder": "Écrivez votre message…",
+    "send": "Envoyer",
+    "noMessages": "Aucun message pour le moment. Envoyez le premier message pour ouvrir un ticket.",
+    "waitingForSuperadmin": "En attente d'un agent…",
+    "superadminTitle": "Sessions actives",
+    "noSessions": "Aucune session active.",
+    "sessionWith": "{{name}}",
+    "closeSession": "Fermer le ticket",
+    "sessionClosed": "Ticket fermé",
+    "you": "Vous",
+    "superadmin": "Assistance",
+    "newTicket": "Nouveau ticket",
+    "reopen": "Rouvrir"
   }
 }

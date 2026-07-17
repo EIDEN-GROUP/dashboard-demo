@@ -17,7 +17,7 @@ type AuthCtx = {
 const Ctx = createContext<AuthCtx>({
   user: null,
   role: null,
-  roleLoading: true,
+  roleLoading: false,
   loading: true,
   login: async () => ({ error: "Not ready" }),
   logout: async () => {},
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<UserRole | null>(null);
-  const [roleLoading, setRoleLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(false);
 
   useEffect(() => {
     const stored = supabase.auth.getSession();
@@ -53,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user?.id) {
       setRole(null);
-      setRoleLoading(false);
       return;
     }
     let cancelled = false;
@@ -65,8 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single()
       .then(({ data, error }) => {
         if (cancelled) return;
-        // Missing row / fetch error → plain admin (fail-closed for superadmin access)
-        setRole(!error && data?.role === "superadmin" ? "superadmin" : "admin");
+        if (!error && data?.role === "superadmin") {
+          setRole("superadmin");
+        } else if (user.user_metadata?.role === "superadmin") {
+          setRole("superadmin");
+          // Attempt to backfill the DB so it sticks on next reload
+          supabase.from("profiles").upsert({ id: user.id, role: "superadmin" }).then().catch(() => {});
+        } else {
+          setRole("admin");
+        }
         setRoleLoading(false);
       });
     return () => {
