@@ -47,12 +47,13 @@ export const Route = createFileRoute("/dashboard/paiements")({
   component: CrmPaiementsPage,
 });
 
-type PaymentStatus = "paye" | "en_attente" | "retard";
+type PaymentStatus = "paye" | "en_attente" | "retard" | "impaye";
 
 const STATUS_LABEL: Record<PaymentStatus, string> = {
   paye: "Payé",
   en_attente: "En attente",
-  retard: "En retard",
+  retard: "Retard",
+  impaye: "Impayé",
 };
 
 function dash(v: string) {

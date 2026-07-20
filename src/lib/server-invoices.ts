@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-export type InvoiceStatus = "paye" | "en_attente" | "retard";
+export type InvoiceStatus = "paye" | "en_attente" | "retard" | "impaye";
 
 export type Invoice = {
   id: string;
@@ -20,11 +20,13 @@ export type InvoicePoint = {
   bucket: string;
   encaisse: number;
   en_attente: number;
+  impaye: number;
   retard: number;
   du: number;
   paiements: number;
   countPaye: number;
   countEnAttente: number;
+  countImpaye: number;
   countRetard: number;
 };
 
@@ -74,11 +76,13 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
       bucket,
       encaisse: 0,
       en_attente: 0,
+      impaye: 0,
       retard: 0,
       du: 0,
       paiements: 0,
       countPaye: 0,
       countEnAttente: 0,
+      countImpaye: 0,
       countRetard: 0,
     });
 
@@ -95,6 +99,9 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
       } else if (r.status === "en_attente") {
         point.en_attente += outstanding;
         point.countEnAttente += 1;
+      } else if (r.status === "impaye") {
+        point.impaye += outstanding;
+        point.countImpaye += 1;
       } else {
         point.countPaye += 1;
       }
@@ -104,6 +111,7 @@ export const getInvoiceAnalytics = createServerFn({ method: "GET" })
       ...p,
       encaisse: Math.round(p.encaisse),
       en_attente: Math.round(p.en_attente),
+      impaye: Math.round(p.impaye),
       retard: Math.round(p.retard),
       du: Math.round(p.du),
     });
@@ -167,12 +175,14 @@ export const getOutstanding = createServerFn({ method: "GET" }).handler(async ()
   const { data, error } = await supabaseAdmin
     .from("invoices")
     .select("amount_due, amount_paid, status")
-    .in("status", ["en_attente", "retard"]);
+    .in("status", ["en_attente", "retard", "impaye"]);
   if (error) throw new Error(error.message);
 
   let enAttenteTotal = 0;
+  let impayeTotal = 0;
   let retardTotal = 0;
   let enAttenteCount = 0;
+  let impayeCount = 0;
   let retardCount = 0;
   for (const r of (data ?? []) as Array<{
     amount_due: number;
@@ -183,15 +193,20 @@ export const getOutstanding = createServerFn({ method: "GET" }).handler(async ()
     if (r.status === "retard") {
       retardTotal += outstanding;
       retardCount += 1;
-    } else {
+    } else if (r.status === "en_attente") {
       enAttenteTotal += outstanding;
       enAttenteCount += 1;
+    } else if (r.status === "impaye") {
+      impayeTotal += outstanding;
+      impayeCount += 1;
     }
   }
   return {
     enAttenteTotal: Math.round(enAttenteTotal),
+    impayeTotal: Math.round(impayeTotal),
     retardTotal: Math.round(retardTotal),
     enAttenteCount,
+    impayeCount,
     retardCount,
   };
 });

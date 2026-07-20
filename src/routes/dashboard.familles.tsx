@@ -87,12 +87,13 @@ export const Route = createFileRoute("/dashboard/familles")({
   component: CrmParentsPage,
 });
 
-type PaymentStatus = "paye" | "en_attente" | "retard";
+type PaymentStatus = "paye" | "en_attente" | "retard" | "impaye";
 
 const PAYMENT_LABEL: Record<PaymentStatus, string> = {
   paye: "Payé",
   en_attente: "En attente",
-  retard: "En retard",
+  retard: "Retard",
+  impaye: "Impayé",
 };
 
 type DbClient = {

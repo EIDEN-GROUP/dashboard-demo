@@ -82,13 +82,14 @@ type Grain = "mensuel" | "trimestriel" | "annuel";
 
 const PENDING_COLOR = "#E8A13C";
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-type SeriesKey = "encaisse" | "en_attente" | "retard" | "attente";
+type SeriesKey = "encaisse" | "en_attente" | "impaye" | "retard" | "attente";
 
 const SERIES_META: Array<{ key: SeriesKey; label: string; color: string }> = [
   { key: "encaisse", label: "Encaissé", color: "#28396C" },
-  { key: "en_attente", label: "Impayé", color: STATUS_COLORS.en_attente },
-  { key: "retard", label: "En retard", color: STATUS_COLORS.retard },
-  { key: "attente", label: "Impayé (total)", color: PENDING_COLOR },
+  { key: "en_attente", label: "En attente", color: STATUS_COLORS.en_attente },
+  { key: "impaye", label: "Impayé", color: STATUS_COLORS.impaye },
+  { key: "retard", label: "Retard", color: STATUS_COLORS.retard },
+  { key: "attente", label: "Total à recouvrer", color: PENDING_COLOR },
 ];
 
 type QuickAction =
@@ -131,6 +132,7 @@ function CrmDash() {
   const [series, setSeries] = useState<Record<SeriesKey, boolean>>({
     encaisse: true,
     en_attente: true,
+    impaye: true,
     retard: true,
     attente: true,
   });
@@ -164,17 +166,18 @@ function CrmDash() {
   // the due date has passed. Derived here rather than in the ledger query   it is
   // exactly impayé + retard, which getInvoiceAnalytics already returns.
   const chartData = useMemo(
-    () => (barData as InvoicePoint[]).map((p) => ({ ...p, attente: p.en_attente + p.retard })),
+    () => (barData as InvoicePoint[]).map((p) => ({ ...p, attente: p.en_attente + p.impaye + p.retard })),
     [barData],
   );
 
   // Count payment statuses
   const statusCounts = useMemo(() => {
-    const c = { paye: 0, en_attente: 0, retard: 0 };
+    const c = { paye: 0, en_attente: 0, retard: 0, impaye: 0 };
     (clients as any[]).forEach((cl: any) => {
       if (cl.payment_status === "paye") c.paye++;
       else if (cl.payment_status === "retard") c.retard++;
       else if (cl.payment_status === "en_attente") c.en_attente++;
+      else c.impaye++;
     });
     return c;
   }, [clients]);
@@ -183,14 +186,14 @@ function CrmDash() {
   // retard au plus récent   c'est la file de relance affichée sous les paiements.
   const pendingDues = useMemo(() => {
     return (clients as any[])
-      .filter((c: any) => c.payment_status === "en_attente" || c.payment_status === "retard")
+      .filter((c: any) => c.payment_status !== "paye")
       .map((c: any) => {
         const net = Math.round((c.monthly_fee ?? 0) * (1 - (c.remise ?? 0) / 100));
         return {
           id: c.id as string,
           name: (c.parent_name || c.child_name || "") as string,
           level: (c.level || "") as string,
-          status: c.payment_status as "en_attente" | "retard",
+          status: c.payment_status as "en_attente" | "retard" | "impaye",
           days: c.payment_status === "retard" ? daysOverdue(c.payment_day) : 0,
           amount: (c.debt ?? 0) > 0 ? (c.debt as number) : net,
         };
@@ -206,8 +209,8 @@ function CrmDash() {
   // The "Impayé" KPI reads off the invoices ledger, like the Impayé / En retard
   // rows it sits under, so the column sums consistently   and matches the chart's
   // "Impayé" bars, which come from the same query.
-  const attenteTotal = (outstanding?.enAttenteTotal ?? 0) + (outstanding?.retardTotal ?? 0);
-  const attenteCount = (outstanding?.enAttenteCount ?? 0) + (outstanding?.retardCount ?? 0);
+  const attenteTotal = (outstanding?.enAttenteTotal ?? 0) + (outstanding?.impayeTotal ?? 0) + (outstanding?.retardTotal ?? 0);
+  const attenteCount = (outstanding?.enAttenteCount ?? 0) + (outstanding?.impayeCount ?? 0) + (outstanding?.retardCount ?? 0);
 
   // Relance rapide: pick who gets the reminder instead of blasting every overdue
   const relanceCandidates = useMemo(
@@ -273,15 +276,16 @@ function CrmDash() {
       note: `Frais mensuels · ${p.clients?.child_name ?? ""}`,
       date: p.date || " ",
       amount: String(p.amount),
-      status: (p.clients?.payment_status ?? "en_attente") as "paye" | "en_attente" | "retard",
+      status: (p.clients?.payment_status ?? "en_attente") as "paye" | "en_attente" | "retard" | "impaye",
     }));
   }, [dbPayments]);
 
-  // 4 indicateurs
+  // 5 indicateurs
   const totalClients = (clients as any[]).length;
   const paidCount = statusCounts.paye;
   const overdueCount = statusCounts.retard;
-  const unpaidCount = statusCounts.en_attente;
+  const partialCount = statusCounts.en_attente;
+  const unpaidCount = statusCounts.impaye;
   const totalRevenue = stats?.total_revenue ?? 0;
 
   // Each card opens the client list already filtered to the status it counts,
@@ -313,7 +317,7 @@ function CrmDash() {
     },
     {
       k: "03",
-      label: "En retard",
+      label: "Retard",
       value: String(overdueCount),
       sub: "relance recommandée",
       accent: STATUS_COLORS.retard,
@@ -325,16 +329,27 @@ function CrmDash() {
     },
     {
       k: "04",
-      label: "Impayé",
-      value: String(unpaidCount),
-      sub: "facture en attente",
+      label: "En attente",
+      value: String(partialCount),
+      sub: "paiement partiel reçu",
       accent: STATUS_COLORS.en_attente,
       tint: "rgba(232,161,60,0.14)",
       icon: AlertCircle,
       to: "/dashboard/familles",
       search: { statut: "en_attente" },
-      // Analyse express : montant total en attente de recouvrement.
-      extra: `${pendingDues.length} famille(s) en attente`,
+      extra: null as string | null,
+    },
+    {
+      k: "05",
+      label: "Impayé",
+      value: String(unpaidCount),
+      sub: "jamais payé",
+      accent: "#9A2F2F",
+      tint: "rgba(154,47,47,0.10)",
+      icon: TrendingUp,
+      to: "/dashboard/familles",
+      search: { statut: "impaye" },
+      extra: null as string | null,
     },
 ] as const;
 
@@ -390,7 +405,7 @@ function CrmDash() {
       </header>
 
       {/* 4 cartes indicateurs   total / payé / en retard / impayé */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {metrics.map((card) => (
           <Link
             key={card.k}
@@ -573,7 +588,7 @@ function CrmDash() {
                 >
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.en_attente }} />
-                    Impayé
+                    En attente
                     <ArrowRight className="ml-auto h-3.5 w-3.5" />
                   </p>
                   <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
@@ -588,12 +603,32 @@ function CrmDash() {
               <li>
                 <Link
                   to="/dashboard/familles"
+                  search={{ statut: "impaye" }}
+                  className="block px-4 py-5 transition-colors hover:bg-[#E25C5C]/20 sm:px-6"
+                >
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.impaye }} />
+                    Impayé
+                    <ArrowRight className="ml-auto h-3.5 w-3.5" />
+                  </p>
+                  <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
+                    {(outstanding?.impayeTotal ?? 0).toLocaleString("fr-FR")} MAD
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {outstanding?.impayeCount ?? 0} facture(s) impayée(s)
+                  </p>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/dashboard/familles"
                   search={{ statut: "retard" }}
                   className="block px-4 py-5 transition-colors hover:bg-[#F6D8D8]/40 sm:px-6"
                 >
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: STATUS_COLORS.retard }} />
-                    En retard
+                    Retard
                     <ArrowRight className="ml-auto h-3.5 w-3.5" />
                   </p>
                   <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
@@ -608,7 +643,7 @@ function CrmDash() {
               <li className="px-4 py-5 sm:px-6">
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: PENDING_COLOR }} />
-                  En attente
+                  Total à recouvrer
                 </p>
                 <p className="mt-1.5 font-display text-2xl font-semibold tabular-nums text-foreground">
                   {attenteTotal.toLocaleString("fr-FR")} MAD
@@ -658,7 +693,7 @@ function CrmDash() {
                   <p className="text-[11px] text-muted-foreground">{p.date}</p>
                 </div>
                 <span className={statusPill(p.status)}>
-                  {p.status === "paye" ? "Payé" : p.status === "retard" ? "En retard" : "En attente"}
+                  {p.status === "paye" ? "Payé" : p.status === "retard" ? "Retard" : p.status === "en_attente" ? "En attente" : "Impayé"}
                 </span>
               </li>
             ))}
@@ -708,9 +743,13 @@ function CrmDash() {
                           >
                             {d.days}j de retard
                           </span>
-                        ) : (
+                        ) : d.status === "en_attente" ? (
                           <span className="shrink-0 rounded-full bg-[#F4E3C0] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A16]">
 En attente
+                          </span>
+                        ) : (
+                          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+Impayé
                           </span>
                         )}
                       </div>
@@ -800,7 +839,7 @@ En attente
               <p className="mt-3 text-[11px] text-white/70">
                 {relanceIds.length > 0
                   ? `${relanceIds.length} client${relanceIds.length > 1 ? "s" : ""} sélectionné${relanceIds.length > 1 ? "s" : ""}`
-                  : "Cliquez sur un parent pour le relancer, ou envoyez à tous les retards."}
+                  : "Cliquez sur un parent pour le relancer, ou envoyez à tous les en retard."}
               </p>
             </div>
             <form
@@ -831,7 +870,7 @@ En attente
                   ? "Envoi..."
                   : relanceIds.length > 0
                     ? `Envoyer à ${relanceIds.length} sélectionné${relanceIds.length > 1 ? "s" : ""}`
-                    : "Envoyer à tous les retards"}
+                    : "Envoyer à tous les en retard"}
               </button>
             </form>
           </div>
