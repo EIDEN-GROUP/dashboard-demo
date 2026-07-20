@@ -821,13 +821,15 @@ function PaymentDueSection() {
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
   const [day, setDay] = useState("5");
   const [graceDays, setGraceDays] = useState("5");
+  const [escalationDays, setEscalationDays] = useState("15");
 
   useEffect(() => {
     if (settings?.payment_due) {
       setDay(String(settings.payment_due.day ?? 5));
       setGraceDays(String(settings.payment_due.grace_days ?? 5));
+      setEscalationDays(String(settings.payment_due.escalation_days ?? 15));
     }
-  }, [settings?.payment_due?.day, settings?.payment_due?.grace_days]);
+  }, [settings?.payment_due?.day, settings?.payment_due?.grace_days, settings?.payment_due?.escalation_days]);
 
   const save = useMutation({
     mutationFn: (val: any) => updateSetting({ data: { key: "payment_due", value: val } }),
@@ -844,18 +846,20 @@ function PaymentDueSection() {
     <Section
       icon={Calendar}
       title="Échéance des paiements"
-      description="Jour d'échéance et délai de grâce avant passage en impayé"
+      description="Jour d'échéance, délai de grâce et délai avant passage en impayé"
       footer={
         <div className="border-t border-[#28396C]/10 bg-muted/40 px-4 py-3 sm:px-6">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Un client sera marqué <strong className="text-foreground">impayé</strong> si son dernier
-            paiement date d'avant le jour d'échéance + délai de grâce.
+            Un client non payé est d'abord marqué <strong className="text-foreground">retard</strong> à
+            partir du jour d'échéance + délai de grâce. Si aucun paiement n'arrive dans les
+            <strong className="text-foreground"> {escalationDays} jours </strong>
+            suivants, il passe en <strong className="text-foreground">impayé</strong>.
           </p>
         </div>
       }
     >
       <div className="space-y-5 px-4 py-5 sm:px-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
             <label htmlFor="due-day" className={labelClass}>
               Paiement dû le jour
@@ -892,11 +896,29 @@ function PaymentDueSection() {
               <span className="shrink-0 text-sm text-muted-foreground">jours</span>
             </div>
           </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="due-escalation" className={labelClass}>
+              Passage impayé après
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="due-escalation"
+                value={escalationDays}
+                onChange={(e) => setEscalationDays(e.target.value)}
+                type="number"
+                min="0"
+                inputMode="numeric"
+                className={cn(fieldClass, "w-24")}
+              />
+              <span className="shrink-0 text-sm text-muted-foreground">jours de retard</span>
+            </div>
+          </div>
         </div>
 
         <div className="flex justify-end border-t border-[#28396C]/10 pt-4">
           <button
-            onClick={() => save.mutate({ day: Number(day), grace_days: Number(graceDays) })}
+            onClick={() => save.mutate({ day: Number(day), grace_days: Number(graceDays), escalation_days: Number(escalationDays) })}
             disabled={save.isPending}
             className={cn(primaryPill, "w-full justify-center disabled:opacity-50 sm:w-auto")}
           >

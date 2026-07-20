@@ -1,11 +1,28 @@
 -- ============================================================================
--- Add 'impaye' back as a 4th payment status
--- New logic:
+-- Add 'impaye' as a 4th payment status with escalation logic
 --   paye       = paid in full
---   retard     = past due date + not fully paid
---   en_attente = paid partial, on time
---   impaye     = never paid at all
+--   retard     = past due date (any unpaid amount, including never-paid)
+--   impaye     = past due + past escalation period, OR never paid + within grace
+--   en_attente = paid partial, still within grace period
 -- ============================================================================
+
+-- ── 0. Escalation days helper (read from settings, default 15) ──────────────
+create or replace function public.invoice_escalation_days()
+returns int
+language sql
+stable
+as $$
+  select coalesce((value ->> 'escalation_days')::int, 15)
+  from public.settings
+  where key = 'payment_due'
+  limit 1;
+$$;
+
+-- Add escalation_days to the default payment_due setting if not present
+update public.settings
+  set value = value || '{"escalation_days": 15}'::jsonb
+  where key = 'payment_due'
+    and not value ? 'escalation_days';
 
 -- ── 1. clients.payment_status ────────────────────────────────────────────────
 alter table public.clients
@@ -49,26 +66,28 @@ alter table public.invoices
 create or replace function public.recalc_client_debt(p_client_id uuid)
 returns void as $$
 declare
-  v_child_names  jsonb;
-  v_level        text;
-  v_subs         jsonb;
-  v_remise       numeric;
-  v_level_fee    numeric := 0;
-  v_service_sum  numeric := 0;
-  v_frais_sum    numeric := 0;
-  v_expected     numeric;
-  v_paid         numeric;
-  v_payment_day  int;
-  v_grace_days   int;
-  v_due_date     date;
-  v_today        date := current_date;
-  v_services     jsonb;
-  v_frais        jsonb;
-  v_idx          int;
-  v_child        jsonb;
-  v_svc          jsonb;
-  v_f            jsonb;
-  v_lv_fee       numeric;
+  v_child_names     jsonb;
+  v_level           text;
+  v_subs            jsonb;
+  v_remise          numeric;
+  v_level_fee       numeric := 0;
+  v_service_sum     numeric := 0;
+  v_frais_sum       numeric := 0;
+  v_expected        numeric;
+  v_paid            numeric;
+  v_payment_day     int;
+  v_grace_days      int;
+  v_escalation_days int;
+  v_due_date        date;
+  v_escalation_date date;
+  v_today           date := current_date;
+  v_services        jsonb;
+  v_frais           jsonb;
+  v_idx             int;
+  v_child           jsonb;
+  v_svc             jsonb;
+  v_f               jsonb;
+  v_lv_fee          numeric;
 begin
   select child_names, level, subscribed_services, coalesce(remise, 0)
   into v_child_names, v_level, v_subs, v_remise
@@ -143,8 +162,11 @@ begin
   select coalesce(sum(amount), 0) into v_paid
   from public.payments where client_id = p_client_id;
 
-  select coalesce((value->>'day')::int, 5), coalesce((value->>'grace_days')::int, 5)
-  into v_payment_day, v_grace_days
+  select
+    coalesce((value->>'day')::int, 5),
+    coalesce((value->>'grace_days')::int, 5),
+    coalesce((value->>'escalation_days')::int, 15)
+  into v_payment_day, v_grace_days, v_escalation_days
   from public.settings where key = 'payment_due';
 
   v_due_date := make_date(
@@ -153,13 +175,16 @@ begin
     least(v_payment_day, 28)
   ) + v_grace_days;
 
+  v_escalation_date := v_due_date + v_escalation_days;
+
   update public.clients
   set
     debt = greatest(0, v_expected - v_paid),
     payment_status = case
       when v_paid >= v_expected then 'paye'
-      when v_paid = 0 then 'impaye'
+      when v_today > v_escalation_date then 'impaye'
       when v_today > v_due_date then 'retard'
+      when v_paid = 0 then 'impaye'
       else 'en_attente'
     end,
     overdue = case when v_paid < v_expected and v_today > v_due_date then true else false end
@@ -175,12 +200,13 @@ create or replace function public.invoice_status(
 )
 returns text
 language sql
-immutable
+stable
 as $$
   select case
     when p_amount_paid >= p_amount_due then 'paye'
-    when p_amount_paid = 0 then 'impaye'
+    when current_date > p_due_date + public.invoice_grace_days() + public.invoice_escalation_days() then 'impaye'
     when current_date > p_due_date + public.invoice_grace_days() then 'retard'
+    when p_amount_paid = 0 then 'impaye'
     else 'en_attente'
   end;
 $$;
