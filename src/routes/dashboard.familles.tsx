@@ -801,7 +801,7 @@ function CrmParentsPage() {
                     onMouseLeave={() => setHoverId(null)}
                     className={cn(
                       "cursor-pointer transition-colors",
-                      hovered ? "bg-[#B5E18B]/10" : banded ? "bg-[#28396C]/[0.02]" : undefined,
+                      hovered ? "bg-[#B5E18B]/40" : banded ? "bg-[#B5E18B]/[0.18]" : "bg-card",
                     )}
                   >
                     {i === 0 ? (
